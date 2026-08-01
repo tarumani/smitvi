@@ -1,0 +1,206 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { ROUTES } from "@/config/constants";
+import type { ProfileEntity } from "@/domain/profile/entities";
+
+type ProfileFormProps = {
+  mode: "create" | "edit";
+  initialProfile?: ProfileEntity | null;
+  defaultDisplayName?: string;
+};
+
+type FormState = {
+  username: string;
+  displayName: string;
+  headline: string;
+  bio: string;
+  websiteUrl: string;
+  location: string;
+  skills: string;
+  publicTwinEnabled: boolean;
+};
+
+export function ProfileForm({
+  mode,
+  initialProfile,
+  defaultDisplayName = "",
+}: ProfileFormProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [form, setForm] = useState<FormState>({
+    username: initialProfile?.username ?? "",
+    displayName: initialProfile?.displayName ?? defaultDisplayName,
+    headline: initialProfile?.headline ?? "",
+    bio: initialProfile?.bio ?? "",
+    websiteUrl: initialProfile?.websiteUrl ?? "",
+    location: initialProfile?.location ?? "",
+    skills: initialProfile?.skills.map((skill) => skill.name).join(", ") ?? "",
+    publicTwinEnabled: initialProfile?.publicTwinEnabled ?? true,
+  });
+
+  function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
+    setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    startTransition(async () => {
+      try {
+        const payload = {
+          username: form.username,
+          displayName: form.displayName,
+          headline: form.headline || null,
+          bio: form.bio || null,
+          websiteUrl: form.websiteUrl || null,
+          location: form.location || null,
+          skills: form.skills
+            .split(",")
+            .map((skill) => skill.trim())
+            .filter(Boolean),
+          visibility: "PUBLIC" as const,
+          publicTwinEnabled: form.publicTwinEnabled,
+        };
+
+        const response = await fetch("/api/v1/profiles/me", {
+          method: mode === "create" ? "POST" : "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const json: unknown = await response.json();
+        if (!response.ok) {
+          const message =
+            typeof json === "object" &&
+            json !== null &&
+            "error" in json &&
+            typeof (json as { error?: { message?: string } }).error?.message ===
+              "string"
+              ? (json as { error: { message: string } }).error.message
+              : "Failed to save profile";
+          throw new Error(message);
+        }
+
+        toast.success(mode === "create" ? "Profile created" : "Profile updated");
+        router.replace(ROUTES.dashboard);
+        router.refresh();
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to save profile";
+        toast.error(message);
+      }
+    });
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="username">Username</Label>
+          <div className="relative">
+            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[var(--muted)]">
+              @
+            </span>
+            <Input
+              id="username"
+              className="pl-8"
+              required
+              value={form.username}
+              onChange={(event) => updateField("username", event.target.value)}
+              placeholder="yourname"
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="displayName">Display name</Label>
+          <Input
+            id="displayName"
+            required
+            value={form.displayName}
+            onChange={(event) => updateField("displayName", event.target.value)}
+            placeholder="Ada Lovelace"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="headline">Headline</Label>
+        <Input
+          id="headline"
+          value={form.headline}
+          onChange={(event) => updateField("headline", event.target.value)}
+          placeholder="AI systems architect · Knowledge engineer"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="bio">Bio</Label>
+        <Textarea
+          id="bio"
+          value={form.bio}
+          onChange={(event) => updateField("bio", event.target.value)}
+          placeholder="What expertise should your Knowledge Twin represent?"
+        />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="websiteUrl">Website</Label>
+          <Input
+            id="websiteUrl"
+            type="url"
+            value={form.websiteUrl}
+            onChange={(event) => updateField("websiteUrl", event.target.value)}
+            placeholder="https://"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="location">Location</Label>
+          <Input
+            id="location"
+            value={form.location}
+            onChange={(event) => updateField("location", event.target.value)}
+            placeholder="Remote · London · NYC"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="skills">Skills</Label>
+        <Input
+          id="skills"
+          value={form.skills}
+          onChange={(event) => updateField("skills", event.target.value)}
+          placeholder="TypeScript, Product Strategy, Machine Learning"
+        />
+        <p className="text-xs text-[var(--muted)]">Comma-separated</p>
+      </div>
+
+      <label className="flex items-center gap-3 text-sm">
+        <input
+          type="checkbox"
+          checked={form.publicTwinEnabled}
+          onChange={(event) =>
+            updateField("publicTwinEnabled", event.target.checked)
+          }
+          className="h-4 w-4 rounded border-[var(--border)]"
+        />
+        Enable public Twin chat on my profile
+      </label>
+
+      <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
+        {isPending
+          ? "Saving…"
+          : mode === "create"
+            ? "Create profile"
+            : "Save changes"}
+      </Button>
+    </form>
+  );
+}

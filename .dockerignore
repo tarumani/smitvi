@@ -1,0 +1,15 @@
+node_modules
+.next
+.data
+.git
+.env
+.env.*
+!.env.example
+coverage
+*.md
+.vscode
+.cursor
+agent-transcripts
+terminals
+**/*.test.ts
+vitest.config.ts

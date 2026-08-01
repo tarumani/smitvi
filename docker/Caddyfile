@@ -1,0 +1,4 @@
+smitvi.com, www.smitvi.com {
+	encode gzip
+	reverse_proxy app:3000
+}

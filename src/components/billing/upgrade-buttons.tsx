@@ -1,0 +1,110 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+
+type UpgradeButtonsProps = {
+  plan: "PRO" | "BUSINESS";
+};
+
+export function UpgradeButtons({ plan }: UpgradeButtonsProps) {
+  const [provider, setProvider] = useState<"STRIPE" | "RAZORPAY">("STRIPE");
+  const [isPending, startTransition] = useTransition();
+
+  function checkout() {
+    startTransition(async () => {
+      try {
+        const response = await fetch("/api/v1/billing/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ plan, provider }),
+        });
+        const json: unknown = await response.json();
+        if (!response.ok) {
+          const message =
+            typeof json === "object" &&
+            json !== null &&
+            "error" in json &&
+            typeof (json as { error?: { message?: string } }).error?.message ===
+              "string"
+              ? (json as { error: { message: string } }).error.message
+              : "Checkout failed";
+          throw new Error(message);
+        }
+
+        const checkout = (
+          json as {
+            data: {
+              checkout:
+                | { provider: "STRIPE"; checkoutUrl: string | null }
+                | {
+                    provider: "RAZORPAY";
+                    subscriptionId: string;
+                    keyId: string;
+                  };
+            };
+          }
+        ).data.checkout;
+
+        if (checkout.provider === "STRIPE") {
+          if (!checkout.checkoutUrl) {
+            throw new Error("Stripe did not return a checkout URL");
+          }
+          window.location.href = checkout.checkoutUrl;
+          return;
+        }
+
+        // Razorpay Checkout.js
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.onload = () => {
+          const RazorpayCtor = (
+            window as unknown as {
+              Razorpay: new (options: Record<string, unknown>) => {
+                open: () => void;
+              };
+            }
+          ).Razorpay;
+          const rzp = new RazorpayCtor({
+            key: checkout.keyId,
+            subscription_id: checkout.subscriptionId,
+            name: "Smitvi",
+            description: `${plan} subscription`,
+            theme: { color: "#0f766e" },
+          });
+          rzp.open();
+        };
+        document.body.appendChild(script);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Checkout failed");
+      }
+    });
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex gap-2">
+        <Button
+          type="button"
+          size="sm"
+          variant={provider === "STRIPE" ? "default" : "outline"}
+          onClick={() => setProvider("STRIPE")}
+        >
+          Stripe
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={provider === "RAZORPAY" ? "default" : "outline"}
+          onClick={() => setProvider("RAZORPAY")}
+        >
+          Razorpay
+        </Button>
+      </div>
+      <Button className="w-full" onClick={checkout} disabled={isPending}>
+        {isPending ? "Redirecting…" : `Upgrade to ${plan}`}
+      </Button>
+    </div>
+  );
+}

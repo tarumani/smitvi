@@ -1,0 +1,46 @@
+# fly.toml — deploy Smitvi on Fly.io (app compute)
+# Domain DNS stays on GoDaddy; Auth/DB/Storage stay on Supabase.
+#
+# First-time:
+#   cd smitvi
+#   fly launch --no-deploy   # or: fly apps create smitvi
+#   fly secrets set NEXT_PUBLIC_APP_URL=https://smitvi.com ...
+#   fly deploy
+#   fly certs add smitvi.com
+#   fly ips list            # use these IPs in GoDaddy DNS
+
+app = "smitvi"
+primary_region = "iad"
+
+[build]
+
+[deploy]
+  release_command = "npx prisma migrate deploy"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3000"
+  STORAGE_DRIVER = "supabase"
+  SUPABASE_STORAGE_BUCKET = "knowledge"
+  NEXT_PUBLIC_APP_URL = "https://smitvi.com"
+  NEXT_PUBLIC_APP_NAME = "Smitvi"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "30s"
+    method = "GET"
+    path = "/api/v1/health"
+
+[[vm]]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1

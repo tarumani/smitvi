@@ -1,0 +1,55 @@
+# GoDaddy VPS / self-hosted production stack (no Vercel)
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: smitvi
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: smitvi
+    volumes:
+      - smitvi_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smitvi -d smitvi"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env.production
+    environment:
+      NODE_ENV: production
+      STORAGE_DRIVER: local
+      DATABASE_URL: postgresql://smitvi:${POSTGRES_PASSWORD}@db:5432/smitvi?sslmode=disable
+      DIRECT_URL: postgresql://smitvi:${POSTGRES_PASSWORD}@db:5432/smitvi?sslmode=disable
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://smitvi.com}
+    volumes:
+      - smitvi_uploads:/app/.data/uploads
+    ports:
+      - "3000:3000"
+
+  # Automatic HTTPS for smitvi.com (points at the app)
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - smitvi_caddy_data:/data
+      - smitvi_caddy_config:/config
+
+volumes:
+  smitvi_pg:
+  smitvi_uploads:
+  smitvi_caddy_data:
+  smitvi_caddy_config:
