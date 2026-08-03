@@ -47,7 +47,6 @@ export function HowItHelps({
   return (
     <section id="how-it-helps" className="relative overflow-hidden">
       <div className="absolute inset-0 section-band" />
-      <div className="absolute inset-0 hero-mesh opacity-25" />
       <div className="relative mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 lg:py-28">
         {showIntro ? (
           <div className="max-w-2xl">

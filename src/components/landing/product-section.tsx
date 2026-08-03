@@ -21,8 +21,7 @@ const pillars = [
 export function ProductSection() {
   return (
     <section id="product" className="relative overflow-hidden">
-      <div className="absolute inset-0 hero-mesh opacity-40" />
-      <div className="absolute inset-0 section-band opacity-60" />
+      <div className="absolute inset-0 section-band" />
       <div className="relative mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 lg:py-32">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold tracking-[0.18em] text-[var(--accent)] uppercase">

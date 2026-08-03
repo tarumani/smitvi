@@ -7,8 +7,7 @@ import { ROUTES } from "@/config/constants";
 export function DemoSection() {
   return (
     <section className="relative overflow-hidden border-y border-[var(--border)]">
-      <div className="absolute inset-0 bg-[var(--surface)]/50" />
-      <div className="absolute inset-0 section-band opacity-70" />
+      <div className="absolute inset-0 bg-[var(--surface)]/40" />
       <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:py-24">
         <GlassCard className="p-7 sm:p-8">
           <p className="text-sm font-semibold tracking-[0.18em] text-[var(--accent)] uppercase">

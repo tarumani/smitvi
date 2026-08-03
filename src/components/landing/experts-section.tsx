@@ -7,18 +7,8 @@ import { ROUTES } from "@/config/constants";
 export function ExpertsSection() {
   return (
     <section id="experts" className="relative">
-      <div className="absolute inset-0 section-band opacity-50" />
       <div className="relative mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 lg:py-32">
         <GlassCard className="px-6 py-16 sm:px-12 lg:px-16 lg:py-20">
-          <div
-            aria-hidden
-            className="animate-aurora pointer-events-none absolute -right-16 -top-20 h-72 w-72 rounded-full bg-[radial-gradient(circle_at_center,rgba(15,118,110,0.22),transparent_70%)]"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-20 -left-12 h-64 w-64 rounded-full bg-[radial-gradient(circle_at_center,rgba(14,165,233,0.14),transparent_70%)]"
-          />
-
           <div className="relative max-w-2xl">
             <p className="text-sm font-semibold tracking-[0.18em] text-[var(--accent)] uppercase">
               For experts

@@ -10,15 +10,7 @@ export function Hero() {
     <section className="relative isolate overflow-hidden">
       <div
         aria-hidden
-        className="animate-aurora pointer-events-none absolute -left-24 top-0 h-[28rem] w-[28rem] rounded-full bg-[radial-gradient(circle_at_center,rgba(15,118,110,0.28),transparent_68%)]"
-      />
-      <div
-        aria-hidden
-        className="animate-aurora pointer-events-none absolute right-[-10%] top-10 h-[32rem] w-[32rem] rounded-full bg-[radial-gradient(circle_at_center,rgba(14,165,233,0.18),transparent_70%)] [animation-delay:2s]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 hidden w-[54%] bg-gradient-to-l from-[#07111f] via-[#0b1728]/88 to-transparent lg:block dark:from-[#04070d]"
+        className="pointer-events-none absolute inset-y-0 right-0 hidden w-[50%] bg-gradient-to-l from-[#0b1220]/95 via-[#0b1220]/55 to-transparent lg:block dark:from-[#04070d]"
       />
 
       <div className="relative z-10 mx-auto grid h-[calc(100svh-4rem)] max-h-[calc(100svh-4rem)] w-full max-w-6xl items-center gap-6 overflow-hidden px-4 py-5 sm:px-6 lg:grid-cols-[1.08fr_0.92fr] lg:gap-10 lg:py-6">

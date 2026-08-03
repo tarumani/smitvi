@@ -27,8 +27,7 @@ export function HowItWorks() {
       id="how"
       className="relative overflow-hidden border-y border-[var(--border)]"
     >
-      <div className="absolute inset-0 bg-[var(--surface)]/45" />
-      <div className="pointer-events-none absolute inset-0 section-band opacity-80" />
+      <div className="absolute inset-0 bg-[var(--surface)]/35" />
       <div className="relative mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 lg:py-32">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold tracking-[0.18em] text-[var(--accent)] uppercase">
