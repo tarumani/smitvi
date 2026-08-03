@@ -20,6 +20,7 @@ export const ROUTES = {
   marketplaceOrders: "/marketplace/orders",
   billingSettings: "/settings/billing",
   profileSettings: "/settings/profile",
+  passwordSettings: "/settings/password",
   apiKeysSettings: "/settings/api-keys",
   developers: "/developers",
   onboarding: "/onboarding",

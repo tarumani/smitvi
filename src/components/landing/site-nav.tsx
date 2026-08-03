@@ -22,9 +22,10 @@ function linkActive(pathname: string, href: string) {
 
 type SiteNavProps = {
   variant: "desktop" | "mobile";
+  signedIn?: boolean;
 };
 
-export function SiteNav({ variant }: SiteNavProps) {
+export function SiteNav({ variant, signedIn = false }: SiteNavProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -80,18 +81,28 @@ export function SiteNav({ variant }: SiteNavProps) {
                 {link.label}
               </Link>
             ))}
-            <div className="mt-2 grid grid-cols-2 gap-2 border-t border-[var(--border)] pt-3 sm:hidden">
-              <Button asChild variant="secondary" size="sm">
-                <Link href={ROUTES.login} onClick={() => setOpen(false)}>
-                  Sign in
-                </Link>
-              </Button>
-              <Button asChild size="sm">
-                <Link href={ROUTES.signup} onClick={() => setOpen(false)}>
-                  Create Twin
-                </Link>
-              </Button>
-            </div>
+            {!signedIn ? (
+              <div className="mt-2 grid grid-cols-2 gap-2 border-t border-[var(--border)] pt-3 sm:hidden">
+                <Button asChild variant="secondary" size="sm">
+                  <Link href={ROUTES.login} onClick={() => setOpen(false)}>
+                    Sign in
+                  </Link>
+                </Button>
+                <Button asChild size="sm">
+                  <Link href={ROUTES.signup} onClick={() => setOpen(false)}>
+                    Create Twin
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="mt-2 border-t border-[var(--border)] pt-3 sm:hidden">
+                <Button asChild variant="secondary" size="sm" className="w-full">
+                  <Link href={ROUTES.dashboard} onClick={() => setOpen(false)}>
+                    Open dashboard
+                  </Link>
+                </Button>
+              </div>
+            )}
           </nav>
         </div>
       ) : null}
