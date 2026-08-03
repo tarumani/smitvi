@@ -45,10 +45,13 @@ export default async function PublicTwinChatPage({ params }: PageProps) {
     .slice(0, 4);
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm text-[var(--muted)]">
+          <p className="text-sm font-medium tracking-wide text-[var(--accent)] uppercase">
+            Public Twin
+          </p>
+          <p className="mt-1 text-sm text-[var(--muted)]">
             <Link
               href={ROUTES.publicProfile(username)}
               className="hover:text-[var(--foreground)]"
@@ -56,7 +59,7 @@ export default async function PublicTwinChatPage({ params }: PageProps) {
               @{username}
             </Link>
           </p>
-          <h1 className="font-display text-2xl font-bold tracking-tight">
+          <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">
             {profile.displayName}&apos;s Knowledge Twin
           </h1>
         </div>

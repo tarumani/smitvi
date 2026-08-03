@@ -1,14 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Search as SearchIcon } from "lucide-react";
 import { container } from "@/application/container";
+import { PageHero } from "@/components/layout/page-hero";
 import { Avatar } from "@/components/ui/avatar";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { ROUTES } from "@/config/constants";
 
 export const metadata: Metadata = {
   title: "Search",
+  description: "Search people, skills, topics, and knowledge across Smitvi.",
 };
 
 type PageProps = {
@@ -38,20 +42,27 @@ export default async function SearchPage({ searchParams }: PageProps) {
     0;
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
-      <h1 className="font-display text-3xl font-bold tracking-tight">Search</h1>
-      <p className="mt-2 text-[var(--muted-foreground)]">
-        People, skills, topics, knowledge, and questions across Smitvi.
-      </p>
+    <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 sm:py-16">
+      <PageHero
+        eyebrow="Search"
+        title="Find human intelligence"
+        description="People, skills, topics, knowledge, and questions across the Smitvi network."
+      />
 
-      <form className="mt-6 flex gap-2" action="/search">
-        <Input
-          name="q"
-          defaultValue={query}
-          placeholder="Search experts, skills, topics…"
-          className="h-12"
-        />
-        <Button type="submit" className="h-12 px-6">
+      <form
+        className="animate-fade-up-delay-1 mt-8 flex flex-col gap-3 sm:flex-row"
+        action="/search"
+      >
+        <div className="relative flex-1">
+          <SearchIcon className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
+          <Input
+            name="q"
+            defaultValue={query}
+            placeholder="Search experts, skills, topics…"
+            className="h-12 border-[var(--glass-border)] bg-[var(--glass)] pl-11 shadow-[var(--glass-shadow)] backdrop-blur-xl"
+          />
+        </div>
+        <Button type="submit" className="h-12 px-8">
           Search
         </Button>
       </form>
@@ -63,19 +74,47 @@ export default async function SearchPage({ searchParams }: PageProps) {
       ) : null}
 
       {query.length >= 2 && !hasResults ? (
-        <GlassCard className="mt-8 p-6 text-sm text-[var(--muted-foreground)]">
-          No results for “{query}”.
-        </GlassCard>
+        <div className="mt-10">
+          <EmptyState
+            icon={<SearchIcon className="h-8 w-8 text-[var(--accent)]" />}
+            title={`No results for “${query}”`}
+            description="Try another name, skill, or topic — or explore trending experts on Discover."
+            action={
+              <Button asChild variant="secondary" size="sm">
+                <Link href={ROUTES.discover}>Browse Discover</Link>
+              </Button>
+            }
+          />
+        </div>
       ) : null}
 
-      <div className="mt-10 space-y-10">
+      {!query ? (
+        <div className="mt-10">
+          <EmptyState
+            icon={<SearchIcon className="h-8 w-8 text-[var(--accent)]" />}
+            title="Start searching"
+            description="Look up experts by name, scan skills and topics, or find public knowledge packs."
+            action={
+              <Button asChild variant="secondary" size="sm">
+                <Link href={ROUTES.discover}>Explore Discover</Link>
+              </Button>
+            }
+          />
+        </div>
+      ) : null}
+
+      <div className="mt-12 space-y-12">
         {results.people.length ? (
-          <section className="space-y-3">
+          <section className="space-y-4">
             <h2 className="font-display text-xl font-semibold">People</h2>
             <div className="grid gap-3">
               {results.people.map((person) => (
-                <Link key={person.username} href={ROUTES.publicProfile(person.username)}>
-                  <GlassCard className="flex items-center gap-3 p-4 transition-colors hover:bg-[var(--surface-elevated)]">
+                <Link
+                  key={person.username}
+                  href={ROUTES.publicProfile(person.username)}
+                  className="group"
+                >
+                  <GlassCard className="flex items-center gap-3 p-4 transition-colors group-hover:bg-[var(--surface-elevated)]">
                     <Avatar src={person.avatarUrl} name={person.displayName} />
                     <div>
                       <p className="font-semibold">{person.displayName}</p>
@@ -92,14 +131,14 @@ export default async function SearchPage({ searchParams }: PageProps) {
         ) : null}
 
         {results.knowledge.length ? (
-          <section className="space-y-3">
+          <section className="space-y-4">
             <h2 className="font-display text-xl font-semibold">Knowledge</h2>
             {results.knowledge.map((item) => (
               <Link
                 key={item.id}
                 href={ROUTES.publicProfile(item.ownerUsername)}
               >
-                <GlassCard className="mb-3 p-4">
+                <GlassCard className="mb-3 p-5 transition-colors hover:bg-[var(--surface-elevated)]">
                   <p className="font-semibold">{item.title}</p>
                   <p className="mt-1 text-sm text-[var(--muted-foreground)]">
                     by @{item.ownerUsername}
@@ -116,14 +155,14 @@ export default async function SearchPage({ searchParams }: PageProps) {
         ) : null}
 
         {results.skills.length ? (
-          <section className="space-y-3">
+          <section className="space-y-4">
             <h2 className="font-display text-xl font-semibold">Skills</h2>
             <div className="flex flex-wrap gap-2">
               {results.skills.map((skill) => (
                 <Link
                   key={skill.slug}
                   href={`/search?q=${encodeURIComponent(skill.name)}`}
-                  className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm transition-colors hover:border-[var(--accent)] hover:bg-[var(--accent-soft)]"
                 >
                   {skill.name} · {skill.profileCount}
                 </Link>
@@ -133,14 +172,14 @@ export default async function SearchPage({ searchParams }: PageProps) {
         ) : null}
 
         {results.topics.length ? (
-          <section className="space-y-3">
+          <section className="space-y-4">
             <h2 className="font-display text-xl font-semibold">Topics</h2>
             <div className="flex flex-wrap gap-2">
               {results.topics.map((topic) => (
                 <Link
                   key={topic.topic}
                   href={`/search?q=${encodeURIComponent(topic.topic)}`}
-                  className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm transition-colors hover:border-[var(--accent)] hover:bg-[var(--accent-soft)]"
                 >
                   {topic.topic} · {topic.sourceCount}
                 </Link>
@@ -150,14 +189,14 @@ export default async function SearchPage({ searchParams }: PageProps) {
         ) : null}
 
         {results.questions.length ? (
-          <section className="space-y-3">
+          <section className="space-y-4">
             <h2 className="font-display text-xl font-semibold">Questions</h2>
             {results.questions.map((item) => (
               <Link
                 key={`${item.ownerUsername}-${item.question}`}
                 href={ROUTES.publicTwinChat(item.ownerUsername)}
               >
-                <GlassCard className="mb-3 p-4">
+                <GlassCard className="mb-3 p-5 transition-colors hover:bg-[var(--surface-elevated)]">
                   <p className="font-medium">{item.question}</p>
                   <p className="mt-1 text-sm text-[var(--muted-foreground)]">
                     @{item.ownerUsername} · {item.sourceTitle}

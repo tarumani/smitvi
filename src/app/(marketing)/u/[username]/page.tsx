@@ -48,9 +48,9 @@ export default async function PublicProfilePage({ params }: PageProps) {
   ]);
 
   return (
-    <div className="min-h-full bg-[var(--background)]">
-      <div className="relative h-40 w-full bg-gradient-to-r from-teal-700/30 via-sky-600/20 to-transparent sm:h-52" />
-      <div className="mx-auto w-full max-w-5xl px-4 pb-16 sm:px-6">
+    <div className="pb-16">
+      <div className="relative h-40 w-full bg-gradient-to-r from-teal-700/35 via-sky-600/20 to-transparent sm:h-52" />
+      <div className="mx-auto w-full max-w-5xl px-4 sm:px-6">
         <div className="-mt-12 flex flex-col gap-6 sm:-mt-14 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex items-end gap-4">
             <Avatar
