@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SmitviLogo } from "@/components/brand/smitvi-logo";
 import { ROUTES } from "@/config/constants";
 import { createSupabaseBrowserClient } from "@/infrastructure/auth/supabase/client";
 
@@ -97,44 +96,47 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   return (
-    <GlassCard className="w-full max-w-md p-8">
-      <div className="space-y-3 text-center">
-        <div className="flex justify-center">
-          <SmitviLogo href={null} size="sm" />
-        </div>
-        <h1 className="font-display text-3xl font-bold tracking-tight">
+    <GlassCard className="w-full max-w-md px-5 py-5 sm:px-6 sm:py-6">
+      <div className="text-center">
+        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-[1.75rem]">
           {title}
         </h1>
-        <p className="text-sm text-[var(--muted-foreground)]">{subtitle}</p>
+        <p className="mt-1.5 text-sm text-[var(--muted-foreground)]">
+          {subtitle}
+        </p>
       </div>
 
-      <div className="mt-8 grid gap-3">
+      <div className="mt-5 grid grid-cols-2 gap-2.5">
         <Button
           type="button"
           variant="secondary"
+          size="sm"
+          className="h-10"
           disabled={isPending || oauthLoading !== null}
           onClick={() => handleOAuth("google")}
         >
-          {oauthLoading === "google" ? "Redirecting…" : "Continue with Google"}
+          {oauthLoading === "google" ? "…" : "Google"}
         </Button>
         <Button
           type="button"
           variant="secondary"
+          size="sm"
+          className="h-10"
           disabled={isPending || oauthLoading !== null}
           onClick={() => handleOAuth("apple")}
         >
-          {oauthLoading === "apple" ? "Redirecting…" : "Continue with Apple"}
+          {oauthLoading === "apple" ? "…" : "Apple"}
         </Button>
       </div>
 
-      <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-wider text-[var(--muted)]">
+      <div className="my-4 flex items-center gap-3 text-[10px] uppercase tracking-wider text-[var(--muted)]">
         <div className="h-px flex-1 bg-[var(--border)]" />
         or email
         <div className="h-px flex-1 bg-[var(--border)]" />
       </div>
 
-      <form className="space-y-4" onSubmit={handleEmailAuth}>
-        <div className="space-y-2">
+      <form className="space-y-3" onSubmit={handleEmailAuth}>
+        <div className="space-y-1.5">
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
@@ -144,9 +146,10 @@ export function AuthForm({ mode }: AuthFormProps) {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             placeholder="you@company.com"
+            className="h-10"
           />
         </div>
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label htmlFor="password">Password</Label>
           <Input
             id="password"
@@ -157,9 +160,10 @@ export function AuthForm({ mode }: AuthFormProps) {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             placeholder="Minimum 8 characters"
+            className="h-10"
           />
         </div>
-        <Button className="w-full" type="submit" disabled={isPending}>
+        <Button className="mt-1 h-10 w-full" type="submit" disabled={isPending}>
           {isPending
             ? "Please wait…"
             : mode === "login"
@@ -168,7 +172,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-[var(--muted-foreground)]">
+      <p className="mt-4 text-center text-sm text-[var(--muted-foreground)]">
         {mode === "login" ? (
           <>
             New to Smitvi?{" "}

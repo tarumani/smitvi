@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 function AuthFormFallback() {
-  return <Skeleton className="h-[520px] w-full max-w-md rounded-3xl" />;
+  return <Skeleton className="h-[360px] w-full max-w-md rounded-3xl" />;
 }
 
 export default function SignupPage() {
