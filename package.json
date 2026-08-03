@@ -41,6 +41,7 @@
     "openai": "^7.3.0",
     "pdf-parse": "^2.4.5",
     "pg": "^8.22.0",
+    "prisma": "^7.9.1",
     "razorpay": "^2.9.8",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -65,7 +66,6 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
     "jsdom": "^30.0.1",
-    "prisma": "^7.9.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"

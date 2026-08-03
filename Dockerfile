@@ -39,7 +39,8 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/package.json ./package.json
-# Full pruned node_modules so `npx prisma migrate deploy` works as release_command
+COPY --from=builder /app/scripts ./scripts
+# Full pruned node_modules so Prisma release_command can run
 COPY --from=builder /app/node_modules ./node_modules
 
 USER nextjs
