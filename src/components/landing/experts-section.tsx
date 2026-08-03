@@ -1,14 +1,17 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GlassCard } from "@/components/ui/glass-card";
 import { ROUTES } from "@/config/constants";
 
 export function ExpertsSection() {
   return (
-    <section id="experts" className="relative">
+    <section id="experts" className="relative overflow-hidden">
       <div className="relative mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 lg:py-32">
-        <GlassCard className="px-6 py-16 sm:px-12 lg:px-16 lg:py-20">
+        <div className="relative overflow-hidden border-y border-[var(--border)] py-16 sm:py-20">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_80%_50%,rgba(15,118,110,0.08),transparent_65%)]"
+          />
           <div className="relative max-w-2xl">
             <p className="text-sm font-semibold tracking-[0.18em] text-[var(--accent)] uppercase">
               For experts
@@ -30,7 +33,7 @@ export function ExpertsSection() {
               </Button>
             </div>
           </div>
-        </GlassCard>
+        </div>
       </div>
     </section>
   );

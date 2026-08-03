@@ -1,5 +1,3 @@
-import { GlassCard } from "@/components/ui/glass-card";
-
 const pillars = [
   {
     title: "Own your intelligence",
@@ -21,7 +19,6 @@ const pillars = [
 export function ProductSection() {
   return (
     <section id="product" className="relative overflow-hidden">
-      <div className="absolute inset-0 section-band" />
       <div className="relative mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 lg:py-32">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold tracking-[0.18em] text-[var(--accent)] uppercase">
@@ -36,9 +33,12 @@ export function ProductSection() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-5 md:grid-cols-3">
+        <div className="mt-14 grid gap-0 border-t border-[var(--border)] md:grid-cols-3">
           {pillars.map((pillar, index) => (
-            <GlassCard key={pillar.title} className="p-7">
+            <article
+              key={pillar.title}
+              className="border-b border-[var(--border)] py-8 md:border-r md:border-b-0 md:px-8 md:py-10 md:first:pl-0 md:last:border-r-0 md:last:pr-0"
+            >
               <p className="font-display text-sm font-bold tracking-[0.2em] text-[var(--accent)]">
                 {String(index + 1).padStart(2, "0")}
               </p>
@@ -48,7 +48,7 @@ export function ProductSection() {
               <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)]">
                 {pillar.description}
               </p>
-            </GlassCard>
+            </article>
           ))}
         </div>
       </div>

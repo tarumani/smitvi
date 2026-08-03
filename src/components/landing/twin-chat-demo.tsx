@@ -43,28 +43,27 @@ export function TwinChatDemo({ className, compact = false }: TwinChatDemoProps) 
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#0b1220] text-white shadow-[0_40px_120px_rgba(2,8,23,0.45)] ring-1 ring-teal-400/10",
+        "relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--foreground)] shadow-[0_24px_60px_rgba(15,23,42,0.1)]",
         className,
       )}
     >
       <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-teal-400/10 to-transparent"
-      />
-      <div
         className={cn(
-          "relative flex items-center justify-between border-b border-white/10",
+          "flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface)]/70",
           compact ? "px-4 py-3" : "px-5 py-4",
         )}
       >
-        <div>
-          <p className="font-display text-sm font-semibold tracking-tight">
-            Knowledge Twin
-          </p>
-          <p className="text-xs text-white/50">@maya · Product Architect</p>
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)]">
+            <span className="text-xs font-bold">KT</span>
+          </div>
+          <div>
+            <p className="text-sm font-semibold tracking-tight">Knowledge Twin</p>
+            <p className="text-xs text-[var(--muted)]">@maya · Product Architect</p>
+          </div>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-md bg-teal-400/15 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-teal-300">
-          <span className="animate-live-dot h-1.5 w-1.5 rounded-full bg-teal-300" />
+        <span className="inline-flex items-center gap-1.5 rounded-md bg-[var(--accent-soft)] px-2.5 py-1 text-[11px] font-semibold tracking-wide text-[var(--accent)]">
+          <span className="animate-live-dot h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
           LIVE
         </span>
       </div>
@@ -89,14 +88,14 @@ export function TwinChatDemo({ className, compact = false }: TwinChatDemoProps) 
               className={cn(
                 "rounded-2xl px-4 py-3 text-sm leading-relaxed",
                 message.role === "user"
-                  ? "bg-white/10 text-white"
-                  : "bg-teal-400/10 text-teal-50 ring-1 ring-teal-400/20",
+                  ? "bg-[var(--foreground)] text-[var(--background)]"
+                  : "border border-[var(--accent)]/20 bg-[var(--accent-soft)] text-[var(--foreground)]",
               )}
             >
               {message.text}
             </div>
             {message.citation ? (
-              <p className="mt-1.5 text-[11px] text-white/40">
+              <p className="mt-1.5 text-[11px] text-[var(--muted)]">
                 Cited from {message.citation}
               </p>
             ) : null}
@@ -106,11 +105,11 @@ export function TwinChatDemo({ className, compact = false }: TwinChatDemoProps) 
 
       <div
         className={cn(
-          "border-t border-white/10",
+          "border-t border-[var(--border)] bg-[var(--surface)]/50",
           compact ? "px-4 py-3" : "px-5 py-4",
         )}
       >
-        <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/35">
+        <div className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2.5 text-sm text-[var(--muted)]">
           Ask this twin anything from their knowledge…
         </div>
       </div>

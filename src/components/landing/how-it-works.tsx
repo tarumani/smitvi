@@ -1,5 +1,3 @@
-import { GlassCard } from "@/components/ui/glass-card";
-
 const steps = [
   {
     step: "01",
@@ -27,7 +25,6 @@ export function HowItWorks() {
       id="how"
       className="relative overflow-hidden border-y border-[var(--border)]"
     >
-      <div className="absolute inset-0 bg-[var(--surface)]/35" />
       <div className="relative mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 lg:py-32">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold tracking-[0.18em] text-[var(--accent)] uppercase">
@@ -38,26 +35,24 @@ export function HowItWorks() {
           </h2>
         </div>
 
-        <ol className="mt-16 grid gap-5 md:grid-cols-3">
+        <ol className="mt-16 grid gap-12 md:grid-cols-3 md:gap-8">
           {steps.map((item, index) => (
             <li key={item.step} className="relative">
               {index < steps.length - 1 ? (
                 <span
-                  aria-hidden="true"
-                  className="absolute top-10 left-[calc(100%+0.15rem)] z-10 hidden h-px w-[calc(100%-1.2rem)] bg-gradient-to-r from-[var(--accent)]/50 to-transparent md:block"
+                  aria-hidden
+                  className="absolute top-8 left-[calc(100%+0.25rem)] hidden h-px w-[calc(100%-2rem)] bg-gradient-to-r from-[var(--accent)]/45 to-transparent md:block"
                 />
               ) : null}
-              <GlassCard className="h-full p-7">
-                <p className="font-display text-4xl font-extrabold tracking-tight text-[var(--accent)]/30">
-                  {item.step}
-                </p>
-                <h3 className="mt-3 text-xl font-semibold tracking-tight">
-                  {item.title}
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)] sm:text-base">
-                  {item.description}
-                </p>
-              </GlassCard>
+              <p className="font-display text-5xl font-extrabold tracking-tight text-[var(--accent)]/20">
+                {item.step}
+              </p>
+              <h3 className="mt-3 font-display text-xl font-semibold tracking-tight">
+                {item.title}
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)] sm:text-base">
+                {item.description}
+              </p>
             </li>
           ))}
         </ol>
