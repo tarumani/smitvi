@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/config/constants";
 
 type BuyButtonProps = {
   listingId: string;
@@ -17,10 +18,15 @@ export function BuyButton({ listingId }: BuyButtonProps) {
       try {
         const response = await fetch("/api/v1/marketplace/checkout", {
           method: "POST",
+          credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ listingId, provider }),
         });
         const json: unknown = await response.json();
+        if (response.status === 401) {
+          window.location.href = `${ROUTES.login}?next=${encodeURIComponent(ROUTES.marketplace)}`;
+          return;
+        }
         if (!response.ok) {
           const message =
             typeof json === "object" &&

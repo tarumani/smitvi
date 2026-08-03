@@ -1,3 +1,4 @@
+import type { User as AuthUser } from "@supabase/supabase-js";
 import { DomainError, UnauthorizedError } from "@/domain/shared/errors";
 import type { UserEntity } from "@/domain/user/entities";
 import type { ProfileSummary } from "@/domain/profile/entities";
@@ -11,6 +12,16 @@ export type CurrentSession = {
   readonly profile: ProfileSummary | null;
 };
 
+/** Email/password must confirm; OAuth providers are trusted. */
+function isAuthEmailVerified(authUser: AuthUser): boolean {
+  if (authUser.email_confirmed_at) return true;
+  const provider = authUser.app_metadata?.provider;
+  if (typeof provider === "string" && provider !== "email") return true;
+  return (authUser.identities ?? []).some(
+    (identity) => identity.provider !== "email",
+  );
+}
+
 export async function getCurrentSession(): Promise<CurrentSession | null> {
   const supabase = await createSupabaseServerClient();
   const {
@@ -23,7 +34,7 @@ export async function getCurrentSession(): Promise<CurrentSession | null> {
 
   // Email/password signups must verify before using the app.
   // Google OAuth accounts are confirmed by the provider.
-  if (!authUser.email_confirmed_at) {
+  if (!isAuthEmailVerified(authUser)) {
     await supabase.auth.signOut();
     return null;
   }

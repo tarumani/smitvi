@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getCurrentSession } from "@/application/auth/get-current-session";
 import { container } from "@/application/container";
 import { PageHero } from "@/components/layout/page-hero";
 import { Avatar } from "@/components/ui/avatar";
@@ -15,8 +16,14 @@ export const metadata: Metadata = {
 };
 
 export default async function MarketplacePage() {
-  const liveListings = await container.marketplace.listActive();
+  const [liveListings, session] = await Promise.all([
+    container.marketplace.listActive(),
+    getCurrentSession(),
+  ]);
   const usingDemo = liveListings.length === 0;
+  const sellHref = session
+    ? ROUTES.marketplaceSell
+    : `${ROUTES.login}?next=${encodeURIComponent(ROUTES.marketplaceSell)}`;
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
@@ -27,7 +34,7 @@ export default async function MarketplacePage() {
           description={`Hire consultations and buy knowledge packs. Smitvi takes a ${Math.round(MARKETPLACE_COMMISSION_RATE * 100)}% platform fee so experts can monetize their intelligence.`}
         />
         <Button asChild size="lg" className="shrink-0 animate-fade-up-delay-1">
-          <Link href={ROUTES.marketplaceSell}>Sell on Smitvi</Link>
+          <Link href={sellHref}>Sell on Smitvi</Link>
         </Button>
       </div>
 
@@ -35,7 +42,7 @@ export default async function MarketplacePage() {
         <p className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--surface)]/70 px-4 py-3 text-sm text-[var(--muted-foreground)]">
           Example offers to show how the marketplace looks.{" "}
           <Link
-            href={ROUTES.marketplaceSell}
+            href={sellHref}
             className="font-semibold text-[var(--accent)] hover:underline"
           >
             Publish a real listing →
@@ -88,9 +95,21 @@ export default async function MarketplacePage() {
                   </p>
                 </div>
                 <div className="mt-4">
-                  <Button asChild className="w-full" variant="secondary">
-                    <Link href={ROUTES.signup}>Sign up to buy</Link>
-                  </Button>
+                  {session ? (
+                    <Button asChild className="w-full" variant="secondary">
+                      <Link href={ROUTES.marketplaceSell}>
+                        Publish a listing to sell
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button asChild className="w-full" variant="secondary">
+                      <Link
+                        href={`${ROUTES.login}?next=${encodeURIComponent(ROUTES.marketplace)}`}
+                      >
+                        Sign in to buy
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               </GlassCard>
             ))
@@ -134,7 +153,17 @@ export default async function MarketplacePage() {
                     </p>
                   </div>
                   <div className="mt-4">
-                    <BuyButton listingId={listing.id} />
+                    {session ? (
+                      <BuyButton listingId={listing.id} />
+                    ) : (
+                      <Button asChild className="w-full">
+                        <Link
+                          href={`${ROUTES.login}?next=${encodeURIComponent(ROUTES.marketplace)}`}
+                        >
+                          Sign in to buy
+                        </Link>
+                      </Button>
+                    )}
                   </div>
                 </GlassCard>
               );

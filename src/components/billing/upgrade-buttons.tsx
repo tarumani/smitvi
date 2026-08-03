@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/config/constants";
 
 type UpgradeButtonsProps = {
   plan: "PRO" | "BUSINESS";
@@ -17,10 +18,15 @@ export function UpgradeButtons({ plan }: UpgradeButtonsProps) {
       try {
         const response = await fetch("/api/v1/billing/checkout", {
           method: "POST",
+          credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ plan, provider }),
         });
         const json: unknown = await response.json();
+        if (response.status === 401) {
+          window.location.href = `${ROUTES.login}?next=${encodeURIComponent(ROUTES.pricing)}`;
+          return;
+        }
         if (!response.ok) {
           const message =
             typeof json === "object" &&

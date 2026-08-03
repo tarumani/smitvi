@@ -1,6 +1,12 @@
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { getPublicEnv } from "@/config/env";
+
+export type SessionCookie = {
+  name: string;
+  value: string;
+  options: CookieOptions;
+};
 
 export async function updateSession(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
@@ -11,11 +17,12 @@ export async function updateSession(request: NextRequest) {
       headers: requestHeaders,
     },
   });
+  let sessionCookies: SessionCookie[] = [];
 
   const { supabaseUrl, supabaseAnonKey } = getPublicEnv();
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    return { response, user: null };
+    return { response, user: null, sessionCookies };
   }
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
@@ -24,6 +31,7 @@ export async function updateSession(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
+        sessionCookies = cookiesToSet;
         for (const { name, value } of cookiesToSet) {
           request.cookies.set(name, value);
         }
@@ -43,5 +51,15 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  return { response, user };
+  return { response, user, sessionCookies };
+}
+
+export function applySessionCookies(
+  target: NextResponse,
+  sessionCookies: readonly SessionCookie[],
+) {
+  for (const { name, value, options } of sessionCookies) {
+    target.cookies.set(name, value, options);
+  }
+  return target;
 }

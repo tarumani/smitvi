@@ -29,7 +29,15 @@ export async function GET(request: Request) {
     );
   }
 
-  if (!data.user.email_confirmed_at) {
+  const isOAuth = (data.user.identities ?? []).some(
+    (identity) => identity.provider !== "email",
+  );
+  const provider = data.user.app_metadata?.provider;
+  const oauthTrusted =
+    isOAuth || (typeof provider === "string" && provider !== "email");
+
+  // Email/password must confirm; OAuth providers are already verified.
+  if (!data.user.email_confirmed_at && !oauthTrusted) {
     await supabase.auth.signOut();
     return NextResponse.redirect(
       new URL(

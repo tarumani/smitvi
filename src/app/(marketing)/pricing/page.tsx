@@ -84,7 +84,11 @@ export default async function PricingPage() {
                   </Button>
                 ) : !session ? (
                   <Button asChild className="w-full">
-                    <Link href={ROUTES.signup}>Sign up to upgrade</Link>
+                    <Link
+                      href={`${ROUTES.login}?next=${encodeURIComponent(ROUTES.pricing)}`}
+                    >
+                      Sign in to upgrade
+                    </Link>
                   </Button>
                 ) : isCurrent ? (
                   <Button disabled className="w-full" variant="secondary">
