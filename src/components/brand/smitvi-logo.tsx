@@ -16,6 +16,7 @@ const SIZE = {
   lg: { mark: "h-10 w-10", text: "text-2xl" },
 } as const;
 
+/** Hexagon + growth chart mark shared with smitviai.com branding. */
 function LogoMark({ className }: { className?: string }) {
   return (
     <svg
@@ -25,24 +26,21 @@ function LogoMark({ className }: { className?: string }) {
       className={cn("shrink-0", className)}
       aria-hidden
     >
-      <rect width="64" height="64" rx="16" fill="#0F766E" />
+      <rect width="64" height="64" rx="14" fill="#141821" />
       <path
-        d="M44 20.5c0-4.6-3.9-8-9.8-8-5.2 0-9.2 2.6-10.4 6.6"
-        stroke="#F8FFFE"
+        d="M32 11.5L49.5 21.5V42.5L32 52.5L14.5 42.5V21.5L32 11.5Z"
+        stroke="#2DFF6E"
         strokeWidth="3.2"
+        strokeLinejoin="round"
         strokeLinecap="round"
       />
       <path
-        d="M23.8 26.2c1.4-3.2 4.8-5.2 9.4-5.2 5.6 0 8.8 2.7 8.8 6.2 0 3.3-2.2 5.1-8.2 6.7-6.4 1.7-10.2 4.4-10.2 9.4 0 5.2 4.4 8.7 11 8.7 5.4 0 9.4-2.6 10.8-6.8"
-        stroke="#F8FFFE"
-        strokeWidth="3.2"
+        d="M20 43L26.5 35.5L31 40L39.5 26.5L43.5 31.5L48 20"
+        stroke="#F4FFFB"
+        strokeWidth="3.4"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <circle cx="24.2" cy="19.8" r="3.1" fill="#F8FFFE" />
-      <circle cx="40.8" cy="27.6" r="3.1" fill="#F8FFFE" />
-      <circle cx="23.6" cy="37.4" r="3.1" fill="#F8FFFE" />
-      <circle cx="41.2" cy="45.8" r="3.1" fill="#F8FFFE" />
     </svg>
   );
 }
