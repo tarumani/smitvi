@@ -85,6 +85,61 @@ export const DEMO_TRENDING_TOPICS: DemoTopic[] = [
   { topic: "Security reviews", sourceCount: 14 },
 ];
 
+/** Domain lanes used on Discover to help people browse by intent. */
+export const DEMO_DISCOVER_DOMAINS = [
+  {
+    key: "ai-product",
+    title: "AI & product",
+    description: "Twins trained on product strategy, RAG design, and launch playbooks.",
+    query: "AI product",
+  },
+  {
+    key: "engineering",
+    title: "Engineering",
+    description: "System design, security, and architecture knowledge you can ask anytime.",
+    query: "system design",
+  },
+  {
+    key: "research",
+    title: "Research & policy",
+    description: "Cited answers from research notes, briefs, and domain libraries.",
+    query: "climate policy",
+  },
+  {
+    key: "coaching",
+    title: "Coaching & careers",
+    description: "Founder, career, and interview guidance grounded in real frameworks.",
+    query: "career coaching",
+  },
+  {
+    key: "health-education",
+    title: "Education & health",
+    description: "Teaching and clinical knowledge Twins with clear source boundaries.",
+    query: "medical education",
+  },
+  {
+    key: "design",
+    title: "Design & UX",
+    description: "Research libraries, interview insights, and product design judgment.",
+    query: "UX research",
+  },
+] as const;
+
+export const DEMO_DISCOVER_GUIDES = [
+  {
+    title: "Find an expert Twin",
+    body: "Search by skill or topic, then open public chat for grounded answers.",
+  },
+  {
+    title: "Ask with citations",
+    body: "Every Twin reply can show the sources it used — or say “I don’t know.”",
+  },
+  {
+    title: "Book a human when needed",
+    body: "Use the Twin for FAQs, then hire the expert for decisions that need judgment.",
+  },
+] as const;
+
 export const DEMO_MARKETPLACE_LISTINGS: DemoListing[] = [
   {
     id: "demo-listing-1",
