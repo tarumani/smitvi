@@ -1,5 +1,6 @@
 import type { UserEntity, UserPlan, UserRole } from "@/domain/user/entities";
 import type {
+  AdminUserListItem,
   SyncUserInput,
   UserRepository,
 } from "@/domain/user/ports";
@@ -63,5 +64,87 @@ export class PrismaUserRepository implements UserRepository {
       data: { plan },
     });
     return toUserEntity(user);
+  }
+
+  async setBanned(id: string, isBanned: boolean): Promise<UserEntity> {
+    const user = await prisma.user.update({
+      where: { id },
+      data: {
+        isBanned,
+        isActive: !isBanned,
+      },
+    });
+    return toUserEntity(user);
+  }
+
+  async countAll(): Promise<number> {
+    return prisma.user.count({ where: { deletedAt: null } });
+  }
+
+  async countBanned(): Promise<number> {
+    return prisma.user.count({
+      where: { deletedAt: null, isBanned: true },
+    });
+  }
+
+  async listForAdmin(options?: {
+    query?: string;
+    take?: number;
+    skip?: number;
+  }): Promise<AdminUserListItem[]> {
+    const q = options?.query?.trim();
+    const rows = await prisma.user.findMany({
+      where: {
+        deletedAt: null,
+        ...(q
+          ? {
+              OR: [
+                { email: { contains: q, mode: "insensitive" } },
+                {
+                  profile: {
+                    OR: [
+                      { username: { contains: q, mode: "insensitive" } },
+                      { displayName: { contains: q, mode: "insensitive" } },
+                    ],
+                  },
+                },
+              ],
+            }
+          : {}),
+      },
+      orderBy: { createdAt: "desc" },
+      take: options?.take ?? 50,
+      skip: options?.skip ?? 0,
+      include: {
+        profile: {
+          select: {
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+            publicTwinEnabled: true,
+          },
+        },
+        _count: {
+          select: {
+            knowledgeSources: true,
+            conversations: true,
+          },
+        },
+      },
+    });
+
+    return rows.map((row) => ({
+      ...toUserEntity(row),
+      profile: row.profile
+        ? {
+            username: row.profile.username,
+            displayName: row.profile.displayName,
+            avatarUrl: row.profile.avatarUrl,
+            publicTwinEnabled: row.profile.publicTwinEnabled,
+          }
+        : null,
+      knowledgeCount: row._count.knowledgeSources,
+      conversationCount: row._count.conversations,
+    }));
   }
 }

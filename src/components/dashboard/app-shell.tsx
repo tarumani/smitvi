@@ -8,11 +8,13 @@ import {
   Building2,
   Compass,
   CreditCard,
+  Inbox,
   KeyRound,
   LayoutDashboard,
   MessageSquare,
   Search,
   Settings,
+  Shield,
   Store,
 } from "lucide-react";
 import { AccountMenu } from "@/components/landing/account-menu";
@@ -27,12 +29,14 @@ type AppShellProps = {
   username?: string | null;
   avatarUrl?: string | null;
   email: string;
+  showAdmin?: boolean;
 };
 
-const navItems = [
+const baseNavItems = [
   { href: ROUTES.dashboard, label: "Dashboard", icon: LayoutDashboard },
   { href: ROUTES.knowledge, label: "Knowledge", icon: BookOpen },
   { href: ROUTES.twinChat, label: "Twin Chat", icon: MessageSquare },
+  { href: ROUTES.inbox, label: "Twin Inbox", icon: Inbox },
   { href: ROUTES.organizations, label: "Workspaces", icon: Building2 },
   { href: ROUTES.marketplace, label: "Marketplace", icon: Store },
   { href: ROUTES.search, label: "Search", icon: Search },
@@ -45,7 +49,7 @@ const navItems = [
 const mobileNavItems = [
   { href: ROUTES.dashboard, label: "Home", icon: LayoutDashboard },
   { href: ROUTES.knowledge, label: "Knowledge", icon: BookOpen },
-  { href: ROUTES.twinChat, label: "Chat", icon: MessageSquare },
+  { href: ROUTES.inbox, label: "Inbox", icon: Inbox },
   { href: ROUTES.organizations, label: "Orgs", icon: Building2 },
   { href: ROUTES.profileSettings, label: "You", icon: Settings },
 ] as const;
@@ -56,8 +60,15 @@ export function AppShell({
   username,
   avatarUrl,
   email,
+  showAdmin = false,
 }: AppShellProps) {
   const pathname = usePathname();
+  const navItems = showAdmin
+    ? [
+        ...baseNavItems,
+        { href: ROUTES.admin, label: "Admin", icon: Shield },
+      ]
+    : [...baseNavItems];
 
   useEffect(() => {
     const html = document.documentElement;

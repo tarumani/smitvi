@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import {
+  Inbox,
   KeyRound,
   LayoutDashboard,
   LogOut,
@@ -105,6 +106,13 @@ export function AccountMenu({ user }: AccountMenuProps) {
               onClick={() => setOpen(false)}
             >
               Dashboard
+            </MenuLink>
+            <MenuLink
+              href={ROUTES.inbox}
+              icon={Inbox}
+              onClick={() => setOpen(false)}
+            >
+              Twin Inbox
             </MenuLink>
             {user.username ? (
               <MenuLink

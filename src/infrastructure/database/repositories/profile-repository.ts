@@ -213,4 +213,53 @@ export class PrismaProfileRepository implements ProfileRepository {
       })),
     });
   }
+
+  async countAll(): Promise<number> {
+    return prisma.profile.count();
+  }
+
+  async listForAdmin(options?: { take?: number; skip?: number }) {
+    const rows = await prisma.profile.findMany({
+      orderBy: { createdAt: "desc" },
+      take: options?.take ?? 50,
+      skip: options?.skip ?? 0,
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            plan: true,
+            isBanned: true,
+            createdAt: true,
+            _count: {
+              select: { knowledgeSources: true, conversations: true },
+            },
+          },
+        },
+      },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      userId: row.userId,
+      username: row.username,
+      displayName: row.displayName,
+      headline: row.headline,
+      avatarUrl: row.avatarUrl,
+      visibility: row.visibility,
+      publicTwinEnabled: row.publicTwinEnabled,
+      isOnboarded: row.isOnboarded,
+      followersCount: row.followersCount,
+      ratingAverage: row.ratingAverage,
+      ratingCount: row.ratingCount,
+      createdAt: row.createdAt,
+      email: row.user.email,
+      role: row.user.role,
+      plan: row.user.plan,
+      isBanned: row.user.isBanned,
+      knowledgeCount: row.user._count.knowledgeSources,
+      conversationCount: row.user._count.conversations,
+    }));
+  }
 }

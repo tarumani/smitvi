@@ -237,6 +237,49 @@ export class PrismaKnowledgeRepository {
     return rows.map(toSourceEntity);
   }
 
+  async countAll(): Promise<number> {
+    return prisma.knowledgeSource.count();
+  }
+
+  async countByStatus(status: KnowledgeProcessingStatus): Promise<number> {
+    return prisma.knowledgeSource.count({ where: { status } });
+  }
+
+  async listRecentForAdmin(options?: {
+    status?: KnowledgeProcessingStatus;
+    take?: number;
+  }) {
+    const rows = await prisma.knowledgeSource.findMany({
+      where: options?.status ? { status: options.status } : undefined,
+      orderBy: { createdAt: "desc" },
+      take: options?.take ?? 50,
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            profile: {
+              select: {
+                username: true,
+                displayName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return rows.map((row) => ({
+      ...toSourceEntity(row),
+      owner: {
+        userId: row.user.id,
+        email: row.user.email,
+        username: row.user.profile?.username ?? null,
+        displayName: row.user.profile?.displayName ?? null,
+      },
+    }));
+  }
+
   async setPublic(
     id: string,
     userId: string,

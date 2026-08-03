@@ -17,6 +17,26 @@ export type ConversationMessageEntity = {
   createdAt: Date;
 };
 
+export type TwinInboxItem = {
+  id: string;
+  title: string | null;
+  updatedAt: Date;
+  createdAt: Date;
+  messageCount: number;
+  lastMessage: {
+    role: "USER" | "ASSISTANT" | "SYSTEM";
+    content: string;
+    createdAt: Date;
+  } | null;
+  visitor: {
+    userId: string;
+    email: string;
+    displayName: string | null;
+    username: string | null;
+    avatarUrl: string | null;
+  };
+};
+
 export class PrismaConversationRepository {
   async listForUser(userId: string): Promise<ConversationSummary[]> {
     return prisma.conversation.findMany({
@@ -29,6 +49,94 @@ export class PrismaConversationRepository {
         createdAt: true,
       },
       take: 50,
+    });
+  }
+
+  /** Conversations where others chatted with this user's Twin. */
+  async listInboxForOwner(ownerUserId: string): Promise<TwinInboxItem[]> {
+    const rows = await prisma.conversation.findMany({
+      where: {
+        ownerUserId,
+        userId: { not: ownerUserId },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 100,
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            profile: {
+              select: {
+                displayName: true,
+                username: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+        messages: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: {
+            role: true,
+            content: true,
+            createdAt: true,
+          },
+        },
+        _count: { select: { messages: true } },
+      },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      updatedAt: row.updatedAt,
+      createdAt: row.createdAt,
+      messageCount: row._count.messages,
+      lastMessage: row.messages[0]
+        ? {
+            role: row.messages[0].role,
+            content: row.messages[0].content,
+            createdAt: row.messages[0].createdAt,
+          }
+        : null,
+      visitor: {
+        userId: row.user.id,
+        email: row.user.email,
+        displayName: row.user.profile?.displayName ?? null,
+        username: row.user.profile?.username ?? null,
+        avatarUrl: row.user.profile?.avatarUrl ?? null,
+      },
+    }));
+  }
+
+  async getForOwner(conversationId: string, ownerUserId: string) {
+    return prisma.conversation.findFirst({
+      where: {
+        id: conversationId,
+        ownerUserId,
+        userId: { not: ownerUserId },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            profile: {
+              select: {
+                displayName: true,
+                username: true,
+                avatarUrl: true,
+                headline: true,
+              },
+            },
+          },
+        },
+        messages: {
+          orderBy: { createdAt: "asc" },
+        },
+      },
     });
   }
 
@@ -154,5 +262,18 @@ export class PrismaConversationRepository {
       },
     });
     return row?.messageCount ?? 0;
+  }
+
+  async countAll(): Promise<number> {
+    return prisma.conversation.count();
+  }
+
+  async countInboxForOwner(ownerUserId: string): Promise<number> {
+    return prisma.conversation.count({
+      where: {
+        ownerUserId,
+        userId: { not: ownerUserId },
+      },
+    });
   }
 }
