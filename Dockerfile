@@ -19,10 +19,15 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV NEXT_PUBLIC_APP_URL=https://smitvi.com
 ENV NEXT_PUBLIC_APP_NAME=Smitvi
-ENV NEXT_PUBLIC_SUPABASE_URL=https://placeholder.supabase.co
-ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder
+# NEXT_PUBLIC_* are inlined at build time — pass real values via --build-arg
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 ENV DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/postgres
-RUN npx prisma generate && npm run build && npm prune --omit=dev
+RUN test -n "$NEXT_PUBLIC_SUPABASE_URL" \
+  && test -n "$NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+  && npx prisma generate && npm run build && npm prune --omit=dev
 
 FROM base AS runner
 ENV NODE_ENV=production

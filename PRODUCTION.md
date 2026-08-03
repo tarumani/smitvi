@@ -74,12 +74,18 @@ Leave GoDaddy **email MX** records alone if you use GoDaddy email.
 
 1. Production project → copy URL, anon key, service role key.
 2. `DATABASE_URL`: use a Postgres URL Fly can reach (direct or pooler; prefer direct/`sslmode=require` if migrate fails on pooler).
-3. Auth → URL configuration:
+3. Auth → URL configuration (required for signup / Google):
    - Site URL: `https://smitvi.com`
    - Redirect URLs:
      - `https://smitvi.com/auth/callback`
      - `https://www.smitvi.com/auth/callback`
-4. Storage → private bucket `knowledge`.
+4. Auth → Providers → enable **Google** (Apple optional later).
+5. For easier email signup while launching, you may disable **Confirm email** under Auth → Providers → Email.
+6. Storage → private bucket `knowledge`.
+7. GitHub Actions build needs these repo secrets (inlined at build time):
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `FLY_API_TOKEN`
 
 ## 2. Migrations
 

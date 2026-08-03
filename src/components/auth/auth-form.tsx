@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -24,6 +24,15 @@ function getSafeNextPath(value: string | null): string {
   return value;
 }
 
+function errorMessage(error: unknown, fallback: string) {
+  if (error && typeof error === "object" && "message" in error) {
+    const message = String((error as { message: unknown }).message ?? "").trim();
+    if (message) return message;
+  }
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
+}
+
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -31,15 +40,24 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isPending, startTransition] = useTransition();
-  const [oauthLoading, setOauthLoading] = useState<"google" | "apple" | null>(
-    null,
-  );
+  const [oauthLoading, setOauthLoading] = useState(false);
 
   const title = mode === "login" ? "Welcome back" : "Create your Twin";
   const subtitle =
     mode === "login"
       ? "Sign in to manage your Knowledge Twin."
       : "Start indexing your intelligence on Smitvi.";
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (!error) return;
+    const messages: Record<string, string> = {
+      missing_code: "Sign-in was cancelled or incomplete. Try again.",
+      auth_callback_failed:
+        "Could not finish Google sign-in. Check Supabase redirect URLs include https://smitvi.com/auth/callback",
+    };
+    toast.error(messages[error] ?? "Authentication failed. Please try again.");
+  }, [searchParams]);
 
   function handleEmailAuth(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -58,7 +76,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           return;
         }
 
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -66,32 +84,45 @@ export function AuthForm({ mode }: AuthFormProps) {
           },
         });
         if (error) throw error;
-        toast.success("Check your email to confirm your account");
-        router.replace(ROUTES.login);
+
+        // If email confirmation is disabled, Supabase returns a session immediately.
+        if (data.session) {
+          toast.success("Account created");
+          router.replace(nextPath);
+          router.refresh();
+          return;
+        }
+
+        toast.success("Check your email to confirm your account, then sign in.");
+        router.replace(
+          `${ROUTES.login}?next=${encodeURIComponent(nextPath)}`,
+        );
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Authentication failed";
-        toast.error(message);
+        toast.error(errorMessage(error, "Authentication failed"));
       }
     });
   }
 
-  async function handleOAuth(provider: "google" | "apple") {
+  async function handleGoogle() {
     try {
-      setOauthLoading(provider);
+      setOauthLoading(true);
       const supabase = createSupabaseBrowserClient();
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
         options: {
           redirectTo: `${window.location.origin}${ROUTES.authCallback}?next=${encodeURIComponent(nextPath)}`,
+          skipBrowserRedirect: false,
         },
       });
       if (error) throw error;
+      if (data.url) {
+        window.location.assign(data.url);
+        return;
+      }
+      throw new Error("Google sign-in did not return a redirect URL");
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "OAuth sign-in failed";
-      toast.error(message);
-      setOauthLoading(null);
+      toast.error(errorMessage(error, "Google sign-in failed"));
+      setOauthLoading(false);
     }
   }
 
@@ -106,28 +137,15 @@ export function AuthForm({ mode }: AuthFormProps) {
         </p>
       </div>
 
-      <div className="mt-5 grid grid-cols-2 gap-2.5">
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          className="h-10"
-          disabled={isPending || oauthLoading !== null}
-          onClick={() => handleOAuth("google")}
-        >
-          {oauthLoading === "google" ? "…" : "Google"}
-        </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          className="h-10"
-          disabled={isPending || oauthLoading !== null}
-          onClick={() => handleOAuth("apple")}
-        >
-          {oauthLoading === "apple" ? "…" : "Apple"}
-        </Button>
-      </div>
+      <Button
+        type="button"
+        variant="secondary"
+        className="mt-5 h-10 w-full"
+        disabled={isPending || oauthLoading}
+        onClick={() => void handleGoogle()}
+      >
+        {oauthLoading ? "Redirecting to Google…" : "Continue with Google"}
+      </Button>
 
       <div className="my-4 flex items-center gap-3 text-[10px] uppercase tracking-wider text-[var(--muted)]">
         <div className="h-px flex-1 bg-[var(--border)]" />
