@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { Hanken_Grotesk } from "next/font/google";
+import { Hanken_Grotesk, Syne } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { THEME_STORAGE_KEY } from "@/components/providers/theme-script";
 import { RegisterServiceWorker } from "@/components/pwa/register-sw";
@@ -14,6 +14,12 @@ const hankenGrotesk = Hanken_Grotesk({
   subsets: ["latin"],
   variable: "--font-sans-family",
   weight: ["400", "500", "600", "700", "800"],
+});
+
+const syne = Syne({
+  subsets: ["latin"],
+  variable: "--font-display-family",
+  weight: ["500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -79,7 +85,7 @@ export default async function RootLayout({
       }
     >
       <body
-        className={`${hankenGrotesk.variable} app-atmosphere min-h-full font-sans antialiased`}
+        className={`${hankenGrotesk.variable} ${syne.variable} app-atmosphere min-h-full font-sans antialiased`}
       >
         <ThemeProvider initialTheme={theme} disableTransitionOnChange>
           {children}

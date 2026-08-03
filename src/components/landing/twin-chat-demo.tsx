@@ -43,21 +43,28 @@ export function TwinChatDemo({ className, compact = false }: TwinChatDemoProps) 
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#0b1220] text-white shadow-[0_40px_120px_rgba(2,8,23,0.45)]",
+        "relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#0b1220] text-white shadow-[0_40px_120px_rgba(2,8,23,0.45)] ring-1 ring-teal-400/10",
         className,
       )}
     >
       <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-teal-400/10 to-transparent"
+      />
+      <div
         className={cn(
-          "flex items-center justify-between border-b border-white/10",
+          "relative flex items-center justify-between border-b border-white/10",
           compact ? "px-4 py-3" : "px-5 py-4",
         )}
       >
         <div>
-          <p className="text-sm font-semibold tracking-tight">Knowledge Twin</p>
+          <p className="font-display text-sm font-semibold tracking-tight">
+            Knowledge Twin
+          </p>
           <p className="text-xs text-white/50">@maya · Product Architect</p>
         </div>
-        <span className="rounded-md bg-teal-400/15 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-teal-300">
+        <span className="inline-flex items-center gap-1.5 rounded-md bg-teal-400/15 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-teal-300">
+          <span className="animate-live-dot h-1.5 w-1.5 rounded-full bg-teal-300" />
           LIVE
         </span>
       </div>
