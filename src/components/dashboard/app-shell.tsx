@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import {
   BookOpen,
   Building2,
@@ -9,19 +10,15 @@ import {
   CreditCard,
   KeyRound,
   LayoutDashboard,
-  LogOut,
   MessageSquare,
   Search,
   Settings,
   Store,
 } from "lucide-react";
-import { toast } from "sonner";
-import { Avatar } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { AccountMenu } from "@/components/landing/account-menu";
 import { SmitviLogo } from "@/components/brand/smitvi-logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { ROUTES } from "@/config/constants";
-import { createSupabaseBrowserClient } from "@/infrastructure/auth/supabase/client";
 import { cn } from "@/lib/utils";
 
 type AppShellProps = {
@@ -61,80 +58,91 @@ export function AppShell({
   email,
 }: AppShellProps) {
   const pathname = usePathname();
-  const router = useRouter();
 
-  async function handleSignOut() {
-    const supabase = createSupabaseBrowserClient();
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success("Signed out");
-    router.replace(ROUTES.home);
-    router.refresh();
-  }
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+    };
+  }, []);
 
   return (
-    <div className="min-h-full">
-      <div className="mx-auto grid min-h-full w-full max-w-7xl lg:grid-cols-[240px_1fr]">
-        <aside className="hidden border-r border-[var(--border)] bg-[var(--surface)]/35 px-4 py-6 backdrop-blur-xl lg:block">
+    <div className="flex h-svh overflow-hidden bg-[var(--background)]">
+      {/* Fixed sidebar — independent from page scroll */}
+      <aside className="hidden h-svh w-60 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--surface-elevated)] lg:flex">
+        <div className="shrink-0 border-b border-[var(--border)] px-4 py-4">
           <SmitviLogo href={ROUTES.dashboard} size="sm" />
-          <nav className="mt-8 space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const active =
-                pathname === item.href || pathname.startsWith(`${item.href}/`);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                    active
-                      ? "bg-[var(--accent-soft)] text-[var(--accent)]"
-                      : "text-[var(--muted-foreground)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]",
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-          <div className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--accent)]">
+        </div>
+
+        <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-4 [scrollbar-width:thin]">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active =
+              pathname === item.href || pathname.startsWith(`${item.href}/`);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                  active
+                    ? "bg-[var(--accent-soft)] text-[var(--accent)]"
+                    : "text-[var(--muted-foreground)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]",
+                )}
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="shrink-0 border-t border-[var(--border)] p-4">
+          <div className="rounded-2xl bg-[var(--accent-soft)]/60 px-3 py-3">
+            <p className="text-[10px] font-semibold tracking-[0.14em] text-[var(--accent)] uppercase">
               Knowledge Twin
             </p>
-            <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-              Upload sources, chat, speak, or call the Public API.
+            <p className="mt-1.5 text-xs leading-relaxed text-[var(--muted-foreground)]">
+              Upload sources, chat, and manage your public Twin.
             </p>
           </div>
-        </aside>
-
-        <div className="flex min-h-full flex-col pb-20 lg:pb-0">
-          <header className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-4 sm:px-6">
-            <div className="flex items-center gap-3">
-              <Avatar src={avatarUrl} name={displayName} />
-              <div>
-                <p className="text-sm font-semibold">{displayName}</p>
-                <p className="text-xs text-[var(--muted)]">
-                  {username ? `@${username}` : email}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <ThemeToggle />
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                <LogOut className="h-4 w-4" />
-                <span className="hidden sm:inline">Sign out</span>
-              </Button>
-            </div>
-          </header>
-          <main className="flex-1 px-4 py-6 sm:px-6">{children}</main>
         </div>
+      </aside>
+
+      {/* Main column: fixed header + scrollable body */}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <header className="z-20 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--background)]/90 px-4 backdrop-blur-xl sm:px-6">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">{displayName}</p>
+            <p className="truncate text-xs text-[var(--muted)]">
+              {username ? `@${username}` : email}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <ThemeToggle />
+            <AccountMenu
+              user={{
+                displayName,
+                email,
+                username: username ?? null,
+                avatarUrl: avatarUrl ?? null,
+              }}
+            />
+          </div>
+        </header>
+
+        <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-6 pb-24 sm:px-6 lg:pb-8 [scrollbar-width:thin]">
+          <div className="mx-auto w-full max-w-5xl">{children}</div>
+        </main>
       </div>
 
+      {/* Mobile bottom nav */}
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--border)] bg-[var(--background)]/95 backdrop-blur lg:hidden">
         <div className="mx-auto grid max-w-lg grid-cols-5 gap-1 px-2 py-2">
           {mobileNavItems.map((item) => {
