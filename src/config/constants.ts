@@ -13,6 +13,7 @@ export const ROUTES = {
   twinChat: "/chat",
   search: "/search",
   discover: "/discover",
+  howItHelps: "/how-it-helps",
   pricing: "/pricing",
   marketplace: "/marketplace",
   marketplaceSell: "/marketplace/sell",

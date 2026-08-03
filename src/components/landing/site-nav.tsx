@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 const NAV_LINKS = [
   { href: ROUTES.discover, label: "Discover" },
   { href: ROUTES.marketplace, label: "Marketplace" },
-  { href: ROUTES.search, label: "Search" },
+  { href: ROUTES.howItHelps, label: "How it helps" },
   { href: ROUTES.pricing, label: "Pricing" },
   { href: ROUTES.developers, label: "Developers" },
 ] as const;

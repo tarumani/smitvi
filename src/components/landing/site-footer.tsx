@@ -5,6 +5,7 @@ import { APP_NAME, APP_TAGLINE, ROUTES } from "@/config/constants";
 const PRODUCT_LINKS = [
   { href: ROUTES.discover, label: "Discover" },
   { href: ROUTES.marketplace, label: "Marketplace" },
+  { href: ROUTES.howItHelps, label: "How it helps" },
   { href: ROUTES.search, label: "Search" },
   { href: ROUTES.pricing, label: "Pricing" },
 ] as const;
