@@ -89,7 +89,9 @@ Leave GoDaddy **email MX** records alone if you use GoDaddy email.
 5. Keep **Confirm email** enabled under Auth → Providers → Email (required to reduce spam signups).
    - After signup, users must open the confirmation email before password login works.
    - Unverified login often shows “Invalid login credentials”.
-6. Storage → private bucket `knowledge`.
+6. Storage → create a **private** bucket named exactly `knowledge`
+   (required for PDF/knowledge uploads; without it uploads fail with “Bucket not found”).
+   The app will also try to auto-create this bucket on first upload if the service role key allows it.
 7. GitHub Actions build needs these repo secrets (inlined at build time):
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`

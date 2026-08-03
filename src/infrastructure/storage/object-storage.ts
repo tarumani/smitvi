@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { ValidationError } from "@/domain/shared/errors";
 import {
   deleteUploadLocally,
   readUploadLocally,
@@ -9,6 +10,8 @@ import { getSupabaseAdmin } from "@/infrastructure/auth/supabase/admin";
 export type StorageDriver = "local" | "supabase";
 
 const DEFAULT_BUCKET = "knowledge";
+
+let bucketReady: Promise<string> | null = null;
 
 export function getStorageDriver(): StorageDriver {
   const explicit = process.env.STORAGE_DRIVER;
@@ -25,6 +28,50 @@ function buildObjectKey(userId: string, fileName: string) {
   return `${userId}/${randomUUID()}-${safeName}`;
 }
 
+async function ensureSupabaseBucket(): Promise<string> {
+  const bucket = getBucket();
+  if (!bucketReady) {
+    bucketReady = (async () => {
+      const supabase = getSupabaseAdmin();
+      const { data: existing, error: listError } =
+        await supabase.storage.listBuckets();
+
+      if (listError) {
+        throw new ValidationError(
+          `Storage is not ready (${listError.message}). Check Supabase service role key and Storage settings.`,
+        );
+      }
+
+      const found = existing?.some((item) => item.name === bucket);
+      if (!found) {
+        const { error: createError } = await supabase.storage.createBucket(
+          bucket,
+          {
+            public: false,
+            fileSizeLimit: 15 * 1024 * 1024,
+          },
+        );
+
+        // Another request may create it first — treat "already exists" as success.
+        if (
+          createError &&
+          !/already exists|duplicate/i.test(createError.message)
+        ) {
+          throw new ValidationError(
+            `Could not create storage bucket "${bucket}". In Supabase → Storage, create a private bucket named "${bucket}", then try again. (${createError.message})`,
+          );
+        }
+      }
+
+      return bucket;
+    })().catch((error) => {
+      bucketReady = null;
+      throw error;
+    });
+  }
+  return bucketReady;
+}
+
 export async function saveUpload(
   userId: string,
   fileName: string,
@@ -35,17 +82,21 @@ export async function saveUpload(
     return saveUploadLocally(userId, fileName, bytes);
   }
 
+  const bucket = await ensureSupabaseBucket();
   const key = buildObjectKey(userId, fileName);
   const supabase = getSupabaseAdmin();
-  const { error } = await supabase.storage
-    .from(getBucket())
-    .upload(key, bytes, {
-      contentType: "application/octet-stream",
-      upsert: false,
-    });
+  const { error } = await supabase.storage.from(bucket).upload(key, bytes, {
+    contentType: "application/octet-stream",
+    upsert: false,
+  });
 
   if (error) {
-    throw new Error(`Storage upload failed: ${error.message}`);
+    if (/bucket not found/i.test(error.message)) {
+      throw new ValidationError(
+        `Storage bucket "${bucket}" was not found. Create a private bucket named "${bucket}" in Supabase → Storage, then try again.`,
+      );
+    }
+    throw new ValidationError(`Storage upload failed: ${error.message}`);
   }
 
   return key;
@@ -57,13 +108,14 @@ export async function readUpload(storagePath: string): Promise<Buffer> {
     return readUploadLocally(storagePath);
   }
 
+  const bucket = await ensureSupabaseBucket();
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase.storage
-    .from(getBucket())
+    .from(bucket)
     .download(storagePath);
 
   if (error || !data) {
-    throw new Error(
+    throw new ValidationError(
       `Storage download failed: ${error?.message ?? "missing object"}`,
     );
   }
@@ -78,6 +130,7 @@ export async function deleteUpload(storagePath: string): Promise<void> {
     return;
   }
 
+  const bucket = await ensureSupabaseBucket();
   const supabase = getSupabaseAdmin();
-  await supabase.storage.from(getBucket()).remove([storagePath]);
+  await supabase.storage.from(bucket).remove([storagePath]);
 }
