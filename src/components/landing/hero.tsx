@@ -8,10 +8,10 @@ import { APP_TAGLINE, ROUTES } from "@/config/constants";
 
 export function Hero() {
   return (
-    <section className="relative isolate overflow-hidden bg-[#f7fafc]">
+    <section className="relative isolate overflow-hidden bg-[var(--background)]">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(15,118,110,0.12),transparent_42%),radial-gradient(circle_at_90%_10%,rgba(14,165,233,0.1),transparent_40%)]"
+        className="pointer-events-none absolute inset-0 opacity-100 [background-image:var(--hero-glow)]"
       />
       <div className="relative z-10 mx-auto grid h-[calc(100svh-4rem)] max-h-[calc(100svh-4rem)] w-full max-w-6xl items-center gap-6 overflow-hidden px-4 py-5 sm:px-6 lg:grid-cols-[1.12fr_0.88fr] lg:gap-12 lg:py-6">
         <div className="max-w-xl">

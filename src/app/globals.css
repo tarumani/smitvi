@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-:root,
-.light {
+/* Light defaults on :root. Explicit .light / .dark win over system preference. */
+:root {
   --background: #f3f5f8;
   --foreground: #0f172a;
   --muted: #64748b;
@@ -40,9 +40,49 @@
   color-scheme: light;
 }
 
-/* System theme before an explicit .light / .dark class is applied */
+/* Force light even when the OS is in dark mode */
+html.light {
+  --background: #f3f5f8;
+  --foreground: #0f172a;
+  --muted: #64748b;
+  --muted-foreground: #475569;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --border: rgba(15, 23, 42, 0.09);
+  --accent: #0f766e;
+  --accent-foreground: #f8fffe;
+  --accent-soft: rgba(15, 118, 110, 0.12);
+  --glass: rgba(255, 255, 255, 0.92);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.85);
+  --glass-shadow: 0 14px 36px rgba(15, 23, 42, 0.07);
+  --danger: #dc2626;
+  --warning: #d97706;
+  --section-band: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(15, 118, 110, 0.035) 50%,
+    transparent 100%
+  );
+  --hero-glow: radial-gradient(
+      60% 50% at 12% 0%,
+      rgba(15, 118, 110, 0.09),
+      transparent 65%
+    ),
+    radial-gradient(
+      50% 45% at 92% 8%,
+      rgba(14, 165, 233, 0.06),
+      transparent 65%
+    ),
+    linear-gradient(180deg, #f7f9fc 0%, #f3f5f8 55%, #eef2f6 100%);
+  --grid-line: rgba(15, 23, 42, 0.035);
+  --card-sheen: rgba(255, 255, 255, 0.7);
+  color-scheme: light;
+}
+
+/* System dark when no explicit theme class is set */
 @media (prefers-color-scheme: dark) {
-  :root:not(.light) {
+  html:not(.light):not(.dark) {
     --background: #0b1017;
     --foreground: #eef3f9;
     --muted: #8b98a8;
@@ -82,7 +122,8 @@
   }
 }
 
-.dark {
+/* Explicit dark mode — higher specificity than :root */
+html.dark {
   --background: #0b1017;
   --foreground: #eef3f9;
   --muted: #8b98a8;
