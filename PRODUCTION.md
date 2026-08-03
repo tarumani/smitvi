@@ -79,8 +79,16 @@ Leave GoDaddy **email MX** records alone if you use GoDaddy email.
    - Redirect URLs:
      - `https://smitvi.com/auth/callback`
      - `https://www.smitvi.com/auth/callback`
-4. Auth → Providers → enable **Google** (Apple optional later).
+4. Auth → Providers → enable **Google** (required for “Continue with Google”):
+   - Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client (Web)
+   - Authorized redirect URI must be exactly:
+     `https://ofinmuzcjanjjzojxqdv.supabase.co/auth/v1/callback`
+     (use your project’s Auth callback URL from Supabase → Authentication → Providers → Google)
+   - Paste Client ID + Client Secret into Supabase Google provider and turn **Enable** on
+   - Without this, Google returns: `Unsupported provider: provider is not enabled`
 5. Keep **Confirm email** enabled under Auth → Providers → Email (required to reduce spam signups).
+   - After signup, users must open the confirmation email before password login works.
+   - Unverified login often shows “Invalid login credentials”.
 6. Storage → private bucket `knowledge`.
 7. GitHub Actions build needs these repo secrets (inlined at build time):
    - `NEXT_PUBLIC_SUPABASE_URL`

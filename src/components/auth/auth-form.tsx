@@ -25,12 +25,28 @@ function getSafeNextPath(value: string | null): string {
 }
 
 function errorMessage(error: unknown, fallback: string) {
+  let message = "";
   if (error && typeof error === "object" && "message" in error) {
-    const message = String((error as { message: unknown }).message ?? "").trim();
-    if (message) return message;
+    message = String((error as { message: unknown }).message ?? "").trim();
+  } else if (error instanceof Error && error.message) {
+    message = error.message;
   }
-  if (error instanceof Error && error.message) return error.message;
-  return fallback;
+  if (!message) return fallback;
+
+  const lower = message.toLowerCase();
+  if (lower.includes("provider is not enabled")) {
+    return "Google sign-in is not enabled yet in Supabase. Enable Authentication → Providers → Google.";
+  }
+  if (
+    lower.includes("invalid login credentials") ||
+    lower.includes("invalid credentials")
+  ) {
+    return "Invalid email or password — or your email is not verified yet. Check your inbox for the confirmation link, then try again.";
+  }
+  if (lower.includes("email not confirmed")) {
+    return "Confirm your email before signing in. Open the verification link we sent, then come back.";
+  }
+  return message;
 }
 
 export function AuthForm({ mode }: AuthFormProps) {
