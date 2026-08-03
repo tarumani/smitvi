@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SmitviLogo } from "@/components/brand/smitvi-logo";
 import { TwinChatDemo } from "@/components/landing/twin-chat-demo";
 import { APP_NAME, APP_TAGLINE, ROUTES } from "@/config/constants";
 
@@ -14,6 +15,13 @@ export function Hero() {
 
       <div className="relative z-10 mx-auto grid min-h-[calc(100svh-4rem)] w-full max-w-6xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:py-16">
         <div className="max-w-xl">
+          <div className="animate-fade-up mb-5">
+            <SmitviLogo
+              href={null}
+              showWordmark={false}
+              markClassName="h-14 w-14 sm:h-16 sm:w-16"
+            />
+          </div>
           <p className="animate-fade-up font-display text-[clamp(3.75rem,11vw,7.5rem)] font-extrabold leading-[0.88] tracking-[-0.05em] text-[var(--foreground)]">
             {APP_NAME}
           </p>

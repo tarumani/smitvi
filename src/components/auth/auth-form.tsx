@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { APP_NAME, ROUTES } from "@/config/constants";
+import { SmitviLogo } from "@/components/brand/smitvi-logo";
+import { ROUTES } from "@/config/constants";
 import { createSupabaseBrowserClient } from "@/infrastructure/auth/supabase/client";
 
 type AuthMode = "login" | "signup";
@@ -97,10 +98,10 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   return (
     <GlassCard className="w-full max-w-md p-8">
-      <div className="space-y-2 text-center">
-        <p className="font-display text-sm font-bold tracking-[0.2em] text-[var(--accent)]">
-          {APP_NAME}
-        </p>
+      <div className="space-y-3 text-center">
+        <div className="flex justify-center">
+          <SmitviLogo href={null} size="sm" />
+        </div>
         <h1 className="font-display text-3xl font-bold tracking-tight">
           {title}
         </h1>

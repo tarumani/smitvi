@@ -18,8 +18,9 @@ import {
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { SmitviLogo } from "@/components/brand/smitvi-logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
-import { APP_NAME, ROUTES } from "@/config/constants";
+import { ROUTES } from "@/config/constants";
 import { createSupabaseBrowserClient } from "@/infrastructure/auth/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -78,9 +79,7 @@ export function AppShell({
     <div className="min-h-full bg-[var(--background)]">
       <div className="mx-auto grid min-h-full w-full max-w-7xl lg:grid-cols-[240px_1fr]">
         <aside className="hidden border-r border-[var(--border)] px-4 py-6 lg:block">
-          <Link href={ROUTES.dashboard} className="font-display text-xl font-extrabold">
-            {APP_NAME}
-          </Link>
+          <SmitviLogo href={ROUTES.dashboard} size="sm" />
           <nav className="mt-8 space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;

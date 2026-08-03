@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SmitviLogo } from "@/components/brand/smitvi-logo";
 import { APP_NAME, APP_TAGLINE, ROUTES } from "@/config/constants";
 
 const PRODUCT_LINKS = [
@@ -20,9 +21,7 @@ export function SiteFooter() {
     <footer className="relative mt-auto border-t border-[var(--border)] bg-[var(--surface)]/40">
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
-          <p className="font-display text-2xl font-extrabold tracking-tight">
-            {APP_NAME}
-          </p>
+          <SmitviLogo size="lg" />
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-[var(--muted-foreground)]">
             {APP_TAGLINE}. Own, organize, monetize, and scale your intelligence
             with AI.
