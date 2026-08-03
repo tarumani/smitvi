@@ -1,4 +1,4 @@
-// Smitvi schema — Sprint 1 + Sprint 2
+// Smitvi schema — Sprint 1–4
 // Auth identity lives in Supabase Auth (auth.users).
 // Application tables reference that UUID and own product data.
 
@@ -66,6 +66,9 @@ enum AuditAction {
   API_KEY_CREATED
   API_KEY_REVOKED
   VOICE_TWIN_USED
+  CONSULTATION_OFFER_UPDATED
+  CONSULTATION_REQUESTED
+  CONSULTATION_REQUEST_UPDATED
 }
 
 enum OrgRole {
@@ -170,6 +173,14 @@ enum MarketplaceOrderStatus {
   FULFILLED
 }
 
+enum ConsultationRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELED
+  COMPLETED
+}
+
 model User {
   id            String    @id @db.Uuid
   email         String    @unique
@@ -203,6 +214,9 @@ model User {
   organizationInvitesSent OrganizationInvite[] @relation("OrgInvitesSent")
   apiKeys              ApiKey[]
   voiceSessions        VoiceSession[]
+  consultationOffer    ConsultationOffer?
+  consultationRequestsReceived ConsultationRequest[] @relation("ConsultationExpert")
+  consultationRequestsSent     ConsultationRequest[] @relation("ConsultationRequester")
 
   @@index([role])
   @@index([plan])
@@ -703,4 +717,47 @@ model VoiceSession {
 
   @@index([userId, createdAt])
   @@map("voice_sessions")
+}
+
+/// Sprint 4 — paid/consult booking foundation
+model ConsultationOffer {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @unique @map("user_id") @db.Uuid
+  enabled         Boolean  @default(false)
+  headline        String?  @db.VarChar(160)
+  description     String?  @db.VarChar(1000)
+  durationMinutes Int      @default(30) @map("duration_minutes")
+  priceCents      Int      @default(0) @map("price_cents")
+  currency        String   @default("USD") @db.VarChar(3)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user     User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requests ConsultationRequest[]
+
+  @@index([enabled])
+  @@map("consultation_offers")
+}
+
+model ConsultationRequest {
+  id               String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  offerId          String                     @map("offer_id") @db.Uuid
+  expertUserId     String                     @map("expert_user_id") @db.Uuid
+  requesterUserId  String?                    @map("requester_user_id") @db.Uuid
+  requesterName    String                     @map("requester_name") @db.VarChar(120)
+  requesterEmail   String                     @map("requester_email") @db.VarChar(254)
+  message          String?                    @db.VarChar(2000)
+  preferredAt      DateTime?                  @map("preferred_at")
+  status           ConsultationRequestStatus  @default(PENDING)
+  createdAt        DateTime                   @default(now()) @map("created_at")
+  updatedAt        DateTime                   @updatedAt @map("updated_at")
+
+  offer     ConsultationOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  expert    User              @relation("ConsultationExpert", fields: [expertUserId], references: [id], onDelete: Cascade)
+  requester User?             @relation("ConsultationRequester", fields: [requesterUserId], references: [id], onDelete: SetNull)
+
+  @@index([expertUserId, status, createdAt])
+  @@index([requesterUserId, createdAt])
+  @@index([offerId, createdAt])
+  @@map("consultation_requests")
 }

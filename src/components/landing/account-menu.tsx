@@ -92,7 +92,7 @@ export function AccountMenu({ user }: AccountMenuProps) {
         <div
           id={menuId}
           role="menu"
-          className="absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] shadow-[0_16px_40px_rgba(15,23,42,0.12)]"
+          className="absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] shadow-[var(--glass-shadow)]"
         >
           <div className="border-b border-[var(--border)] px-4 py-3">
             <p className="truncate text-sm font-semibold">{user.displayName}</p>

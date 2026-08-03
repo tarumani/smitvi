@@ -6,6 +6,7 @@ import { container } from "@/application/container";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
+import { ConsultationRequestForm } from "@/components/consultations/consultation-request-form";
 import { FollowButton } from "@/components/profile/follow-button";
 import { ShareProfileButton } from "@/components/profile/share-profile-button";
 import { ReviewForm } from "@/components/profile/review-form";
@@ -42,10 +43,17 @@ export default async function PublicProfilePage({ params }: PageProps) {
     ? await container.social.isFollowing(session.user.id, profile.userId)
     : false;
 
-  const [publicKnowledge, reviews] = await Promise.all([
+  const [publicKnowledge, reviews, consultationOffer] = await Promise.all([
     container.knowledge.listPublicByUser(profile.userId),
     container.social.listReviews(profile.userId),
+    container.consultations.getEnabledOfferByUserId(profile.userId),
   ]);
+
+  const consultationPriceLabel = consultationOffer
+    ? consultationOffer.priceCents <= 0
+      ? "Free intro"
+      : `${(consultationOffer.priceCents / 100).toFixed(2)} ${consultationOffer.currency}`
+    : "";
 
   return (
     <div className="pb-16">
@@ -187,9 +195,50 @@ export default async function PublicProfilePage({ params }: PageProps) {
           <div className="space-y-6">
             <GlassCard className="p-5">
               <h2 className="font-semibold">Consultation</h2>
-              <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-                Booking and paid consultations arrive in Sprint 4.
-              </p>
+              {consultationOffer ? (
+                <div className="mt-3 space-y-4">
+                  {consultationOffer.headline ? (
+                    <p className="text-sm font-medium">
+                      {consultationOffer.headline}
+                    </p>
+                  ) : null}
+                  {consultationOffer.description ? (
+                    <p className="text-sm text-[var(--muted-foreground)]">
+                      {consultationOffer.description}
+                    </p>
+                  ) : null}
+                  {isOwner ? (
+                    <Button asChild variant="secondary" size="sm">
+                      <Link href={ROUTES.consultationSettings}>
+                        Manage consultations
+                      </Link>
+                    </Button>
+                  ) : (
+                    <ConsultationRequestForm
+                      username={profile.username}
+                      defaultName={session?.profile?.displayName ?? ""}
+                      defaultEmail={session?.email ?? ""}
+                      durationMinutes={consultationOffer.durationMinutes}
+                      priceLabel={consultationPriceLabel}
+                    />
+                  )}
+                </div>
+              ) : (
+                <div className="mt-2 space-y-3">
+                  <p className="text-sm text-[var(--muted-foreground)]">
+                    {isOwner
+                      ? "Turn on consultations to accept booking requests on this profile."
+                      : "This expert is not accepting consultations right now."}
+                  </p>
+                  {isOwner ? (
+                    <Button asChild variant="secondary" size="sm">
+                      <Link href={ROUTES.consultationSettings}>
+                        Set up consultations
+                      </Link>
+                    </Button>
+                  ) : null}
+                </div>
+              )}
             </GlassCard>
 
             <GlassCard className="space-y-4 p-5">

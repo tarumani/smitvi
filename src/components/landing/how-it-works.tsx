@@ -23,7 +23,7 @@ export function HowItWorks() {
   return (
     <section
       id="how"
-      className="relative overflow-hidden bg-[#edf3f7] dark:bg-[#121820]"
+      className="relative overflow-hidden bg-[var(--surface-elevated)]"
     >
       <div
         aria-hidden

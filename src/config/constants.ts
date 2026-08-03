@@ -24,6 +24,7 @@ export const ROUTES = {
   profileSettings: "/settings/profile",
   passwordSettings: "/settings/password",
   apiKeysSettings: "/settings/api-keys",
+  consultationSettings: "/settings/consultations",
   developers: "/developers",
   onboarding: "/onboarding",
   admin: "/admin",

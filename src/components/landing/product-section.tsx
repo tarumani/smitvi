@@ -25,7 +25,7 @@ export function ProductSection() {
   return (
     <section
       id="product"
-      className="relative overflow-hidden border-y border-[var(--border)] bg-white dark:bg-[#0a1018]"
+      className="relative overflow-hidden border-y border-[var(--border)] bg-[var(--surface)]"
     >
       <div
         aria-hidden

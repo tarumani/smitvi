@@ -21,6 +21,7 @@ import { PrismaBillingRepository } from "@/infrastructure/database/repositories/
 import { PrismaMarketplaceRepository } from "@/infrastructure/database/repositories/marketplace-repository";
 import { PrismaOrganizationRepository } from "@/infrastructure/database/repositories/organization-repository";
 import { PrismaApiKeyRepository } from "@/infrastructure/database/repositories/api-key-repository";
+import { PrismaConsultationRepository } from "@/infrastructure/database/repositories/consultation-repository";
 
 const users = new PrismaUserRepository();
 const profiles = new PrismaProfileRepository();
@@ -33,6 +34,7 @@ const billing = new PrismaBillingRepository();
 const marketplace = new PrismaMarketplaceRepository();
 const organizations = new PrismaOrganizationRepository();
 const apiKeys = new PrismaApiKeyRepository();
+const consultations = new PrismaConsultationRepository();
 const processKnowledgeSource = new ProcessKnowledgeSource(knowledge, auditLogs);
 
 export const container = {
@@ -66,4 +68,6 @@ export const container = {
   marketplace,
   organizations,
   apiKeys,
+  consultations,
+  auditLogs,
 };

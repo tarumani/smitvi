@@ -1,108 +1,124 @@
 @import "tailwindcss";
 
-:root {
-  --background: #f5f7fa;
-  --foreground: #0b1220;
-  --muted: #6b7280;
-  --muted-foreground: #4b5563;
-  --surface: rgba(255, 255, 255, 0.8);
-  --surface-elevated: rgba(255, 255, 255, 0.95);
-  --border: rgba(15, 23, 42, 0.08);
+:root,
+.light {
+  --background: #f3f5f8;
+  --foreground: #0f172a;
+  --muted: #64748b;
+  --muted-foreground: #475569;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --border: rgba(15, 23, 42, 0.09);
   --accent: #0f766e;
   --accent-foreground: #f8fffe;
   --accent-soft: rgba(15, 118, 110, 0.12);
-  --glass: rgba(255, 255, 255, 0.72);
-  --glass-border: rgba(255, 255, 255, 0.65);
-  --glass-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+  --glass: rgba(255, 255, 255, 0.92);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.85);
+  --glass-shadow: 0 14px 36px rgba(15, 23, 42, 0.07);
+  --danger: #dc2626;
+  --warning: #d97706;
   --section-band: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(15, 118, 110, 0.03) 50%,
+    rgba(15, 118, 110, 0.035) 50%,
     transparent 100%
   );
   --hero-glow: radial-gradient(
       60% 50% at 12% 0%,
-      rgba(15, 118, 110, 0.1),
+      rgba(15, 118, 110, 0.09),
       transparent 65%
     ),
     radial-gradient(
       50% 45% at 92% 8%,
-      rgba(14, 165, 233, 0.07),
+      rgba(14, 165, 233, 0.06),
       transparent 65%
     ),
-    linear-gradient(180deg, #f7f9fc 0%, #f5f7fa 50%, #f3f6f8 100%);
-  --grid-line: rgba(15, 23, 42, 0.03);
+    linear-gradient(180deg, #f7f9fc 0%, #f3f5f8 55%, #eef2f6 100%);
+  --grid-line: rgba(15, 23, 42, 0.035);
+  --card-sheen: rgba(255, 255, 255, 0.7);
+  color-scheme: light;
 }
 
 /* System theme before an explicit .light / .dark class is applied */
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --background: #070b14;
-    --foreground: #e8eef8;
-    --muted: #94a3b8;
-    --muted-foreground: #cbd5e1;
-    --surface: rgba(15, 23, 42, 0.72);
-    --surface-elevated: rgba(30, 41, 59, 0.9);
-    --border: rgba(148, 163, 184, 0.16);
+    --background: #0b1017;
+    --foreground: #eef3f9;
+    --muted: #8b98a8;
+    --muted-foreground: #b4bfcc;
+    --surface: #121925;
+    --surface-elevated: #182232;
+    --border: rgba(226, 232, 240, 0.1);
     --accent: #2dd4bf;
     --accent-foreground: #042f2e;
     --accent-soft: rgba(45, 212, 191, 0.14);
-    --glass: rgba(15, 23, 42, 0.62);
-    --glass-border: rgba(148, 163, 184, 0.2);
-    --glass-shadow: 0 24px 70px rgba(0, 0, 0, 0.4);
+    --glass: rgba(18, 25, 37, 0.92);
+    --glass-border: rgba(226, 232, 240, 0.12);
+    --glass-highlight: rgba(148, 163, 184, 0.18);
+    --glass-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);
+    --danger: #f87171;
+    --warning: #fbbf24;
     --section-band: linear-gradient(
       180deg,
       transparent 0%,
-      rgba(45, 212, 191, 0.04) 50%,
+      rgba(45, 212, 191, 0.05) 50%,
       transparent 100%
     );
     --hero-glow: radial-gradient(
-        55% 45% at 12% 0%,
-        rgba(45, 212, 191, 0.12),
+        55% 45% at 14% 0%,
+        rgba(45, 212, 191, 0.14),
         transparent 65%
       ),
       radial-gradient(
-        45% 40% at 90% 10%,
-        rgba(56, 189, 248, 0.08),
+        45% 40% at 90% 8%,
+        rgba(56, 189, 248, 0.1),
         transparent 65%
       ),
-      linear-gradient(180deg, #070b14 0%, #0a101c 50%, #070b14 100%);
-    --grid-line: rgba(148, 163, 184, 0.055);
+      linear-gradient(180deg, #0d131c 0%, #0b1017 50%, #0a0f16 100%);
+    --grid-line: rgba(148, 163, 184, 0.06);
+    --card-sheen: rgba(148, 163, 184, 0.16);
+    color-scheme: dark;
   }
 }
 
 .dark {
-  --background: #070b14;
-  --foreground: #e8eef8;
-  --muted: #94a3b8;
-  --muted-foreground: #cbd5e1;
-  --surface: rgba(15, 23, 42, 0.72);
-  --surface-elevated: rgba(30, 41, 59, 0.9);
-  --border: rgba(148, 163, 184, 0.16);
+  --background: #0b1017;
+  --foreground: #eef3f9;
+  --muted: #8b98a8;
+  --muted-foreground: #b4bfcc;
+  --surface: #121925;
+  --surface-elevated: #182232;
+  --border: rgba(226, 232, 240, 0.1);
   --accent: #2dd4bf;
   --accent-foreground: #042f2e;
   --accent-soft: rgba(45, 212, 191, 0.14);
-  --glass: rgba(15, 23, 42, 0.62);
-  --glass-border: rgba(148, 163, 184, 0.2);
-  --glass-shadow: 0 24px 70px rgba(0, 0, 0, 0.4);
+  --glass: rgba(18, 25, 37, 0.92);
+  --glass-border: rgba(226, 232, 240, 0.12);
+  --glass-highlight: rgba(148, 163, 184, 0.18);
+  --glass-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);
+  --danger: #f87171;
+  --warning: #fbbf24;
   --section-band: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(45, 212, 191, 0.04) 50%,
+    rgba(45, 212, 191, 0.05) 50%,
     transparent 100%
   );
   --hero-glow: radial-gradient(
-      55% 45% at 12% 0%,
-      rgba(45, 212, 191, 0.12),
+      55% 45% at 14% 0%,
+      rgba(45, 212, 191, 0.14),
       transparent 65%
     ),
     radial-gradient(
-      45% 40% at 90% 10%,
-      rgba(56, 189, 248, 0.08),
+      45% 40% at 90% 8%,
+      rgba(56, 189, 248, 0.1),
       transparent 65%
     ),
-    linear-gradient(180deg, #070b14 0%, #0a101c 50%, #070b14 100%);
-  --grid-line: rgba(148, 163, 184, 0.055);
+    linear-gradient(180deg, #0d131c 0%, #0b1017 50%, #0a0f16 100%);
+  --grid-line: rgba(148, 163, 184, 0.06);
+  --card-sheen: rgba(148, 163, 184, 0.16);
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -151,24 +167,12 @@ body {
   background-image: var(--section-band);
 }
 
-html.dark .app-atmosphere,
-html.dark .hero-atmosphere,
-html.dark .hero-mesh {
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
-    var(--hero-glow);
-}
-
-@media (prefers-color-scheme: dark) {
-  html:not(.light) .app-atmosphere,
-  html:not(.light) .hero-atmosphere,
-  html:not(.light) .hero-mesh {
-    background-image:
-      linear-gradient(var(--grid-line) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
-      var(--hero-glow);
-  }
+/* Form controls inherit readable surfaces in both themes */
+input,
+textarea,
+select {
+  color: var(--foreground);
+  background-color: var(--surface);
 }
 
 @keyframes fade-up {
