@@ -64,6 +64,23 @@ export const socialPlatformSchema = z.enum([
   "other",
 ]);
 
+export const portfolioItemSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, "Project title is required")
+    .max(160, "Project title must be at most 160 characters"),
+  description: z
+    .string()
+    .trim()
+    .max(2000, "Description must be at most 2000 characters")
+    .optional()
+    .nullable()
+    .or(z.literal("").transform(() => null)),
+  url: optionalUrlSchema,
+  imageUrl: optionalUrlSchema,
+});
+
 export const createProfileSchema = z.object({
   username: usernameSchema,
   displayName: displayNameSchema,
@@ -87,12 +104,14 @@ export const createProfileSchema = z.object({
     )
     .max(10)
     .default([]),
+  portfolio: z.array(portfolioItemSchema).max(20).default([]),
 });
 
 export const updateProfileSchema = createProfileSchema.partial().extend({
   username: usernameSchema.optional(),
   displayName: displayNameSchema.optional(),
   publicTwinEnabled: z.boolean().optional(),
+  portfolio: z.array(portfolioItemSchema).max(20).optional(),
 });
 
 export type CreateProfileInput = z.infer<typeof createProfileSchema>;

@@ -151,13 +151,33 @@ export default async function PublicProfilePage({ params }: PageProps) {
                 </GlassCard>
               ) : (
                 profile.portfolio.map((item) => (
-                  <GlassCard key={item.id} className="p-5">
-                    <p className="font-semibold">{item.title}</p>
-                    {item.description ? (
-                      <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-                        {item.description}
-                      </p>
+                  <GlassCard key={item.id} className="overflow-hidden p-0">
+                    {item.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={item.imageUrl}
+                        alt={item.title}
+                        className="h-40 w-full object-cover"
+                      />
                     ) : null}
+                    <div className="p-5">
+                      <p className="font-semibold">{item.title}</p>
+                      {item.description ? (
+                        <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                          {item.description}
+                        </p>
+                      ) : null}
+                      {item.url ? (
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-3 inline-block text-sm text-[var(--accent)] hover:underline"
+                        >
+                          View project
+                        </a>
+                      ) : null}
+                    </div>
                   </GlassCard>
                 ))
               )}

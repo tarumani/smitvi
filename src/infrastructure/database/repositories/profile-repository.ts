@@ -84,6 +84,9 @@ export class PrismaProfileRepository implements ProfileRepository {
 
         await this.syncSkills(tx, created.id, input.skills);
         await this.syncSocialLinks(tx, created.id, input.socialLinks);
+        if (input.portfolio) {
+          await this.syncPortfolio(tx, created.id, input.portfolio);
+        }
 
         return tx.profile.findUniqueOrThrow({
           where: { id: created.id },
@@ -144,6 +147,9 @@ export class PrismaProfileRepository implements ProfileRepository {
         if (input.socialLinks) {
           await this.syncSocialLinks(tx, existing.id, input.socialLinks);
         }
+        if (input.portfolio) {
+          await this.syncPortfolio(tx, existing.id, input.portfolio);
+        }
 
         return tx.profile.findUniqueOrThrow({
           where: { userId },
@@ -161,6 +167,32 @@ export class PrismaProfileRepository implements ProfileRepository {
       }
       throw error;
     }
+  }
+
+  private async syncPortfolio(
+    tx: Prisma.TransactionClient,
+    profileId: string,
+    items: Array<{
+      title: string;
+      description?: string | null;
+      url?: string | null;
+      imageUrl?: string | null;
+    }>,
+  ): Promise<void> {
+    await tx.portfolioItem.deleteMany({ where: { profileId } });
+
+    if (items.length === 0) return;
+
+    await tx.portfolioItem.createMany({
+      data: items.map((item, index) => ({
+        profileId,
+        title: item.title.trim(),
+        description: item.description?.trim() || null,
+        url: item.url?.trim() || null,
+        imageUrl: item.imageUrl?.trim() || null,
+        sortOrder: index,
+      })),
+    });
   }
 
   private async syncSkills(
