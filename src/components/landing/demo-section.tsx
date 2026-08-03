@@ -1,19 +1,21 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { GlassCard } from "@/components/ui/glass-card";
 import { InfographicPanel } from "@/components/landing/infographic-panel";
 import { ROUTES } from "@/config/constants";
 
 export function DemoSection() {
   return (
     <section className="relative overflow-hidden border-y border-[var(--border)]">
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(15,118,110,0.05),transparent)]" />
+      <div className="absolute inset-0 bg-[var(--surface)]/50" />
+      <div className="absolute inset-0 section-band opacity-70" />
       <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:py-24">
-        <div>
+        <GlassCard className="p-7 sm:p-8">
           <p className="text-sm font-semibold tracking-[0.18em] text-[var(--accent)] uppercase">
             Grounded answers
           </p>
           <h2 className="mt-4 font-display text-3xl font-bold tracking-tight sm:text-5xl sm:leading-[1.05]">
-            Answers from your knowledge. Citations included.
+            Answers from your knowledge. Citations included. No hallucination.
           </h2>
           <p className="mt-5 max-w-md text-base leading-relaxed text-[var(--muted-foreground)]">
             Every response is grounded in uploaded sources. When confidence is
@@ -34,14 +36,12 @@ export function DemoSection() {
             </li>
           </ul>
           <div className="mt-8">
-            <Button asChild size="lg">
+            <Button asChild>
               <Link href={ROUTES.signup}>Try it with your sources</Link>
             </Button>
           </div>
-        </div>
-        <div className="animate-fade-up">
-          <InfographicPanel variant="network" />
-        </div>
+        </GlassCard>
+        <InfographicPanel variant="network" className="animate-fade-up" />
       </div>
     </section>
   );

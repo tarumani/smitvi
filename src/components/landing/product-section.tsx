@@ -1,3 +1,5 @@
+import { GlassCard } from "@/components/ui/glass-card";
+
 const pillars = [
   {
     title: "Own your intelligence",
@@ -19,7 +21,8 @@ const pillars = [
 export function ProductSection() {
   return (
     <section id="product" className="relative overflow-hidden">
-      <div className="absolute inset-0 hero-mesh opacity-35" />
+      <div className="absolute inset-0 hero-mesh opacity-40" />
+      <div className="absolute inset-0 section-band opacity-60" />
       <div className="relative mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 lg:py-32">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold tracking-[0.18em] text-[var(--accent)] uppercase">
@@ -34,22 +37,19 @@ export function ProductSection() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-10 md:grid-cols-3 md:gap-8">
+        <div className="mt-14 grid gap-5 md:grid-cols-3">
           {pillars.map((pillar, index) => (
-            <article
-              key={pillar.title}
-              className="border-t-2 border-[var(--accent)]/35 pt-6"
-            >
+            <GlassCard key={pillar.title} className="p-7">
               <p className="font-display text-sm font-bold tracking-[0.2em] text-[var(--accent)]">
                 {String(index + 1).padStart(2, "0")}
               </p>
-              <h3 className="mt-4 font-display text-2xl font-semibold tracking-tight">
+              <h3 className="mt-5 font-display text-2xl font-semibold tracking-tight">
                 {pillar.title}
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)]">
                 {pillar.description}
               </p>
-            </article>
+            </GlassCard>
           ))}
         </div>
       </div>

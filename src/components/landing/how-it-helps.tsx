@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, GraduationCap, Briefcase, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { GlassCard } from "@/components/ui/glass-card";
 import { InfographicPanel } from "@/components/landing/infographic-panel";
 import { ROUTES } from "@/config/constants";
 
@@ -45,7 +46,8 @@ export function HowItHelps({
 }: HowItHelpsProps) {
   return (
     <section id="how-it-helps" className="relative overflow-hidden">
-      <div className="absolute inset-0 hero-mesh opacity-30" />
+      <div className="absolute inset-0 section-band" />
+      <div className="absolute inset-0 hero-mesh opacity-25" />
       <div className="relative mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 lg:py-28">
         {showIntro ? (
           <div className="max-w-2xl">
@@ -63,45 +65,34 @@ export function HowItHelps({
           </div>
         ) : null}
 
-        <div className="mt-12 grid gap-8 lg:grid-cols-2 lg:items-center">
+        <div className="mt-12 grid gap-6 lg:grid-cols-2 lg:items-center">
           <InfographicPanel variant="pipeline" className="animate-fade-up" />
-          <div className="animate-fade-up-delay-1 space-y-5">
-            {[
-              {
-                title: "Upload",
-                body: "Bring the artifacts of your expertise — documents, notes, decks, and more.",
-              },
-              {
-                title: "Index",
-                body: "Build a private intelligence graph with embeddings and citations.",
-              },
-              {
-                title: "Launch",
-                body: "Answer on your behalf, then open marketplace offers when you’re ready to earn.",
-              },
-            ].map((item) => (
-              <div
-                key={item.title}
-                className="border-l-2 border-[var(--accent)]/40 pl-4"
-              >
-                <p className="font-display text-lg font-semibold tracking-tight">
-                  {item.title}
-                </p>
-                <p className="mt-1 text-sm leading-relaxed text-[var(--muted-foreground)]">
-                  {item.body}
-                </p>
-              </div>
-            ))}
-          </div>
+          <GlassCard className="animate-fade-up-delay-1 space-y-4 p-6 text-sm leading-relaxed text-[var(--muted-foreground)]">
+            <p>
+              <strong className="text-[var(--foreground)]">Upload</strong> the
+              artifacts of your expertise — documents, notes, decks, and more.
+            </p>
+            <p>
+              <strong className="text-[var(--foreground)]">Index</strong> them
+              into a private intelligence graph with embeddings and citations.
+            </p>
+            <p>
+              <strong className="text-[var(--foreground)]">Launch</strong> a Twin
+              that answers on your behalf, then open marketplace offers when
+              you’re ready to earn.
+            </p>
+          </GlassCard>
         </div>
 
-        <div className="mt-16 grid gap-8 md:grid-cols-3">
+        <div className="mt-16 grid gap-5 md:grid-cols-3">
           {audiences.map((item, index) => (
-            <article
+            <GlassCard
               key={item.title}
-              className={`border-t border-[var(--border)] pt-6 ${index === 0 ? "animate-fade-up" : index === 1 ? "animate-fade-up-delay-1" : "animate-fade-up-delay-2"}`}
+              className={`p-6 ${index === 0 ? "animate-fade-up" : index === 1 ? "animate-fade-up-delay-1" : "animate-fade-up-delay-2"}`}
             >
-              <item.icon className="h-5 w-5 text-[var(--accent)]" />
+              <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--accent-soft)]">
+                <item.icon className="h-5 w-5 text-[var(--accent)]" />
+              </div>
               <h3 className="mt-4 font-display text-xl font-semibold tracking-tight">
                 {item.title}
               </h3>
@@ -113,25 +104,25 @@ export function HowItHelps({
                   </li>
                 ))}
               </ul>
-            </article>
+            </GlassCard>
           ))}
         </div>
 
-        <div className="mt-16 grid gap-8 lg:grid-cols-2">
-          <div>
+        <div className="mt-14 grid gap-6 lg:grid-cols-2">
+          <GlassCard className="overflow-hidden p-4 sm:p-5">
             <InfographicPanel variant="value" />
-            <p className="mt-4 text-sm text-[var(--muted-foreground)]">
+            <p className="mt-4 px-1 text-sm text-[var(--muted-foreground)]">
               Experts multiply their time. Learners get instant, cited help —
               then book a human when it matters.
             </p>
-          </div>
-          <div>
+          </GlassCard>
+          <GlassCard className="overflow-hidden p-4 sm:p-5">
             <InfographicPanel variant="network" />
-            <p className="mt-4 text-sm text-[var(--muted-foreground)]">
+            <p className="mt-4 px-1 text-sm text-[var(--muted-foreground)]">
               Your Twin sits at the center of your knowledge sources — not a
               generic chatbot trained on the open web.
             </p>
-          </div>
+          </GlassCard>
         </div>
 
         <div className="mt-10 flex flex-wrap gap-3">

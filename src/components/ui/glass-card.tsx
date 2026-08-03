@@ -8,7 +8,9 @@ export function GlassCard({
   return (
     <div
       className={cn(
-        "rounded-3xl border border-[var(--glass-border)] bg-[var(--glass)] shadow-[var(--glass-shadow)] backdrop-blur-xl",
+        "relative overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[var(--glass)] shadow-[var(--glass-shadow)] backdrop-blur-xl transition-transform duration-300 hover:-translate-y-0.5",
+        "before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/70 before:to-transparent",
+        "after:pointer-events-none after:absolute after:-right-10 after:-top-10 after:h-28 after:w-28 after:rounded-full after:bg-[var(--accent)]/10 after:blur-2xl",
         className,
       )}
       {...props}

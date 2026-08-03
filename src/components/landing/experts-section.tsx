@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { GlassCard } from "@/components/ui/glass-card";
 import { ROUTES } from "@/config/constants";
 
 export function ExpertsSection() {
   return (
     <section id="experts" className="relative">
-      <div className="mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 lg:py-32">
-        <div className="relative overflow-hidden rounded-[2rem] border border-[var(--border)] bg-[linear-gradient(135deg,rgba(15,118,110,0.12),rgba(14,165,233,0.08)_48%,transparent)] px-6 py-16 sm:px-12 lg:px-16 lg:py-20">
+      <div className="absolute inset-0 section-band opacity-50" />
+      <div className="relative mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 lg:py-32">
+        <GlassCard className="px-6 py-16 sm:px-12 lg:px-16 lg:py-20">
           <div
             aria-hidden
             className="animate-aurora pointer-events-none absolute -right-16 -top-20 h-72 w-72 rounded-full bg-[radial-gradient(circle_at_center,rgba(15,118,110,0.22),transparent_70%)]"
@@ -38,7 +40,7 @@ export function ExpertsSection() {
               </Button>
             </div>
           </div>
-        </div>
+        </GlassCard>
       </div>
     </section>
   );

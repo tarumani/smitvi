@@ -1,36 +1,42 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4f7fb;
+  --background: #eef5f7;
   --foreground: #0b1220;
   --muted: #6b7280;
   --muted-foreground: #4b5563;
-  --surface: rgba(255, 255, 255, 0.72);
-  --surface-elevated: rgba(255, 255, 255, 0.92);
-  --border: rgba(15, 23, 42, 0.08);
+  --surface: rgba(255, 255, 255, 0.78);
+  --surface-elevated: rgba(255, 255, 255, 0.94);
+  --border: rgba(15, 23, 42, 0.09);
   --accent: #0f766e;
   --accent-foreground: #f8fffe;
   --accent-soft: rgba(15, 118, 110, 0.12);
-  --glass: rgba(255, 255, 255, 0.55);
-  --glass-border: rgba(255, 255, 255, 0.45);
-  --glass-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+  --glass: rgba(255, 255, 255, 0.68);
+  --glass-border: rgba(255, 255, 255, 0.72);
+  --glass-shadow: 0 18px 50px rgba(15, 23, 42, 0.1);
+  --section-band: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(15, 118, 110, 0.05) 48%,
+    rgba(255, 255, 255, 0.2) 100%
+  );
   --hero-glow: radial-gradient(
-      55% 45% at 18% 12%,
-      rgba(15, 118, 110, 0.22),
+      58% 48% at 16% 10%,
+      rgba(15, 118, 110, 0.28),
       transparent 70%
     ),
     radial-gradient(
-      48% 42% at 88% 18%,
-      rgba(14, 165, 233, 0.16),
+      50% 44% at 86% 16%,
+      rgba(14, 165, 233, 0.2),
       transparent 72%
     ),
     radial-gradient(
-      40% 35% at 60% 80%,
-      rgba(15, 118, 110, 0.08),
+      42% 36% at 58% 84%,
+      rgba(45, 212, 191, 0.12),
       transparent 70%
     ),
-    linear-gradient(165deg, #eef4f8 0%, #f6fafb 42%, #f2f5f8 100%);
-  --grid-line: rgba(15, 23, 42, 0.045);
+    linear-gradient(165deg, #e8f3f5 0%, #f4fafb 40%, #eef4f8 100%);
+  --grid-line: rgba(15, 23, 42, 0.04);
 }
 
 /* System theme before an explicit .light / .dark class is applied */
@@ -40,28 +46,34 @@
     --foreground: #e8eef8;
     --muted: #94a3b8;
     --muted-foreground: #cbd5e1;
-    --surface: rgba(15, 23, 42, 0.65);
-    --surface-elevated: rgba(30, 41, 59, 0.85);
-    --border: rgba(148, 163, 184, 0.14);
+    --surface: rgba(15, 23, 42, 0.72);
+    --surface-elevated: rgba(30, 41, 59, 0.9);
+    --border: rgba(148, 163, 184, 0.16);
     --accent: #2dd4bf;
     --accent-foreground: #042f2e;
     --accent-soft: rgba(45, 212, 191, 0.14);
-    --glass: rgba(15, 23, 42, 0.55);
-    --glass-border: rgba(148, 163, 184, 0.16);
-    --glass-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+    --glass: rgba(15, 23, 42, 0.62);
+    --glass-border: rgba(148, 163, 184, 0.2);
+    --glass-shadow: 0 24px 70px rgba(0, 0, 0, 0.4);
+    --section-band: linear-gradient(
+      180deg,
+      rgba(15, 23, 42, 0.35) 0%,
+      rgba(45, 212, 191, 0.06) 48%,
+      rgba(15, 23, 42, 0.25) 100%
+    );
     --hero-glow: radial-gradient(
-        52% 42% at 14% 10%,
-        rgba(45, 212, 191, 0.2),
+        54% 44% at 14% 10%,
+        rgba(45, 212, 191, 0.24),
         transparent 70%
       ),
       radial-gradient(
-        46% 40% at 86% 16%,
-        rgba(56, 189, 248, 0.14),
+        48% 42% at 86% 16%,
+        rgba(56, 189, 248, 0.16),
         transparent 72%
       ),
       radial-gradient(
-        38% 34% at 55% 78%,
-        rgba(45, 212, 191, 0.08),
+        40% 36% at 55% 78%,
+        rgba(45, 212, 191, 0.1),
         transparent 70%
       ),
       linear-gradient(165deg, #070b14 0%, #0b1220 48%, #070b14 100%);
@@ -74,28 +86,34 @@
   --foreground: #e8eef8;
   --muted: #94a3b8;
   --muted-foreground: #cbd5e1;
-  --surface: rgba(15, 23, 42, 0.65);
-  --surface-elevated: rgba(30, 41, 59, 0.85);
-  --border: rgba(148, 163, 184, 0.14);
+  --surface: rgba(15, 23, 42, 0.72);
+  --surface-elevated: rgba(30, 41, 59, 0.9);
+  --border: rgba(148, 163, 184, 0.16);
   --accent: #2dd4bf;
   --accent-foreground: #042f2e;
   --accent-soft: rgba(45, 212, 191, 0.14);
-  --glass: rgba(15, 23, 42, 0.55);
-  --glass-border: rgba(148, 163, 184, 0.16);
-  --glass-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+  --glass: rgba(15, 23, 42, 0.62);
+  --glass-border: rgba(148, 163, 184, 0.2);
+  --glass-shadow: 0 24px 70px rgba(0, 0, 0, 0.4);
+  --section-band: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.35) 0%,
+    rgba(45, 212, 191, 0.06) 48%,
+    rgba(15, 23, 42, 0.25) 100%
+  );
   --hero-glow: radial-gradient(
-      52% 42% at 14% 10%,
-      rgba(45, 212, 191, 0.2),
+      54% 44% at 14% 10%,
+      rgba(45, 212, 191, 0.24),
       transparent 70%
     ),
     radial-gradient(
-      46% 40% at 86% 16%,
-      rgba(56, 189, 248, 0.14),
+      48% 42% at 86% 16%,
+      rgba(56, 189, 248, 0.16),
       transparent 72%
     ),
     radial-gradient(
-      38% 34% at 55% 78%,
-      rgba(45, 212, 191, 0.08),
+      40% 36% at 55% 78%,
+      rgba(45, 212, 191, 0.1),
       transparent 70%
     ),
     linear-gradient(165deg, #070b14 0%, #0b1220 48%, #070b14 100%);
@@ -106,7 +124,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans-family);
-  --font-display: var(--font-display-family);
+  --font-display: var(--font-sans-family);
 }
 
 * {
@@ -125,7 +143,7 @@ body {
 }
 
 .font-display {
-  font-family: var(--font-display-family), "Syne", sans-serif;
+  font-family: var(--font-sans-family), "Hanken Grotesk", sans-serif;
 }
 
 /* Corporate AI atmosphere used across marketing + app shells */
@@ -135,19 +153,24 @@ body {
   background-color: var(--background);
   background-image:
     radial-gradient(
-      42% 36% at 12% 8%,
-      rgba(15, 118, 110, 0.16),
+      46% 40% at 10% 6%,
+      rgba(15, 118, 110, 0.22),
       transparent 72%
     ),
     radial-gradient(
-      38% 32% at 88% 12%,
-      rgba(14, 165, 233, 0.12),
+      42% 36% at 90% 10%,
+      rgba(14, 165, 233, 0.16),
       transparent 70%
     ),
     radial-gradient(
-      34% 30% at 70% 88%,
-      rgba(45, 212, 191, 0.08),
+      36% 32% at 72% 90%,
+      rgba(45, 212, 191, 0.12),
       transparent 72%
+    ),
+    radial-gradient(
+      30% 28% at 40% 50%,
+      rgba(255, 255, 255, 0.35),
+      transparent 70%
     ),
     linear-gradient(var(--grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
@@ -156,10 +179,15 @@ body {
     auto,
     auto,
     auto,
-    56px 56px,
-    56px 56px,
+    auto,
+    48px 48px,
+    48px 48px,
     auto;
   background-attachment: fixed;
+}
+
+.section-band {
+  background-image: var(--section-band);
 }
 
 html.dark .app-atmosphere,
@@ -167,19 +195,24 @@ html.dark .hero-atmosphere,
 html.dark .hero-mesh {
   background-image:
     radial-gradient(
-      42% 36% at 12% 8%,
-      rgba(45, 212, 191, 0.14),
+      46% 40% at 10% 6%,
+      rgba(45, 212, 191, 0.18),
       transparent 72%
     ),
     radial-gradient(
-      38% 32% at 88% 12%,
-      rgba(56, 189, 248, 0.1),
+      42% 36% at 90% 10%,
+      rgba(56, 189, 248, 0.12),
       transparent 70%
     ),
     radial-gradient(
-      34% 30% at 70% 88%,
-      rgba(45, 212, 191, 0.07),
+      36% 32% at 72% 90%,
+      rgba(45, 212, 191, 0.1),
       transparent 72%
+    ),
+    radial-gradient(
+      30% 28% at 40% 50%,
+      rgba(15, 23, 42, 0.45),
+      transparent 70%
     ),
     linear-gradient(var(--grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
@@ -192,19 +225,24 @@ html.dark .hero-mesh {
   html:not(.light) .hero-mesh {
     background-image:
       radial-gradient(
-        42% 36% at 12% 8%,
-        rgba(45, 212, 191, 0.14),
+        46% 40% at 10% 6%,
+        rgba(45, 212, 191, 0.18),
         transparent 72%
       ),
       radial-gradient(
-        38% 32% at 88% 12%,
-        rgba(56, 189, 248, 0.1),
+        42% 36% at 90% 10%,
+        rgba(56, 189, 248, 0.12),
         transparent 70%
       ),
       radial-gradient(
-        34% 30% at 70% 88%,
-        rgba(45, 212, 191, 0.07),
+        36% 32% at 72% 90%,
+        rgba(45, 212, 191, 0.1),
         transparent 72%
+      ),
+      radial-gradient(
+        30% 28% at 40% 50%,
+        rgba(15, 23, 42, 0.45),
+        transparent 70%
       ),
       linear-gradient(var(--grid-line) 1px, transparent 1px),
       linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
