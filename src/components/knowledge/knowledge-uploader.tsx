@@ -58,6 +58,7 @@ export function KnowledgeUploader({
         router.refresh();
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Upload failed");
+        router.refresh();
       }
     });
   }

@@ -2,8 +2,10 @@ import {
   chunkText,
   estimateTokenCount,
 } from "@/domain/knowledge/chunking";
+import { ValidationError } from "@/domain/shared/errors";
 import type { PrismaKnowledgeRepository } from "@/infrastructure/database/repositories/knowledge-repository";
 import { PrismaAuditLogRepository } from "@/infrastructure/database/repositories/audit-repository";
+import { mapAiError } from "@/infrastructure/ai/map-ai-error";
 import {
   embedTexts,
   generateKnowledgeMetadata,
@@ -31,7 +33,9 @@ export class ProcessKnowledgeSource {
       const extractedText = await extractTextFromFile(bytes, source.type);
 
       if (!extractedText || extractedText.length < 20) {
-        throw new Error("No usable text could be extracted from this file.");
+        throw new ValidationError(
+          "No usable text could be extracted from this file. Paste at least a short paragraph.",
+        );
       }
 
       await this.knowledge.updateStatus(sourceId, "CHUNKING");
@@ -70,17 +74,16 @@ export class ProcessKnowledgeSource {
         },
       });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Knowledge processing failed";
-      await this.knowledge.updateStatus(sourceId, "FAILED", message);
+      const mapped = mapAiError(error);
+      await this.knowledge.updateStatus(sourceId, "FAILED", mapped.message);
       await this.auditLogs.create({
         actorId: userId,
         action: "KNOWLEDGE_FAILED",
         entityType: "knowledge_source",
         entityId: sourceId,
-        metadata: { message },
+        metadata: { message: mapped.message },
       });
-      throw error;
+      throw mapped;
     }
   }
 }
