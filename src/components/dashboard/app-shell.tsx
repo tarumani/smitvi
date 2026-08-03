@@ -76,9 +76,9 @@ export function AppShell({
   }
 
   return (
-    <div className="min-h-full bg-[var(--background)]">
+    <div className="min-h-full">
       <div className="mx-auto grid min-h-full w-full max-w-7xl lg:grid-cols-[240px_1fr]">
-        <aside className="hidden border-r border-[var(--border)] px-4 py-6 lg:block">
+        <aside className="hidden border-r border-[var(--border)] bg-[var(--surface)]/35 px-4 py-6 backdrop-blur-xl lg:block">
           <SmitviLogo href={ROUTES.dashboard} size="sm" />
           <nav className="mt-8 space-y-1">
             {navItems.map((item) => {

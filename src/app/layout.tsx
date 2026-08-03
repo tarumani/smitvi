@@ -79,7 +79,7 @@ export default async function RootLayout({
       }
     >
       <body
-        className={`${hankenGrotesk.variable} min-h-full font-sans antialiased`}
+        className={`${hankenGrotesk.variable} app-atmosphere min-h-full font-sans antialiased`}
       >
         <ThemeProvider initialTheme={theme} disableTransitionOnChange>
           {children}

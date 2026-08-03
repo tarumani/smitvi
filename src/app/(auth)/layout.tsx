@@ -7,7 +7,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="hero-atmosphere flex h-dvh max-h-dvh flex-col overflow-hidden">
+    <div className="flex h-dvh max-h-dvh flex-col overflow-hidden">
       <div className="mx-auto flex h-14 w-full max-w-6xl shrink-0 items-center justify-between px-4 sm:px-6">
         <SmitviLogo size="sm" />
         <ThemeToggle />

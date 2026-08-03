@@ -64,8 +64,10 @@ export function TwinChatDemo({ className, compact = false }: TwinChatDemoProps) 
 
       <div
         className={cn(
-          "space-y-3 overflow-y-auto px-4 py-4",
-          compact ? "max-h-[220px] min-h-[180px]" : "min-h-[320px] sm:min-h-[380px] sm:space-y-4 sm:px-5 sm:py-5",
+          "space-y-3 overflow-hidden px-4 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+          compact
+            ? "h-[210px]"
+            : "min-h-[320px] sm:min-h-[380px] sm:space-y-4 sm:px-5 sm:py-5",
         )}
       >
         {transcript.slice(0, visibleCount).map((message, index) => (
