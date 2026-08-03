@@ -49,6 +49,13 @@ export function AuthForm({ mode }: AuthFormProps) {
       : "Start indexing your intelligence on Smitvi.";
 
   useEffect(() => {
+    if (searchParams.get("verify") === "1") {
+      toast.message("Verify your email before signing in.", {
+        description:
+          "Open the confirmation link we sent, then come back to sign in.",
+      });
+    }
+
     const error = searchParams.get("error");
     if (!error) return;
     const messages: Record<string, string> = {
@@ -65,11 +72,17 @@ export function AuthForm({ mode }: AuthFormProps) {
       try {
         const supabase = createSupabaseBrowserClient();
         if (mode === "login") {
-          const { error } = await supabase.auth.signInWithPassword({
+          const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
           });
           if (error) throw error;
+          if (!data.user?.email_confirmed_at) {
+            await supabase.auth.signOut();
+            throw new Error(
+              "Confirm your email before signing in. Check your inbox for the verification link.",
+            );
+          }
           toast.success("Signed in");
           router.replace(nextPath);
           router.refresh();
@@ -85,17 +98,23 @@ export function AuthForm({ mode }: AuthFormProps) {
         });
         if (error) throw error;
 
-        // If email confirmation is disabled, Supabase returns a session immediately.
-        if (data.session) {
+        // Email confirmation is required — never treat an unverified signup as logged in.
+        if (data.session && data.user?.email_confirmed_at) {
           toast.success("Account created");
           router.replace(nextPath);
           router.refresh();
           return;
         }
 
-        toast.success("Check your email to confirm your account, then sign in.");
+        if (data.session) {
+          await supabase.auth.signOut();
+        }
+
+        toast.success(
+          "Confirm your email to finish signup. Check your inbox, then sign in.",
+        );
         router.replace(
-          `${ROUTES.login}?next=${encodeURIComponent(nextPath)}`,
+          `${ROUTES.login}?next=${encodeURIComponent(nextPath)}&verify=1`,
         );
       } catch (error) {
         toast.error(errorMessage(error, "Authentication failed"));

@@ -47,7 +47,12 @@ export function TwinChatDemo({ className, compact = false }: TwinChatDemoProps) 
         className,
       )}
     >
-      <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+      <div
+        className={cn(
+          "flex items-center justify-between border-b border-white/10",
+          compact ? "px-4 py-3" : "px-5 py-4",
+        )}
+      >
         <div>
           <p className="text-sm font-semibold tracking-tight">Knowledge Twin</p>
           <p className="text-xs text-white/50">@maya · Product Architect</p>
@@ -59,8 +64,8 @@ export function TwinChatDemo({ className, compact = false }: TwinChatDemoProps) 
 
       <div
         className={cn(
-          "space-y-4 px-5 py-5",
-          compact ? "min-h-[280px]" : "min-h-[360px] sm:min-h-[420px]",
+          "space-y-3 overflow-y-auto px-4 py-4",
+          compact ? "max-h-[220px] min-h-[180px]" : "min-h-[320px] sm:min-h-[380px] sm:space-y-4 sm:px-5 sm:py-5",
         )}
       >
         {transcript.slice(0, visibleCount).map((message, index) => (
@@ -90,8 +95,13 @@ export function TwinChatDemo({ className, compact = false }: TwinChatDemoProps) 
         ))}
       </div>
 
-      <div className="border-t border-white/10 px-5 py-4">
-        <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white/35">
+      <div
+        className={cn(
+          "border-t border-white/10",
+          compact ? "px-4 py-3" : "px-5 py-4",
+        )}
+      >
+        <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/35">
           Ask this twin anything from their knowledge…
         </div>
       </div>

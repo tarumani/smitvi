@@ -80,7 +80,7 @@ Leave GoDaddy **email MX** records alone if you use GoDaddy email.
      - `https://smitvi.com/auth/callback`
      - `https://www.smitvi.com/auth/callback`
 4. Auth → Providers → enable **Google** (Apple optional later).
-5. For easier email signup while launching, you may disable **Confirm email** under Auth → Providers → Email.
+5. Keep **Confirm email** enabled under Auth → Providers → Email (required to reduce spam signups).
 6. Storage → private bucket `knowledge`.
 7. GitHub Actions build needs these repo secrets (inlined at build time):
    - `NEXT_PUBLIC_SUPABASE_URL`
