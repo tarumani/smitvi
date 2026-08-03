@@ -1,15 +1,20 @@
+import { BrainCircuit, MessageSquareQuote, Wallet } from "lucide-react";
+
 const pillars = [
   {
+    icon: BrainCircuit,
     title: "Own your intelligence",
     description:
       "Upload documents, repos, lectures, and notes. Your twin learns only from sources you trust.",
   },
   {
+    icon: MessageSquareQuote,
     title: "Answer at scale",
     description:
       "Public AI chat with citations, confidence gates, and an honest “I don’t know” when evidence is thin.",
   },
   {
+    icon: Wallet,
     title: "Monetize without burnout",
     description:
       "Subscriptions, consultations, and marketplace access — without endless content production.",
@@ -18,9 +23,9 @@ const pillars = [
 
 export function ProductSection() {
   return (
-    <section id="product" className="relative overflow-hidden">
+    <section id="product" className="relative overflow-hidden border-y border-[var(--border)] bg-[var(--surface)]/40">
       <div className="relative mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 lg:py-32">
-        <div className="max-w-2xl">
+        <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold tracking-[0.18em] text-[var(--accent)] uppercase">
             Product
           </p>
@@ -33,16 +38,16 @@ export function ProductSection() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-0 border-t border-[var(--border)] md:grid-cols-3">
+        <div className="mt-16 grid gap-12 md:grid-cols-3 md:gap-8">
           {pillars.map((pillar, index) => (
-            <article
-              key={pillar.title}
-              className="border-b border-[var(--border)] py-8 md:border-r md:border-b-0 md:px-8 md:py-10 md:first:pl-0 md:last:border-r-0 md:last:pr-0"
-            >
-              <p className="font-display text-sm font-bold tracking-[0.2em] text-[var(--accent)]">
-                {String(index + 1).padStart(2, "0")}
+            <article key={pillar.title} className="text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--accent-soft)] text-[var(--accent)]">
+                <pillar.icon className="h-6 w-6" />
+              </div>
+              <p className="mt-5 text-[11px] font-bold tracking-[0.18em] text-[var(--accent)] uppercase">
+                Pillar {String(index + 1).padStart(2, "0")}
               </p>
-              <h3 className="mt-5 font-display text-2xl font-semibold tracking-tight">
+              <h3 className="mt-2 font-display text-xl font-semibold tracking-tight">
                 {pillar.title}
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)]">

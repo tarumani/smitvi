@@ -21,41 +21,41 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section
-      id="how"
-      className="relative overflow-hidden border-y border-[var(--border)]"
-    >
+    <section id="how" className="relative overflow-hidden">
       <div className="relative mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 lg:py-32">
-        <div className="max-w-2xl">
-          <p className="text-sm font-semibold tracking-[0.18em] text-[var(--accent)] uppercase">
-            How it works
-          </p>
-          <h2 className="mt-4 font-display text-3xl font-bold tracking-tight sm:text-5xl">
-            From expertise to Twin in three steps
-          </h2>
-        </div>
+        <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div className="max-w-md lg:sticky lg:top-24">
+            <p className="text-sm font-semibold tracking-[0.18em] text-[var(--accent)] uppercase">
+              How it works
+            </p>
+            <h2 className="mt-4 font-display text-3xl font-bold tracking-tight sm:text-5xl">
+              From expertise to Twin in three steps
+            </h2>
+            <p className="mt-5 text-base leading-relaxed text-[var(--muted-foreground)]">
+              A clear path from profile to live Twin — without rebuilding your
+              knowledge every time someone asks.
+            </p>
+          </div>
 
-        <ol className="mt-16 grid gap-12 md:grid-cols-3 md:gap-8">
-          {steps.map((item, index) => (
-            <li key={item.step} className="relative">
-              {index < steps.length - 1 ? (
+          <ol className="relative space-y-0 border-l border-[var(--accent)]/30 pl-8">
+            {steps.map((item) => (
+              <li key={item.step} className="relative pb-12 last:pb-0">
                 <span
                   aria-hidden
-                  className="absolute top-8 left-[calc(100%+0.25rem)] hidden h-px w-[calc(100%-2rem)] bg-gradient-to-r from-[var(--accent)]/45 to-transparent md:block"
-                />
-              ) : null}
-              <p className="font-display text-5xl font-extrabold tracking-tight text-[var(--accent)]/20">
-                {item.step}
-              </p>
-              <h3 className="mt-3 font-display text-xl font-semibold tracking-tight">
-                {item.title}
-              </h3>
-              <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)] sm:text-base">
-                {item.description}
-              </p>
-            </li>
-          ))}
-        </ol>
+                  className="absolute top-1.5 -left-[2.15rem] flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent)] text-[10px] font-bold text-[var(--accent-foreground)]"
+                >
+                  {item.step}
+                </span>
+                <h3 className="font-display text-xl font-semibold tracking-tight">
+                  {item.title}
+                </h3>
+                <p className="mt-2 max-w-md text-sm leading-relaxed text-[var(--muted-foreground)] sm:text-base">
+                  {item.description}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
       </div>
     </section>
   );

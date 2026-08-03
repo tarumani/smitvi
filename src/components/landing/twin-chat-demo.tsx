@@ -40,29 +40,31 @@ export function TwinChatDemo({ className, compact = false }: TwinChatDemoProps) 
     return () => window.clearTimeout(timer);
   }, [visibleCount]);
 
+  const isTyping = visibleCount < transcript.length;
+
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--foreground)] shadow-[0_24px_60px_rgba(15,23,42,0.1)]",
+        "relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--foreground)] shadow-[0_12px_36px_rgba(15,23,42,0.08)]",
         className,
       )}
     >
       <div
         className={cn(
-          "flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface)]/70",
+          "flex items-center justify-between border-b border-[var(--border)]",
           compact ? "px-4 py-3" : "px-5 py-4",
         )}
       >
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)]">
-            <span className="text-xs font-bold">KT</span>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent)] text-[var(--accent-foreground)]">
+            <span className="text-[10px] font-bold">KT</span>
           </div>
           <div>
             <p className="text-sm font-semibold tracking-tight">Knowledge Twin</p>
             <p className="text-xs text-[var(--muted)]">@maya · Product Architect</p>
           </div>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-md bg-[var(--accent-soft)] px-2.5 py-1 text-[11px] font-semibold tracking-wide text-[var(--accent)]">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-[var(--accent)]">
           <span className="animate-live-dot h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
           LIVE
         </span>
@@ -72,7 +74,7 @@ export function TwinChatDemo({ className, compact = false }: TwinChatDemoProps) 
         className={cn(
           "space-y-3 overflow-hidden px-4 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
           compact
-            ? "h-[210px]"
+            ? "h-[230px]"
             : "min-h-[320px] sm:min-h-[380px] sm:space-y-4 sm:px-5 sm:py-5",
         )}
       >
@@ -86,10 +88,10 @@ export function TwinChatDemo({ className, compact = false }: TwinChatDemoProps) 
           >
             <div
               className={cn(
-                "rounded-2xl px-4 py-3 text-sm leading-relaxed",
+                "rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
                 message.role === "user"
                   ? "bg-[var(--foreground)] text-[var(--background)]"
-                  : "border border-[var(--accent)]/20 bg-[var(--accent-soft)] text-[var(--foreground)]",
+                  : "bg-[var(--accent-soft)] text-[var(--foreground)]",
               )}
             >
               {message.text}
@@ -103,15 +105,26 @@ export function TwinChatDemo({ className, compact = false }: TwinChatDemoProps) 
         ))}
       </div>
 
+      {/* Status footer — intentionally not a search/input field */}
       <div
         className={cn(
-          "border-t border-[var(--border)] bg-[var(--surface)]/50",
-          compact ? "px-4 py-3" : "px-5 py-4",
+          "flex items-center justify-between border-t border-[var(--border)]",
+          compact ? "px-4 py-2.5" : "px-5 py-3",
         )}
       >
-        <div className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2.5 text-sm text-[var(--muted)]">
-          Ask this twin anything from their knowledge…
-        </div>
+        {isTyping ? (
+          <p className="flex items-center gap-2 text-xs text-[var(--muted)]">
+            <span className="inline-flex gap-0.5">
+              <span className="animate-live-dot h-1 w-1 rounded-full bg-[var(--accent)]" />
+              <span className="animate-live-dot h-1 w-1 rounded-full bg-[var(--accent)] [animation-delay:0.2s]" />
+              <span className="animate-live-dot h-1 w-1 rounded-full bg-[var(--accent)] [animation-delay:0.4s]" />
+            </span>
+            Twin is answering…
+          </p>
+        ) : (
+          <p className="text-xs text-[var(--muted)]">Conversation grounded in sources</p>
+        )}
+        <p className="text-[11px] font-medium text-[var(--accent)]">Preview only</p>
       </div>
     </div>
   );
