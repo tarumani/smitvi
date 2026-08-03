@@ -103,7 +103,11 @@ git push
 cd smitvi && fly deploy
 ```
 
-Optional: add a GitHub Action with `superfly/flyctl-actions` that runs `fly deploy` on push to `main`.
+**No local Docker?** Use GitHub Actions (already in `.github/workflows/fly-deploy.yml`):
+
+1. Create a Fly deploy token: `fly tokens create deploy -a smitvi`
+2. Add it as a GitHub secret named `FLY_API_TOKEN` on `tarumani/smitvi`
+3. Push to `master` (or run the workflow manually) — GitHub builds and deploys on Fly for you
 
 ## 4. Payments
 
