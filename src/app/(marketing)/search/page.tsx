@@ -49,22 +49,23 @@ export default async function SearchPage({ searchParams }: PageProps) {
         description="People, skills, topics, knowledge, and questions across the Smitvi network."
       />
 
-      <form
-        className="animate-fade-up-delay-1 mt-8 flex flex-col gap-3 sm:flex-row"
-        action="/search"
-      >
-        <div className="relative flex-1">
+      <form className="animate-fade-up-delay-1 mt-8 w-full" action="/search">
+        <div className="relative">
           <SearchIcon className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
           <Input
             name="q"
             defaultValue={query}
             placeholder="Search experts, skills, topics…"
-            className="h-12 border-[var(--glass-border)] bg-[var(--glass)] pl-11 shadow-[var(--glass-shadow)] backdrop-blur-xl"
+            className="h-12 border-[var(--glass-border)] bg-[var(--glass)] pr-[6.75rem] pl-11 shadow-[var(--glass-shadow)] backdrop-blur-xl"
           />
+          <Button
+            type="submit"
+            size="sm"
+            className="absolute top-1/2 right-1.5 h-9 -translate-y-1/2 px-4"
+          >
+            Search
+          </Button>
         </div>
-        <Button type="submit" className="h-12 px-8">
-          Search
-        </Button>
       </form>
 
       {query.length > 0 && query.length < 2 ? (
