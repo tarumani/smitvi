@@ -29,8 +29,8 @@ export default async function KnowledgePage() {
             Knowledge
           </h1>
           <p className="mt-2 text-[var(--muted-foreground)]">
-            Upload sources to train your Twin. We extract, chunk, embed,
-            summarize, and tag automatically.
+            Paste text or upload documents to train your Twin. We extract,
+            chunk, embed, summarize, and tag automatically.
           </p>
         </div>
         <Button asChild variant="secondary">
@@ -43,7 +43,7 @@ export default async function KnowledgePage() {
       {sources.length === 0 ? (
         <EmptyState
           title="No knowledge yet"
-          description="Upload a PDF, Word doc, deck, or markdown file to create your first intelligence source."
+          description="Paste notes or upload a PDF, Word doc, deck, or markdown file to create your first intelligence source."
         />
       ) : (
         <div className="grid gap-4">
