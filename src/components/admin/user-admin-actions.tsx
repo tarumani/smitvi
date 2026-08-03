@@ -2,11 +2,22 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import type { UserRole } from "@/domain/user/entities";
 
 type UserAdminActionsProps = {
   userId: string;
+  email: string;
   role: UserRole;
   isBanned: boolean;
   canMutate: boolean;
@@ -22,6 +33,7 @@ const ROLE_OPTIONS: UserRole[] = [
 
 export function UserAdminActions({
   userId,
+  email,
   role,
   isBanned,
   canMutate,
@@ -30,11 +42,10 @@ export function UserAdminActions({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentRole, setCurrentRole] = useState(role);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   if (!canMutate) {
-    return (
-      <span className="text-xs text-[var(--muted)]">View only</span>
-    );
+    return <span className="text-xs text-[var(--muted)]">View only</span>;
   }
 
   async function patch(body: { role?: UserRole; isBanned?: boolean }) {
@@ -55,6 +66,31 @@ export function UserAdminActions({
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Update failed");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function handleDelete() {
+    setPending(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/v1/admin/users/${userId}`, {
+        method: "DELETE",
+      });
+      const json = (await res.json()) as {
+        error?: { message?: string };
+      };
+      if (!res.ok) {
+        throw new Error(json.error?.message ?? "Delete failed");
+      }
+      toast.success("User deleted");
+      setDeleteOpen(false);
+      router.refresh();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Delete failed";
+      setError(message);
+      toast.error(message);
     } finally {
       setPending(false);
     }
@@ -87,8 +123,51 @@ export function UserAdminActions({
         >
           {isBanned ? "Unban" : "Ban"}
         </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={pending}
+          onClick={() => setDeleteOpen(true)}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+          Delete
+        </Button>
       </div>
       {error ? <p className="text-xs text-red-500">{error}</p> : null}
+
+      <Dialog
+        open={deleteOpen}
+        onOpenChange={(next) => !pending && setDeleteOpen(next)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete user?</DialogTitle>
+            <DialogDescription>
+              Permanently delete {email}? This removes their profile, knowledge,
+              chats, and auth account. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={pending}
+              onClick={() => setDeleteOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={pending}
+              onClick={() => void handleDelete()}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              {pending ? "Deleting…" : "Delete user"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

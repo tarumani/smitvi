@@ -3,9 +3,12 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getPublicEnv } from "@/config/env";
 
 export async function updateSession(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", request.nextUrl.pathname);
+
   let response = NextResponse.next({
     request: {
-      headers: request.headers,
+      headers: requestHeaders,
     },
   });
 
@@ -26,7 +29,7 @@ export async function updateSession(request: NextRequest) {
         }
         response = NextResponse.next({
           request: {
-            headers: request.headers,
+            headers: requestHeaders,
           },
         });
         for (const { name, value, options } of cookiesToSet) {

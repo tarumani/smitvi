@@ -1,8 +1,7 @@
-import { redirect } from "next/navigation";
-import { getCurrentSession } from "@/application/auth/get-current-session";
+import { headers } from "next/headers";
+import { redirectIfOnboardingIncomplete } from "@/application/auth/require-onboarded";
 import { getAdminSession } from "@/application/auth/require-admin";
 import { AppShell } from "@/components/dashboard/app-shell";
-import { ROUTES } from "@/config/constants";
 import { canAccessAdmin } from "@/domain/user/entities";
 
 export default async function AppLayout({
@@ -10,9 +9,12 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getCurrentSession();
+  const headerStore = await headers();
+  const pathname = headerStore.get("x-pathname");
+  const session = await redirectIfOnboardingIncomplete(pathname);
+
   if (!session) {
-    redirect(ROUTES.login);
+    return null;
   }
 
   const displayName =

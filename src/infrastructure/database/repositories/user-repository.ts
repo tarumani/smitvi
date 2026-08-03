@@ -4,6 +4,7 @@ import type {
   SyncUserInput,
   UserRepository,
 } from "@/domain/user/ports";
+import { ForbiddenError } from "@/domain/shared/errors";
 import { prisma } from "@/infrastructure/database/prisma";
 import { toUserEntity } from "@/infrastructure/database/mappers";
 
@@ -24,6 +25,11 @@ export class PrismaUserRepository implements UserRepository {
 
   async syncFromAuth(input: SyncUserInput): Promise<UserEntity> {
     const email = input.email.toLowerCase();
+    const existing = await prisma.user.findUnique({ where: { id: input.id } });
+    if (existing?.deletedAt) {
+      throw new ForbiddenError("This account has been deleted");
+    }
+
     const user = await prisma.user.upsert({
       where: { id: input.id },
       create: {
@@ -36,8 +42,6 @@ export class PrismaUserRepository implements UserRepository {
         email,
         emailVerified: input.emailVerified,
         lastLoginAt: new Date(),
-        deletedAt: null,
-        isActive: true,
       },
     });
     return toUserEntity(user);
@@ -146,5 +150,15 @@ export class PrismaUserRepository implements UserRepository {
       knowledgeCount: row._count.knowledgeSources,
       conversationCount: row._count.conversations,
     }));
+  }
+
+  async deleteById(id: string): Promise<boolean> {
+    const existing = await prisma.user.findFirst({
+      where: { id, deletedAt: null },
+      select: { id: true },
+    });
+    if (!existing) return false;
+    await prisma.user.delete({ where: { id } });
+    return true;
   }
 }

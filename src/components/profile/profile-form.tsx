@@ -14,7 +14,17 @@ type ProfileFormProps = {
   mode: "create" | "edit";
   initialProfile?: ProfileEntity | null;
   defaultDisplayName?: string;
+  defaultUsername?: string;
 };
+
+function suggestUsername(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "")
+    .replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, "")
+    .slice(0, 30);
+}
 
 type FormState = {
   username: string;
@@ -31,11 +41,14 @@ export function ProfileForm({
   mode,
   initialProfile,
   defaultDisplayName = "",
+  defaultUsername = "",
 }: ProfileFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState<FormState>({
-    username: initialProfile?.username ?? "",
+    username:
+      initialProfile?.username ??
+      suggestUsername(defaultUsername || defaultDisplayName),
     displayName: initialProfile?.displayName ?? defaultDisplayName,
     headline: initialProfile?.headline ?? "",
     bio: initialProfile?.bio ?? "",
@@ -53,8 +66,13 @@ export function ProfileForm({
     event.preventDefault();
     startTransition(async () => {
       try {
+        const username = form.username.trim().toLowerCase();
+        if (!username) {
+          throw new Error("Username is required");
+        }
+
         const payload = {
-          username: form.username,
+          username,
           displayName: form.displayName,
           headline: form.headline || null,
           bio: form.bio || null,
@@ -111,11 +129,18 @@ export function ProfileForm({
               id="username"
               className="pl-8"
               required
+              minLength={3}
+              maxLength={30}
               value={form.username}
-              onChange={(event) => updateField("username", event.target.value)}
+              onChange={(event) =>
+                updateField("username", suggestUsername(event.target.value))
+              }
               placeholder="yourname"
             />
           </div>
+          <p className="text-xs text-[var(--muted)]">
+            Required. Your public page will be smitvi.com/@username
+          </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="displayName">Display name</Label>

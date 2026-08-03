@@ -1,4 +1,4 @@
-import { UnauthorizedError } from "@/domain/shared/errors";
+import { DomainError, UnauthorizedError } from "@/domain/shared/errors";
 import type { UserEntity } from "@/domain/user/entities";
 import type { ProfileSummary } from "@/domain/profile/entities";
 import { container } from "@/application/container";
@@ -28,20 +28,28 @@ export async function getCurrentSession(): Promise<CurrentSession | null> {
     return null;
   }
 
-  let user = await container.users.findById(authUser.id);
+  let user: UserEntity | null = await container.users.findById(authUser.id);
 
-  if (!user) {
-    user = await container.syncAuthenticatedUser.execute({
-      id: authUser.id,
-      email: authUser.email,
-      emailVerified: true,
-    });
-  } else if (!user.emailVerified) {
-    user = await container.users.syncFromAuth({
-      id: authUser.id,
-      email: authUser.email,
-      emailVerified: true,
-    });
+  try {
+    if (!user) {
+      user = await container.syncAuthenticatedUser.execute({
+        id: authUser.id,
+        email: authUser.email,
+        emailVerified: true,
+      });
+    } else if (!user.emailVerified) {
+      user = await container.users.syncFromAuth({
+        id: authUser.id,
+        email: authUser.email,
+        emailVerified: true,
+      });
+    }
+  } catch (error) {
+    if (error instanceof DomainError && error.code === "FORBIDDEN") {
+      await supabase.auth.signOut();
+      return null;
+    }
+    throw error;
   }
 
   if (!user.isActive || user.isBanned) {

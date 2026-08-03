@@ -47,6 +47,7 @@ export default async function AdminUsersPage({
 
       <div className="grid gap-3">
         {users.map((user) => {
+          const hasUsername = Boolean(user.profile?.username);
           const name =
             user.profile?.displayName ??
             (user.profile?.username
@@ -73,18 +74,23 @@ export default async function AdminUsersPage({
                       {user.knowledgeCount} uploads · {user.conversationCount}{" "}
                       chats
                     </p>
-                    {user.profile?.username ? (
+                    {hasUsername ? (
                       <Link
-                        href={ROUTES.publicProfile(user.profile.username)}
+                        href={ROUTES.publicProfile(user.profile!.username)}
                         className="mt-1 inline-block text-xs text-[var(--accent)] hover:underline"
                       >
-                        @{user.profile.username}
+                        @{user.profile!.username}
                       </Link>
-                    ) : null}
+                    ) : (
+                      <p className="mt-1 text-xs font-medium text-amber-600">
+                        Username missing — onboarding incomplete
+                      </p>
+                    )}
                   </div>
                 </div>
                 <UserAdminActions
                   userId={user.id}
+                  email={user.email}
                   role={user.role}
                   isBanned={user.isBanned}
                   canMutate={canMutate && user.id !== session.user.id}

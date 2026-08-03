@@ -27,11 +27,11 @@ export default async function OnboardingPage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
         <h1 className="font-display text-3xl font-bold tracking-tight">
-          Set up your public identity
+          Choose your username
         </h1>
         <p className="mt-2 text-[var(--muted-foreground)]">
-          Claim your @username. This becomes smitvi.com/@username — the home of
-          your Knowledge Twin.
+          A username is required to use Smitvi. This becomes
+          smitvi.com/@username — the home of your Knowledge Twin.
         </p>
       </div>
       <GlassCard className="p-6 sm:p-8">
@@ -39,6 +39,7 @@ export default async function OnboardingPage() {
           mode={profile ? "edit" : "create"}
           initialProfile={profile}
           defaultDisplayName={defaultDisplayName}
+          defaultUsername={defaultDisplayName}
         />
       </GlassCard>
     </div>

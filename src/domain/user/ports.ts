@@ -32,4 +32,6 @@ export interface UserRepository {
   }): Promise<AdminUserListItem[]>;
   countAll(): Promise<number>;
   countBanned(): Promise<number>;
+  /** Permanently remove app user row (auth deletion handled separately). */
+  deleteById(id: string): Promise<boolean>;
 }
