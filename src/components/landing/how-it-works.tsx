@@ -21,7 +21,18 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section id="how" className="relative overflow-hidden">
+    <section
+      id="how"
+      className="relative overflow-hidden bg-[#edf3f7] dark:bg-[#121820]"
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-[linear-gradient(90deg,rgba(15,118,110,0.1),transparent)]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.35] [background-image:radial-gradient(rgba(15,23,42,0.06)_1px,transparent_1px)] [background-size:22px_22px]"
+      />
       <div className="relative mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 lg:py-32">
         <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div className="max-w-md lg:sticky lg:top-24">

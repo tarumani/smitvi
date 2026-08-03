@@ -65,7 +65,14 @@ export function HowItHelps({
   return (
     <>
       {/* Band 1 — How it helps / process console */}
-      <section id="how-it-helps" className="relative overflow-hidden">
+      <section
+        id="how-it-helps"
+        className="relative overflow-hidden border-t border-[var(--border)] bg-[#eef8f5]"
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.65),transparent)]"
+        />
         <div className="relative mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 lg:py-24">
           {showIntro ? (
             <div className="max-w-2xl">
@@ -120,8 +127,12 @@ export function HowItHelps({
         </div>
       </section>
 
-      {/* Band 2 — Who it’s for (tinted surface, metric tiles) */}
-      <section className="relative overflow-hidden border-y border-[var(--border)] bg-[var(--surface)]/55">
+      {/* Band 2 — Who it’s for */}
+      <section className="relative overflow-hidden border-y border-[var(--border)] bg-[#e8eef5]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-sky-300/20 blur-3xl"
+        />
         <div className="relative mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="max-w-xl">

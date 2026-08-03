@@ -5,9 +5,16 @@ import { ROUTES } from "@/config/constants";
 
 export function ExpertsSection() {
   return (
-    <section id="experts" className="relative overflow-hidden">
+    <section
+      id="experts"
+      className="relative overflow-hidden bg-[#0b1220] text-white"
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(15,118,110,0.28),transparent_45%)]"
+      />
       <div className="relative mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:py-24">
-        <div className="relative overflow-hidden rounded-[1.75rem] bg-[var(--accent)] px-6 py-14 text-[var(--accent-foreground)] sm:px-12 lg:px-16 lg:py-16">
+        <div className="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-br from-[var(--accent)] to-[#0b5f59] px-6 py-14 text-[var(--accent-foreground)] sm:px-12 lg:px-16 lg:py-16">
           <div
             aria-hidden
             className="pointer-events-none absolute -right-10 top-0 h-56 w-56 rounded-full bg-white/10"

@@ -23,7 +23,14 @@ const pillars = [
 
 export function ProductSection() {
   return (
-    <section id="product" className="relative overflow-hidden border-y border-[var(--border)] bg-[var(--surface)]/40">
+    <section
+      id="product"
+      className="relative overflow-hidden border-y border-[var(--border)] bg-white dark:bg-[#0a1018]"
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(14,165,233,0.1),transparent_50%)]"
+      />
       <div className="relative mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 lg:py-32">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold tracking-[0.18em] text-[var(--accent)] uppercase">
