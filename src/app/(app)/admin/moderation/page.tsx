@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { container } from "@/application/container";
+import { AdminKnowledgeDeleteButton } from "@/components/admin/admin-knowledge-delete-button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ROUTES } from "@/config/constants";
 
@@ -33,24 +34,32 @@ export default async function AdminModerationPage() {
           <div className="grid gap-3">
             {failedUploads.map((source) => (
               <GlassCard key={source.id} className="p-4">
-                <p className="font-semibold">{source.title}</p>
-                <p className="mt-1 text-sm text-red-500">
-                  {source.errorMessage ?? "Processing failed"}
-                </p>
-                <p className="mt-2 text-xs text-[var(--muted)]">
-                  {source.owner.email}
-                  {source.owner.username ? (
-                    <>
-                      {" · "}
-                      <Link
-                        href={ROUTES.publicProfile(source.owner.username)}
-                        className="text-[var(--accent)] hover:underline"
-                      >
-                        @{source.owner.username}
-                      </Link>
-                    </>
-                  ) : null}
-                </p>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="font-semibold">{source.title}</p>
+                    <p className="mt-1 text-sm text-red-500">
+                      {source.errorMessage ?? "Processing failed"}
+                    </p>
+                    <p className="mt-2 text-xs text-[var(--muted)]">
+                      {source.owner.email}
+                      {source.owner.username ? (
+                        <>
+                          {" · "}
+                          <Link
+                            href={ROUTES.publicProfile(source.owner.username)}
+                            className="text-[var(--accent)] hover:underline"
+                          >
+                            @{source.owner.username}
+                          </Link>
+                        </>
+                      ) : null}
+                    </p>
+                  </div>
+                  <AdminKnowledgeDeleteButton
+                    sourceId={source.id}
+                    title={source.title}
+                  />
+                </div>
               </GlassCard>
             ))}
           </div>

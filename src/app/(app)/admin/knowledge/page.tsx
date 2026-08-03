@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { container } from "@/application/container";
+import { AdminKnowledgeDeleteButton } from "@/components/admin/admin-knowledge-delete-button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ROUTES } from "@/config/constants";
 
@@ -15,7 +16,7 @@ export default async function AdminKnowledgePage() {
     <div className="grid gap-3">
       {sources.map((source) => (
         <GlassCard key={source.id} className="p-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <p className="font-semibold">{source.title}</p>
               <p className="mt-1 text-sm text-[var(--muted-foreground)]">
@@ -41,9 +42,15 @@ export default async function AdminKnowledgePage() {
                 <p className="mt-2 text-sm text-red-500">{source.errorMessage}</p>
               ) : null}
             </div>
-            <p className="shrink-0 text-xs text-[var(--muted)]">
-              {source.createdAt.toLocaleString()}
-            </p>
+            <div className="flex shrink-0 flex-col items-end gap-2">
+              <p className="text-xs text-[var(--muted)]">
+                {source.createdAt.toLocaleString()}
+              </p>
+              <AdminKnowledgeDeleteButton
+                sourceId={source.id}
+                title={source.title}
+              />
+            </div>
           </div>
         </GlassCard>
       ))}

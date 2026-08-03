@@ -352,4 +352,26 @@ export class PrismaKnowledgeRepository {
     await prisma.knowledgeSource.delete({ where: { id } });
     return true;
   }
+
+  async findByIdForAdmin(id: string) {
+    return prisma.knowledgeSource.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        storagePath: true,
+        title: true,
+        userId: true,
+      },
+    });
+  }
+
+  async deleteById(id: string): Promise<boolean> {
+    const existing = await prisma.knowledgeSource.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!existing) return false;
+    await prisma.knowledgeSource.delete({ where: { id } });
+    return true;
+  }
 }
