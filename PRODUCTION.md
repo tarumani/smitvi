@@ -86,9 +86,11 @@ Leave GoDaddy **email MX** records alone if you use GoDaddy email.
      (use your project’s Auth callback URL from Supabase → Authentication → Providers → Google)
    - Paste Client ID + Client Secret into Supabase Google provider and turn **Enable** on
    - Without this, Google returns: `Unsupported provider: provider is not enabled`
-5. Keep **Confirm email** enabled under Auth → Providers → Email (required to reduce spam signups).
-   - After signup, users must open the confirmation email before password login works.
-   - Unverified login often shows “Invalid login credentials”.
+5. Keep **Confirm email** enabled under Auth → Providers → Email (**required**).
+   - Path: Supabase → Authentication → Providers → Email → **Confirm email** = ON.
+   - After signup, users must open the confirmation email before they can use the app.
+   - The Smitvi app also blocks unverified sessions server-side and offers “Resend verification email” on login.
+   - Unverified login often shows “Invalid login credentials” from Supabase until the link is opened.
 6. Storage → create a **private** bucket named exactly `knowledge`
    (required for PDF/knowledge uploads; without it uploads fail with “Bucket not found”).
    The app will also try to auto-create this bucket on first upload if the service role key allows it.

@@ -29,11 +29,21 @@ export async function GET(request: Request) {
     );
   }
 
+  if (!data.user.email_confirmed_at) {
+    await supabase.auth.signOut();
+    return NextResponse.redirect(
+      new URL(
+        `${ROUTES.login}?next=${encodeURIComponent(next)}&verify=1`,
+        url.origin,
+      ),
+    );
+  }
+
   await container.syncAuthenticatedUser.execute(
     {
       id: data.user.id,
       email: data.user.email,
-      emailVerified: Boolean(data.user.email_confirmed_at),
+      emailVerified: true,
     },
     {
       ipAddress: getClientIp(request),

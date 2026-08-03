@@ -53,7 +53,9 @@ export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = getSafeNextPath(searchParams.get("next"));
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(
+    () => searchParams.get("email")?.trim() ?? "",
+  );
   const [password, setPassword] = useState("");
   const [isPending, startTransition] = useTransition();
   const [oauthLoading, setOauthLoading] = useState(false);
@@ -62,7 +64,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const subtitle =
     mode === "login"
       ? "Sign in to manage your Knowledge Twin."
-      : "Start indexing your intelligence on Smitvi.";
+      : "Create an account — we’ll email a verification link before you can sign in.";
 
   useEffect(() => {
     if (searchParams.get("verify") === "1") {
@@ -122,18 +124,52 @@ export function AuthForm({ mode }: AuthFormProps) {
           return;
         }
 
+        // Supabase may return a session when confirm-email is off — never keep it.
         if (data.session) {
           await supabase.auth.signOut();
         }
 
-        toast.success(
-          "Confirm your email to finish signup. Check your inbox, then sign in.",
-        );
+        if (!data.user) {
+          throw new Error(
+            "Could not create your account. Try a different email or sign in if you already registered.",
+          );
+        }
+
+        toast.success("Verification email sent", {
+          description:
+            "Open the link in your inbox to verify your email, then sign in. Check spam if you don’t see it.",
+        });
         router.replace(
-          `${ROUTES.login}?next=${encodeURIComponent(nextPath)}&verify=1`,
+          `${ROUTES.login}?next=${encodeURIComponent(nextPath)}&verify=1&email=${encodeURIComponent(email.trim())}`,
         );
       } catch (error) {
         toast.error(errorMessage(error, "Authentication failed"));
+      }
+    });
+  }
+
+  async function handleResendVerification() {
+    const target = email.trim();
+    if (!target) {
+      toast.error("Enter the email you used to sign up");
+      return;
+    }
+    startTransition(async () => {
+      try {
+        const supabase = createSupabaseBrowserClient();
+        const { error } = await supabase.auth.resend({
+          type: "signup",
+          email: target,
+          options: {
+            emailRedirectTo: `${window.location.origin}${ROUTES.authCallback}?next=${encodeURIComponent(nextPath)}`,
+          },
+        });
+        if (error) throw error;
+        toast.success("Verification email resent", {
+          description: "Check your inbox (and spam), then open the link.",
+        });
+      } catch (error) {
+        toast.error(errorMessage(error, "Could not resend verification email"));
       }
     });
   }
@@ -224,6 +260,25 @@ export function AuthForm({ mode }: AuthFormProps) {
               : "Create account"}
         </Button>
       </form>
+
+      {mode === "signup" ? (
+        <p className="mt-3 text-center text-xs text-[var(--muted)]">
+          Email verification is required. You’ll get a confirmation link after
+          signup.
+        </p>
+      ) : null}
+
+      {mode === "login" && searchParams.get("verify") === "1" ? (
+        <Button
+          type="button"
+          variant="secondary"
+          className="mt-3 h-10 w-full"
+          disabled={isPending}
+          onClick={() => void handleResendVerification()}
+        >
+          Resend verification email
+        </Button>
+      ) : null}
 
       <p className="mt-4 text-center text-sm text-[var(--muted-foreground)]">
         {mode === "login" ? (
