@@ -1,3 +1,4 @@
+import { slugifySkill } from "@/domain/profile/value-objects";
 import { prisma } from "@/infrastructure/database/prisma";
 
 export type SearchResultGroup = {
@@ -22,6 +23,22 @@ export type SearchResultGroup = {
   questions: Array<{ question: string; sourceTitle: string; ownerUsername: string }>;
 };
 
+/** Variants so "visual design" matches "visual-designing" / "Visual Designing". */
+function searchVariants(query: string): string[] {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+
+  const slug = slugifySkill(trimmed);
+  const spaced = slug.replace(/-/g, " ");
+  const compact = trimmed.toLowerCase().replace(/[\s_-]+/g, "");
+
+  return Array.from(
+    new Set(
+      [trimmed, slug, spaced, compact].filter((value) => value.length >= 2),
+    ),
+  );
+}
+
 export class PrismaSearchRepository {
   async search(query: string, limit = 8): Promise<SearchResultGroup> {
     const q = query.trim();
@@ -29,7 +46,12 @@ export class PrismaSearchRepository {
       return emptyResults();
     }
 
+    const variants = searchVariants(q);
     const like = `%${q}%`;
+    const skillNameOr = variants.flatMap((variant) => [
+      { name: { contains: variant, mode: "insensitive" as const } },
+      { slug: { contains: variant, mode: "insensitive" as const } },
+    ]);
 
     const [people, skills, knowledgeRows, topicRows] = await Promise.all([
       prisma.profile.findMany({
@@ -44,7 +66,9 @@ export class PrismaSearchRepository {
             {
               skills: {
                 some: {
-                  skill: { name: { contains: q, mode: "insensitive" } },
+                  skill: {
+                    OR: skillNameOr,
+                  },
                 },
               },
             },
@@ -63,10 +87,7 @@ export class PrismaSearchRepository {
       }),
       prisma.skill.findMany({
         where: {
-          OR: [
-            { name: { contains: q, mode: "insensitive" } },
-            { slug: { contains: q, mode: "insensitive" } },
-          ],
+          OR: skillNameOr,
         },
         take: limit,
         include: {
