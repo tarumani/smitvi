@@ -39,8 +39,8 @@ export default async function TwinInboxPage() {
           Twin Inbox
         </h1>
         <p className="mt-2 text-[var(--muted-foreground)]">
-          People who have chatted with your Twin — open a thread to review the
-          conversation.
+          Visitors who chatted with your Twin — each thread is a chance to
+          convert interest into paid consults or marketplace sales.
         </p>
       </div>
 

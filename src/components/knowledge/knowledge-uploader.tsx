@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ACCEPTED_UPLOAD_EXTENSIONS } from "@/domain/knowledge/mime";
+import { TRAIN_TWIN_LABEL } from "@/config/constants";
 
 type KnowledgeUploaderProps = {
   organizationId?: string | null;
@@ -52,7 +53,7 @@ export function KnowledgeUploader({
               : "Upload failed";
           throw new Error(message);
         }
-        toast.success("Knowledge processed and ready");
+        toast.success("Your AI Twin learned this — it’s ready to earn for you");
         setText("");
         setTitle("");
         router.refresh();
@@ -66,7 +67,7 @@ export function KnowledgeUploader({
   function submitText() {
     const content = text.trim();
     if (!content) {
-      toast.error("Paste or type some knowledge first");
+      toast.error("Add expertise for your Twin to learn first");
       return;
     }
 
@@ -89,9 +90,10 @@ export function KnowledgeUploader({
       {/* 70% — paste / type knowledge */}
       <div className="flex min-h-[280px] flex-col rounded-[1.75rem] border border-[var(--border)] bg-[var(--surface)]/70 p-5 lg:col-span-7">
         <div className="mb-3">
-          <h3 className="text-lg font-semibold">Paste or type knowledge</h3>
+          <h3 className="text-lg font-semibold">Add expertise (text)</h3>
           <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-            Notes, FAQs, project write-ups, or any text your Twin should know.
+            Notes, FAQs, or write-ups — what you want your Twin to represent when
+            people ask (and before they pay you).
           </p>
         </div>
         <Input
@@ -104,20 +106,20 @@ export function KnowledgeUploader({
         <Textarea
           value={text}
           onChange={(event) => setText(event.target.value)}
-          placeholder="Paste or write knowledge here…"
+          placeholder="Paste or write what you know…"
           disabled={isPending}
           className="min-h-[160px] flex-1 resize-y"
         />
         <div className="mt-4 flex items-center justify-between gap-3">
           <p className="text-xs text-[var(--muted)]">
-            Saved as a text source and processed like a document.
+            Trains your Twin like a document upload.
           </p>
           <Button
             type="button"
             disabled={isPending || !text.trim()}
             onClick={submitText}
           >
-            {isPending ? "Processing…" : "Add text"}
+            {isPending ? "Training…" : "Train Twin"}
           </Button>
         </div>
       </div>
@@ -142,9 +144,10 @@ export function KnowledgeUploader({
         }`}
       >
         <Upload className="h-8 w-8 text-[var(--accent)]" />
-        <h3 className="mt-4 text-base font-semibold">Upload a document</h3>
+        <h3 className="mt-4 text-base font-semibold">Upload a file</h3>
         <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-          PDF, Word, PowerPoint, TXT, or Markdown — max 15MB
+          PDF, Word, PowerPoint, TXT, or Markdown — max 15MB. Feeds your{" "}
+          {TRAIN_TWIN_LABEL} flow.
         </p>
         <div className="mt-5">
           <label>
@@ -160,7 +163,7 @@ export function KnowledgeUploader({
               }}
             />
             <Button asChild disabled={isPending} variant="secondary">
-              <span>{isPending ? "Processing…" : "Choose file"}</span>
+              <span>{isPending ? "Training…" : "Choose file"}</span>
             </Button>
           </label>
         </div>

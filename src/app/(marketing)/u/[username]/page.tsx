@@ -127,10 +127,10 @@ export default async function PublicProfilePage({ params }: PageProps) {
             </GlassCard>
 
             <section className="space-y-3">
-              <h2 className="font-display text-xl font-semibold">Knowledge</h2>
+              <h2 className="font-display text-xl font-semibold">Expertise</h2>
               {publicKnowledge.length === 0 ? (
                 <GlassCard className="p-5 text-sm text-[var(--muted-foreground)]">
-                  No public knowledge sources yet.
+                  No public expertise published yet.
                 </GlassCard>
               ) : (
                 publicKnowledge.map((source) => (

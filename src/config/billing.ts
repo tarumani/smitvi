@@ -1,5 +1,5 @@
 import type { UserPlan } from "@/domain/user/entities";
-import { FREE_AI_CHATS_PER_DAY, MARKETPLACE_COMMISSION_RATE } from "@/config/constants";
+import { FREE_AI_CHATS_PER_DAY, MARKETPLACE_COMMISSION_RATE, TRAIN_TWIN_LABEL } from "@/config/constants";
 
 export type BillingProviderName = "STRIPE" | "RAZORPAY";
 
@@ -23,8 +23,8 @@ export const PLAN_CATALOG: Record<UserPlan, PlanDefinition> = {
     currency: "USD",
     features: [
       `${FREE_AI_CHATS_PER_DAY} Twin chats / day`,
-      "Knowledge upload & embeddings",
-      "Public profile",
+      TRAIN_TWIN_LABEL,
+      "Public profile & marketplace",
     ],
     unlimitedAi: false,
     businessWorkspace: false,

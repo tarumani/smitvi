@@ -6,7 +6,11 @@ import { getCurrentSession } from "@/application/auth/get-current-session";
 import { container } from "@/application/container";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
-import { ROUTES } from "@/config/constants";
+import {
+  APP_OUTCOME,
+  ROUTES,
+  TRAIN_TWIN_LABEL,
+} from "@/config/constants";
 import { formatInrFromMinorUnits } from "@/lib/format-money";
 
 export const metadata: Metadata = {
@@ -17,7 +21,10 @@ function resolveTwinStatus(
   sources: { status: string }[],
 ): { label: string; detail: string } {
   if (sources.some((source) => source.status === "READY")) {
-    return { label: "Ready", detail: "Your Twin can answer from uploaded knowledge." };
+    return {
+      label: "Ready",
+      detail: "Your Twin is live — keep training to grow visits and income.",
+    };
   }
   const processing = sources.some(
     (source) =>
@@ -26,17 +33,17 @@ function resolveTwinStatus(
       source.status !== "PENDING",
   );
   if (processing) {
-    return { label: "Training", detail: "We’re indexing your latest uploads." };
+    return { label: "Training", detail: "We’re turning your expertise into answers." };
   }
   if (sources.some((source) => source.status === "PENDING")) {
-    return { label: "Processing", detail: "Uploads are queued for indexing." };
+    return { label: "Processing", detail: "Your latest training is queued." };
   }
   if (sources.some((source) => source.status === "FAILED")) {
-    return { label: "Needs attention", detail: "Fix failed uploads to go live." };
+    return { label: "Needs attention", detail: "Fix failed training files to go live." };
   }
   return {
     label: "Not ready",
-    detail: "Upload knowledge to activate your AI Twin.",
+    detail: `${TRAIN_TWIN_LABEL} to start earning from what you know.`,
   };
 }
 
@@ -97,12 +104,13 @@ export default async function DashboardPage() {
           Welcome, {session.profile.displayName}
         </h1>
         <p className="mt-2 text-[var(--muted-foreground)]">
-          @{session.profile.username} ·{" "}
+          {APP_OUTCOME}{" "}
+          <span className="text-[var(--muted)]">·</span>{" "}
           <Link
             href={ROUTES.publicProfile(session.profile.username)}
             className="text-[var(--accent)] hover:underline"
           >
-            View public profile
+            @{session.profile.username}
           </Link>
         </p>
       </div>
@@ -138,17 +146,17 @@ export default async function DashboardPage() {
               <span className="mr-1.5" aria-hidden>
                 ⬆
               </span>
-              Upload More Knowledge
+              {TRAIN_TWIN_LABEL}
             </p>
             <p className="mt-2 text-sm leading-relaxed text-[var(--muted-foreground)]">
-              More grounded knowledge means better answers, more visitors, and
-              higher earning potential.
+              Every new source helps your Twin answer better, attract visitors,
+              and unlock marketplace and consultation income.
             </p>
           </div>
           <Button asChild className="mt-4 w-full sm:w-auto">
             <Link href={ROUTES.knowledge}>
               <Upload className="h-4 w-4" />
-              Upload More Knowledge
+              {TRAIN_TWIN_LABEL}
             </Link>
           </Button>
         </GlassCard>

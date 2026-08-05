@@ -21,7 +21,7 @@ import {
 import { AccountMenu } from "@/components/landing/account-menu";
 import { SmitviLogo } from "@/components/brand/smitvi-logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
-import { ROUTES } from "@/config/constants";
+import { ROUTES, TRAIN_TWIN_LABEL, TRAIN_TWIN_NAV_SHORT, APP_OUTCOME } from "@/config/constants";
 import { cn } from "@/lib/utils";
 
 type AppShellProps = {
@@ -35,7 +35,7 @@ type AppShellProps = {
 
 const baseNavItems = [
   { href: ROUTES.dashboard, label: "Dashboard", icon: LayoutDashboard },
-  { href: ROUTES.knowledge, label: "Knowledge", icon: BookOpen },
+  { href: ROUTES.knowledge, label: TRAIN_TWIN_LABEL, icon: BookOpen },
   { href: ROUTES.twinChat, label: "Twin Chat", icon: MessageSquare },
   { href: ROUTES.inbox, label: "Twin Inbox", icon: Inbox },
   { href: ROUTES.organizations, label: "Workspaces", icon: Building2 },
@@ -50,8 +50,7 @@ const baseNavItems = [
 
 const mobileNavItems = [
   { href: ROUTES.dashboard, label: "Home", icon: LayoutDashboard },
-  { href: ROUTES.knowledge, label: "Knowledge", icon: BookOpen },
-  { href: ROUTES.inbox, label: "Inbox", icon: Inbox },
+  { href: ROUTES.knowledge, label: TRAIN_TWIN_NAV_SHORT, icon: BookOpen },
   { href: ROUTES.organizations, label: "Orgs", icon: Building2 },
   { href: ROUTES.profileSettings, label: "You", icon: Settings },
 ] as const;
@@ -119,10 +118,11 @@ export function AppShell({
         <div className="shrink-0 border-t border-[var(--border)] p-4">
           <div className="rounded-2xl bg-[var(--accent-soft)]/60 px-3 py-3">
             <p className="text-[10px] font-semibold tracking-[0.14em] text-[var(--accent)] uppercase">
-              Knowledge Twin
+              {APP_OUTCOME}
             </p>
             <p className="mt-1.5 text-xs leading-relaxed text-[var(--muted-foreground)]">
-              Upload sources, chat, and manage your public Twin.
+              {TRAIN_TWIN_LABEL}, get discovered, and sell consults or packs on
+              the marketplace.
             </p>
           </div>
         </div>

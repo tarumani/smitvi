@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { AiNetworkCanvas } from "@/components/landing/ai-network-canvas";
 import { HomeSearch } from "@/components/landing/home-search";
 import { TwinChatDemo } from "@/components/landing/twin-chat-demo";
-import { APP_TAGLINE, ROUTES } from "@/config/constants";
+import { APP_OUTCOME, APP_TAGLINE, ROUTES, TRAIN_TWIN_LABEL } from "@/config/constants";
 
 export function Hero() {
   return (
@@ -17,21 +17,21 @@ export function Hero() {
         <div className="max-w-xl">
           <p className="animate-fade-up inline-flex items-center gap-2 border-b border-[var(--accent)]/30 pb-1 text-xs font-semibold tracking-[0.14em] text-[var(--accent)] uppercase">
             <Sparkles className="h-3.5 w-3.5" />
-            Knowledge Twin platform
+            {APP_OUTCOME}
           </p>
           <h1 className="animate-fade-up-delay-1 mt-4 font-display text-[clamp(1.75rem,3.4vw,2.75rem)] font-bold leading-[1.12] tracking-tight">
             {APP_TAGLINE}
           </h1>
           <p className="animate-fade-up-delay-2 mt-3 max-w-md text-sm leading-relaxed text-[var(--muted-foreground)] sm:text-base">
-            Turn your expertise into an AI twin that answers with citations,
-            opens public chat, and helps you monetize knowledge without
-            repeating yourself.
+            {TRAIN_TWIN_LABEL} from your docs and notes, open a public profile
+            people can chat with, and get paid through the marketplace and
+            consultations — without repeating yourself.
           </p>
 
           <div className="animate-fade-up-delay-2 mt-5">
             <Button asChild size="lg" className="h-11 px-7">
               <Link href={ROUTES.signup}>
-                Create your Knowledge Twin
+                Start earning from your knowledge
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -41,7 +41,7 @@ export function Hero() {
 
           <p className="animate-fade-up-delay-2 mt-4 flex items-center gap-2 text-xs text-[var(--muted)]">
             <ShieldCheck className="h-3.5 w-3.5 text-[var(--accent)]" />
-            Grounded answers · email-verified accounts · marketplace ready
+            Earn from expertise · verified accounts · marketplace payouts
           </p>
         </div>
 
@@ -61,11 +61,11 @@ export function Hero() {
                 className="max-h-[min(22rem,calc(100svh-10rem))] opacity-95"
               />
               <div className="mt-3 flex justify-center gap-5 text-[11px] tracking-wide text-[var(--muted)]">
-                <span>Sources</span>
+                <span>Train</span>
                 <span aria-hidden>·</span>
-                <span>Retrieval</span>
+                <span>Answer</span>
                 <span aria-hidden>·</span>
-                <span>Citations</span>
+                <span>Earn</span>
               </div>
             </div>
           </div>

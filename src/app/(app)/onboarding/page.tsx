@@ -4,7 +4,7 @@ import { getCurrentSession } from "@/application/auth/get-current-session";
 import { container } from "@/application/container";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ProfileForm } from "@/components/profile/profile-form";
-import { ROUTES } from "@/config/constants";
+import { APP_OUTCOME, ROUTES } from "@/config/constants";
 
 export const metadata: Metadata = {
   title: "Onboarding",
@@ -30,8 +30,8 @@ export default async function OnboardingPage() {
           Choose your username
         </h1>
         <p className="mt-2 text-[var(--muted-foreground)]">
-          A username is required to use Smitvi. This becomes
-          smitvi.com/@username — the home of your Knowledge Twin.
+          {APP_OUTCOME} Pick smitvi.com/@username — your public storefront for
+          chat, consults, and marketplace offers.
         </p>
       </div>
       <GlassCard className="p-6 sm:p-8">

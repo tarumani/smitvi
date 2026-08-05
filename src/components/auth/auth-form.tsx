@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ROUTES } from "@/config/constants";
+import { ROUTES, APP_OUTCOME } from "@/config/constants";
 import { createSupabaseBrowserClient } from "@/infrastructure/auth/supabase/client";
 import { getBrowserOrigin } from "@/infrastructure/http/request-origin";
 
@@ -123,11 +123,11 @@ export function AuthForm({ mode }: AuthFormProps) {
     () => searchParams.get("verify") === "1",
   );
 
-  const title = mode === "login" ? "Welcome back" : "Create your Twin";
+  const title = mode === "login" ? "Welcome back" : "Start earning";
   const subtitle =
     mode === "login"
-      ? "Sign in to manage your Knowledge Twin."
-      : "Create an account — we’ll email a verification link before you can sign in.";
+      ? `${APP_OUTCOME} Sign in to train your Twin and grow your income.`
+      : "Create an account — verify your email, then train your Twin and sell what you know.";
 
   useEffect(() => {
     if (searchParams.get("verify") === "1") {

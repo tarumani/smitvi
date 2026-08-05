@@ -1,5 +1,10 @@
 export const APP_NAME = "Smitvi" as const;
 export const APP_TAGLINE = "The Global Human Intelligence Network" as const;
+/** Primary user outcome — reinforce across product UI. */
+export const APP_OUTCOME = "Earn money from what you know." as const;
+export const TRAIN_TWIN_LABEL = "Train Your AI Twin" as const;
+/** Shorter label for compact nav (mobile). */
+export const TRAIN_TWIN_NAV_SHORT = "Train Twin" as const;
 /** Canonical production origin (also set NEXT_PUBLIC_APP_URL in deploy env). */
 export const PRODUCTION_APP_URL = "https://smitvi.com" as const;
 

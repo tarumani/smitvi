@@ -8,10 +8,14 @@ import { VisibilityToggle } from "@/components/knowledge/visibility-toggle";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { GlassCard } from "@/components/ui/glass-card";
-import { ROUTES } from "@/config/constants";
+import {
+  APP_OUTCOME,
+  ROUTES,
+  TRAIN_TWIN_LABEL,
+} from "@/config/constants";
 
 export const metadata: Metadata = {
-  title: "Knowledge",
+  title: TRAIN_TWIN_LABEL,
 };
 
 export default async function KnowledgePage() {
@@ -25,62 +29,76 @@ export default async function KnowledgePage() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">
-            Knowledge
+          <p className="text-sm font-medium text-[var(--accent)]">
+            {APP_OUTCOME}
+          </p>
+          <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">
+            {TRAIN_TWIN_LABEL}
           </h1>
-          <p className="mt-2 text-[var(--muted-foreground)]">
-            Paste text or upload documents to train your Twin. We extract,
-            chunk, embed, summarize, and tag automatically.
+          <p className="mt-2 max-w-2xl text-[var(--muted-foreground)]">
+            Add what you know — articles, decks, notes — so your AI Twin can
+            answer for you 24/7, bring visitors to your profile, and support
+            paid consults and marketplace offers.
           </p>
         </div>
-        <Button asChild variant="secondary">
-          <Link href={ROUTES.twinChat}>Open Twin Chat</Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="secondary">
+            <Link href={ROUTES.marketplaceSell}>Sell your expertise</Link>
+          </Button>
+          <Button asChild variant="secondary">
+            <Link href={ROUTES.twinChat}>Test your Twin</Link>
+          </Button>
+        </div>
       </div>
 
       <KnowledgeUploader />
 
       {sources.length === 0 ? (
         <EmptyState
-          title="No knowledge yet"
-          description="Paste notes or upload a PDF, Word doc, deck, or markdown file to create your first intelligence source."
+          title="Your Twin is waiting for expertise"
+          description="Paste or upload what you’re known for. The more you train, the more valuable your public profile and income potential become."
         />
       ) : (
-        <div className="grid gap-4">
-          {sources.map((source) => (
-            <GlassCard key={source.id} className="p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="font-semibold">{source.title}</p>
-                  <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-                    {source.type} · {source.status}
-                    {source.chunkCount ? ` · ${source.chunkCount} chunks` : ""}
-                  </p>
-                  {source.summary ? (
-                    <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)]">
-                      {source.summary}
+        <div className="space-y-3">
+          <h2 className="font-display text-lg font-semibold">
+            Training sources
+          </h2>
+          <div className="grid gap-4">
+            {sources.map((source) => (
+              <GlassCard key={source.id} className="p-5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="font-semibold">{source.title}</p>
+                    <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+                      {source.type} · {source.status}
+                      {source.chunkCount ? ` · ${source.chunkCount} chunks` : ""}
                     </p>
-                  ) : null}
-                  {source.tags.length ? (
-                    <p className="mt-3 text-xs text-[var(--muted)]">
-                      {source.tags.join(" · ")}
-                    </p>
-                  ) : null}
-                  {source.errorMessage ? (
-                    <p className="mt-3 text-sm text-red-500">
-                      {source.errorMessage}
-                    </p>
+                    {source.summary ? (
+                      <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)]">
+                        {source.summary}
+                      </p>
+                    ) : null}
+                    {source.tags.length ? (
+                      <p className="mt-3 text-xs text-[var(--muted)]">
+                        {source.tags.join(" · ")}
+                      </p>
+                    ) : null}
+                    {source.errorMessage ? (
+                      <p className="mt-3 text-sm text-red-500">
+                        {source.errorMessage}
+                      </p>
+                    ) : null}
+                  </div>
+                  {source.status === "READY" ? (
+                    <VisibilityToggle
+                      sourceId={source.id}
+                      isPublic={source.isPublic}
+                    />
                   ) : null}
                 </div>
-                {source.status === "READY" ? (
-                  <VisibilityToggle
-                    sourceId={source.id}
-                    isPublic={source.isPublic}
-                  />
-                ) : null}
-              </div>
-            </GlassCard>
-          ))}
+              </GlassCard>
+            ))}
+          </div>
         </div>
       )}
     </div>
