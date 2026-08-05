@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ROUTES } from "@/config/constants";
 import { cn } from "@/lib/utils";
+import { hubProfileHref, hubTwinChatHref } from "@/lib/hub-links";
 
 type NetworkHomeExploreProps = NetworkHomeViewModel;
 
@@ -176,7 +177,7 @@ function ExpertsPanel(props: NetworkHomeExploreProps) {
         <ul className="grid gap-3 sm:grid-cols-2">
           {props.trendingExperts.slice(0, 4).map((expert) => (
             <li key={expert.username}>
-              <Link href={ROUTES.publicProfile(expert.username)}>
+              <Link href={hubProfileHref(expert.username, props.hasLiveExperts)}>
                 <GlassCard className="flex gap-4 p-4 transition-colors hover:bg-[var(--surface-elevated)]">
                   <Avatar
                     src={expert.avatarUrl}
@@ -210,7 +211,7 @@ function ExpertsPanel(props: NetworkHomeExploreProps) {
           {props.topCreators.slice(0, 5).map((creator) => (
             <li key={creator.username}>
               <Link
-                href={ROUTES.publicProfile(creator.username)}
+                href={hubProfileHref(creator.username, props.hasLiveCreators)}
                 className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-[var(--surface-elevated)]"
               >
                 <Avatar
@@ -261,7 +262,7 @@ function KnowledgePanel(props: NetworkHomeExploreProps) {
                   </p>
                 ) : null}
                 <Link
-                  href={ROUTES.publicProfile(item.ownerUsername)}
+                  href={hubProfileHref(item.ownerUsername, props.hasLiveKnowledge)}
                   className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[var(--accent)] hover:underline"
                 >
                   Open hub
@@ -328,7 +329,7 @@ function EarnPanel(props: NetworkHomeExploreProps) {
                   Topic: {q.topic}
                 </p>
                 <Link
-                  href={ROUTES.publicTwinChat(q.ownerUsername)}
+                  href={hubTwinChatHref(q.ownerUsername, props.hasLiveQuestions)}
                   className="mt-2 inline-block text-xs font-semibold text-[var(--accent)] hover:underline"
                 >
                   Ask @{q.ownerUsername}&apos;s Twin
@@ -347,7 +348,7 @@ function EarnPanel(props: NetworkHomeExploreProps) {
           <ul className="space-y-2">
             {props.topEarners.slice(0, 5).map((earner, index) => (
               <li key={earner.username}>
-                <Link href={ROUTES.publicProfile(earner.username)}>
+                <Link href={hubProfileHref(earner.username, props.hasLiveEarners)}>
                   <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--glass)] px-4 py-3 transition-colors hover:bg-[var(--surface-elevated)]">
                     <div className="flex min-w-0 items-center gap-3">
                       <span className="text-sm font-bold tabular-nums text-[var(--muted)]">

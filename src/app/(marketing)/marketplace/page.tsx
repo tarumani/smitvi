@@ -13,6 +13,7 @@ import {
   MARKETPLACE_LISTING_TYPE_LABELS,
   ROUTES,
 } from "@/config/constants";
+import { hubProfileHref } from "@/lib/hub-links";
 
 export const metadata: Metadata = {
   title: "Marketplace",
@@ -69,7 +70,12 @@ export default async function MarketplacePage() {
                     />
                     <div>
                       <p className="font-semibold">
-                        {listing.seller.displayName}
+                        <Link
+                          href={hubProfileHref(listing.seller.username, false)}
+                          className="hover:text-[var(--accent)]"
+                        >
+                          {listing.seller.displayName}
+                        </Link>
                       </p>
                       <p className="text-sm text-[var(--muted)]">
                         @{listing.seller.username}
@@ -86,7 +92,12 @@ export default async function MarketplacePage() {
                   ] ?? listing.type.replaceAll("_", " ")}
                 </p>
                 <h2 className="mt-2 font-display text-xl font-semibold">
-                  {listing.title}
+                  <Link
+                    href={ROUTES.exampleListing(listing.id)}
+                    className="hover:text-[var(--accent)]"
+                  >
+                    {listing.title}
+                  </Link>
                 </h2>
                 <p className="mt-2 flex-1 text-sm leading-relaxed text-[var(--muted-foreground)]">
                   {listing.description}
@@ -100,15 +111,15 @@ export default async function MarketplacePage() {
                     </span>
                   </p>
                 </div>
-                <div className="mt-4">
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                   {session ? (
-                    <Button asChild className="w-full" variant="secondary">
+                    <Button asChild className="w-full sm:flex-1" variant="secondary">
                       <Link href={ROUTES.marketplaceSell}>
                         Publish a listing to sell
                       </Link>
                     </Button>
                   ) : (
-                    <Button asChild className="w-full" variant="secondary">
+                    <Button asChild className="w-full sm:flex-1" variant="secondary">
                       <Link
                         href={`${ROUTES.login}?next=${encodeURIComponent(ROUTES.marketplace)}`}
                       >
@@ -116,6 +127,11 @@ export default async function MarketplacePage() {
                       </Link>
                     </Button>
                   )}
+                  <Button asChild className="w-full sm:flex-1" variant="ghost">
+                    <Link href={ROUTES.exampleListing(listing.id)}>
+                      View offer details
+                    </Link>
+                  </Button>
                 </div>
               </GlassCard>
             ))

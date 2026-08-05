@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getCurrentSession } from "@/application/auth/get-current-session";
 import { container } from "@/application/container";
 import { Avatar } from "@/components/ui/avatar";
@@ -11,6 +11,7 @@ import { FollowButton } from "@/components/profile/follow-button";
 import { ShareProfileButton } from "@/components/profile/share-profile-button";
 import { ReviewForm } from "@/components/profile/review-form";
 import { ROUTES } from "@/config/constants";
+import { getExampleHubByUsername } from "@/config/example-hubs";
 
 type PageProps = {
   params: Promise<{ username: string }>;
@@ -34,6 +35,8 @@ export default async function PublicProfilePage({ params }: PageProps) {
   const { username } = await params;
   const profile = await container.profiles.findByUsername(username);
   if (!profile || profile.visibility === "PRIVATE") {
+    const example = getExampleHubByUsername(username);
+    if (example) redirect(ROUTES.exampleHub(example.slug));
     notFound();
   }
 

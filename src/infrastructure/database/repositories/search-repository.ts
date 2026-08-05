@@ -39,6 +39,16 @@ function searchVariants(query: string): string[] {
   );
 }
 
+const qualifiedPublicHubWhere = {
+  visibility: "PUBLIC" as const,
+  isOnboarded: true,
+  user: {
+    knowledgeSources: {
+      some: { isPublic: true, status: "READY" as const },
+    },
+  },
+};
+
 export class PrismaSearchRepository {
   async search(query: string, limit = 8): Promise<SearchResultGroup> {
     const q = query.trim();
@@ -194,15 +204,7 @@ export class PrismaSearchRepository {
   async trendingExperts(limit = 8) {
     const poolSize = Math.max(limit * 5, 40);
     const rows = await prisma.profile.findMany({
-      where: {
-        visibility: "PUBLIC",
-        isOnboarded: true,
-        user: {
-          knowledgeSources: {
-            some: { isPublic: true, status: "READY" },
-          },
-        },
-      },
+      where: qualifiedPublicHubWhere,
       orderBy: [{ followersCount: "desc" }, { ratingAverage: "desc" }],
       take: poolSize,
       select: {
@@ -223,18 +225,28 @@ export class PrismaSearchRepository {
   }
 
   async newExperts(limit = 8) {
-    return prisma.profile.findMany({
-      where: { visibility: "PUBLIC", isOnboarded: true },
+    const poolSize = Math.max(limit * 5, 40);
+    const rows = await prisma.profile.findMany({
+      where: qualifiedPublicHubWhere,
       orderBy: { createdAt: "desc" },
-      take: limit,
+      take: poolSize,
       select: {
         username: true,
         displayName: true,
         headline: true,
+        bio: true,
         avatarUrl: true,
         createdAt: true,
       },
     });
+
+    return rows
+      .filter((profile) => profileHasPublicHubDescription(profile))
+      .slice(0, limit)
+      .map(({ bio: _bio, createdAt, ...expert }) => ({
+        ...expert,
+        createdAt,
+      }));
   }
 
   async trendingTopics(limit = 10) {

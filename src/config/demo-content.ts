@@ -129,14 +129,17 @@ export const DEMO_DISCOVER_GUIDES = [
   {
     title: "Find an expert Twin",
     body: "Search by skill or topic, then open public chat for grounded answers.",
+    href: "/discover",
   },
   {
     title: "Ask with citations",
     body: "Every Twin reply can show the sources it used — or say “I don’t know.”",
+    href: "/product/twin-chat",
   },
   {
     title: "Book a human when needed",
     body: "Use the Twin for FAQs, then hire the expert for decisions that need judgment.",
+    href: "/product/consultations",
   },
 ] as const;
 

@@ -21,6 +21,7 @@ import {
   DEMO_TRENDING_TOPICS,
 } from "@/config/demo-content";
 import { ROUTES } from "@/config/constants";
+import { hubProfileHref } from "@/lib/hub-links";
 
 export const metadata: Metadata = {
   title: "Discover",
@@ -85,7 +86,7 @@ export default async function DiscoverPage() {
         }
       />
 
-      {usingDemoExperts || usingDemoTopics ? (
+      {usingDemoExperts || usingDemoNew || usingDemoTopics ? (
         <p className="-mt-10 rounded-xl border border-[var(--border)] bg-[var(--accent-soft)]/50 px-4 py-3 text-sm text-[var(--muted-foreground)]">
           Showing example network highlights until live public Twins are
           published.{" "}
@@ -120,7 +121,9 @@ export default async function DiscoverPage() {
                 {String(index + 1).padStart(2, "0")}
               </p>
               <h3 className="mt-2 font-display text-lg font-semibold tracking-tight">
-                {guide.title}
+                <Link href={guide.href} className="hover:text-[var(--accent)]">
+                  {guide.title}
+                </Link>
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-[var(--muted-foreground)]">
                 {guide.body}
@@ -197,9 +200,7 @@ export default async function DiscoverPage() {
 
         <ol className="mt-8 divide-y divide-[var(--border)] border-y border-[var(--border)]">
           {trendingExperts.map((expert, index) => {
-            const href = usingDemoExperts
-              ? ROUTES.signup
-              : ROUTES.publicProfile(expert.username);
+            const href = hubProfileHref(expert.username, !usingDemoExperts);
             return (
               <li key={expert.username}>
                 <Link
@@ -231,7 +232,7 @@ export default async function DiscoverPage() {
                     </p>
                   </div>
                   <span className="hidden shrink-0 items-center gap-1 text-sm font-medium text-[var(--accent)] sm:inline-flex">
-                    {usingDemoExperts ? "Join to publish" : "View Twin"}
+                    {usingDemoExperts ? "View example" : "View Twin"}
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                   </span>
                 </Link>
@@ -326,9 +327,7 @@ export default async function DiscoverPage() {
 
           <ol className="relative space-y-0 border-l border-[var(--accent)]/30 pl-8">
             {newExperts.map((expert) => {
-              const href = usingDemoNew
-                ? ROUTES.signup
-                : ROUTES.publicProfile(expert.username);
+              const href = hubProfileHref(expert.username, !usingDemoNew);
               return (
                 <li key={expert.username} className="relative pb-10 last:pb-0">
                   <span

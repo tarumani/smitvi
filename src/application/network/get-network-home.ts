@@ -54,6 +54,7 @@ export type NetworkEarnerCard = {
 
 export type NetworkHomeViewModel = {
   hasLiveExperts: boolean;
+  hasLiveCreators: boolean;
   hasLiveTopics: boolean;
   hasLiveKnowledge: boolean;
   hasLiveQuestions: boolean;
@@ -94,6 +95,7 @@ export class GetNetworkHome {
     ]);
 
     const hasLiveExperts = liveTrending.length > 0;
+    const hasLiveCreators = liveCreators.length > 0;
     const hasLiveTopics = liveTopics.length > 0;
     const hasLiveKnowledge = liveKnowledge.length > 0;
     const hasLiveQuestions = liveQuestions.length > 0;
@@ -164,6 +166,7 @@ export class GetNetworkHome {
 
     return {
       hasLiveExperts,
+      hasLiveCreators,
       hasLiveTopics,
       hasLiveKnowledge,
       hasLiveQuestions,

@@ -7,6 +7,7 @@ import { TwinChat } from "@/components/chat/twin-chat";
 import { Button } from "@/components/ui/button";
 import { ShareProfileButton } from "@/components/profile/share-profile-button";
 import { ROUTES } from "@/config/constants";
+import { getExampleHubByUsername } from "@/config/example-hubs";
 
 type PageProps = {
   params: Promise<{ username: string }>;
@@ -27,6 +28,10 @@ export default async function PublicTwinChatPage({ params }: PageProps) {
     profile.visibility === "PRIVATE" ||
     !profile.publicTwinEnabled
   ) {
+    const example = getExampleHubByUsername(username);
+    if (example) {
+      redirect(`${ROUTES.exampleHub(example.slug)}#twin-chat`);
+    }
     notFound();
   }
 
