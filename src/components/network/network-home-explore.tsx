@@ -189,7 +189,7 @@ function ExpertsPanel(props: NetworkHomeExploreProps) {
                       @{expert.username}
                     </p>
                     <p className="mt-2 line-clamp-2 text-sm leading-snug">
-                      {expert.headline ?? "Intelligence Hub on Smitvi"}
+                      {expert.headline ?? expert.displayName}
                     </p>
                     {expert.followersCount != null && expert.followersCount > 0 ? (
                       <p className="mt-2 text-xs text-[var(--muted)]">

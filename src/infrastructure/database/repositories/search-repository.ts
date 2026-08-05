@@ -192,19 +192,34 @@ export class PrismaSearchRepository {
   }
 
   async trendingExperts(limit = 8) {
-    return prisma.profile.findMany({
-      where: { visibility: "PUBLIC", isOnboarded: true },
+    const poolSize = Math.max(limit * 5, 40);
+    const rows = await prisma.profile.findMany({
+      where: {
+        visibility: "PUBLIC",
+        isOnboarded: true,
+        user: {
+          knowledgeSources: {
+            some: { isPublic: true, status: "READY" },
+          },
+        },
+      },
       orderBy: [{ followersCount: "desc" }, { ratingAverage: "desc" }],
-      take: limit,
+      take: poolSize,
       select: {
         username: true,
         displayName: true,
         headline: true,
+        bio: true,
         avatarUrl: true,
         followersCount: true,
         ratingAverage: true,
       },
     });
+
+    return rows
+      .filter((profile) => profileHasPublicHubDescription(profile))
+      .slice(0, limit)
+      .map(({ bio: _bio, ratingAverage: _rating, ...expert }) => expert);
   }
 
   async newExperts(limit = 8) {
@@ -333,6 +348,16 @@ export class PrismaSearchRepository {
 
     return questions.slice(0, limit);
   }
+}
+
+/** Public hub listings: profile copy plus at least one public READY source (see trendingExperts). */
+function profileHasPublicHubDescription(profile: {
+  bio: string | null;
+  headline: string | null;
+}): boolean {
+  const bio = profile.bio?.trim() ?? "";
+  const headline = profile.headline?.trim() ?? "";
+  return bio.length > 0 || headline.length > 0;
 }
 
 function emptyResults(): SearchResultGroup {
