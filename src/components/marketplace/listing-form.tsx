@@ -8,16 +8,44 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
+const LISTING_TYPES = [
+  {
+    value: "CONSULTATION",
+    label: "Consultation",
+    hint: "Timed 1:1 call — design review, mentoring, feedback",
+  },
+  {
+    value: "SERVICE_PACKAGE",
+    label: "Service package",
+    hint: "Fixed-scope work — branding, UI design, website redesign",
+  },
+  {
+    value: "KNOWLEDGE_PACK",
+    label: "Knowledge pack",
+    hint: "Downloadable assets — Figma kit, templates, guides",
+  },
+  {
+    value: "EXPERT_SUBSCRIPTION",
+    label: "Expert subscription",
+    hint: "Monthly ongoing access or retainership",
+  },
+] as const;
+
+type ListingTypeValue = (typeof LISTING_TYPES)[number]["value"];
+
 export function ListingForm() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState({
-    type: "CONSULTATION",
+    type: "CONSULTATION" as ListingTypeValue,
     title: "",
     description: "",
     price: "50",
     durationMinutes: "30",
   });
+
+  const selectedType =
+    LISTING_TYPES.find((item) => item.value === form.type) ?? LISTING_TYPES[0];
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -77,30 +105,42 @@ export function ListingForm() {
           className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm"
           value={form.type}
           onChange={(event) =>
-            setForm((current) => ({ ...current, type: event.target.value }))
+            setForm((current) => ({
+              ...current,
+              type: event.target.value as ListingTypeValue,
+            }))
           }
         >
-          <option value="CONSULTATION">Consultation</option>
-          <option value="KNOWLEDGE_PACK">Knowledge pack</option>
-          <option value="EXPERT_SUBSCRIPTION">Expert subscription</option>
+          {LISTING_TYPES.map((item) => (
+            <option key={item.value} value={item.value}>
+              {item.label}
+            </option>
+          ))}
         </select>
+        <p className="text-xs text-[var(--muted)]">{selectedType.hint}</p>
       </div>
       <div className="space-y-2">
         <Label htmlFor="title">Title</Label>
         <Input
           id="title"
           required
+          placeholder="e.g. UI/UX designing services, brand identity package"
           value={form.title}
           onChange={(event) =>
             setForm((current) => ({ ...current, title: event.target.value }))
           }
         />
+        <p className="text-xs text-[var(--muted)]">
+          This is where your specialty goes — design, development, coaching, and
+          so on.
+        </p>
       </div>
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
         <Textarea
           id="description"
           required
+          placeholder="What buyers get, what’s included, and who it’s for."
           value={form.description}
           onChange={(event) =>
             setForm((current) => ({

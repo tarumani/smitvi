@@ -276,4 +276,37 @@ export class PrismaConversationRepository {
       },
     });
   }
+
+  async getOwnerTwinEngagementStats(ownerUserId: string): Promise<{
+    visitorsToday: number;
+    questionsAnswered: number;
+  }> {
+    const startOfDay = new Date();
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    const [visitorRows, questionsAnswered] = await Promise.all([
+      prisma.conversation.findMany({
+        where: {
+          ownerUserId,
+          userId: { not: ownerUserId },
+          updatedAt: { gte: startOfDay },
+        },
+        select: { userId: true },
+      }),
+      prisma.conversationMessage.count({
+        where: {
+          role: "ASSISTANT",
+          conversation: {
+            ownerUserId,
+            userId: { not: ownerUserId },
+          },
+        },
+      }),
+    ]);
+
+    return {
+      visitorsToday: new Set(visitorRows.map((row) => row.userId)).size,
+      questionsAnswered,
+    };
+  }
 }

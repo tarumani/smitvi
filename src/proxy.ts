@@ -8,6 +8,7 @@ import {
   applySessionCookies,
   updateSession,
 } from "@/infrastructure/auth/supabase/proxy-client";
+import { getRequestOrigin } from "@/infrastructure/http/request-origin";
 
 function matchesPrefix(pathname: string, prefixes: readonly string[]) {
   return prefixes.some(
@@ -19,6 +20,10 @@ function matchesPrefix(pathname: string, prefixes: readonly string[]) {
 function safeNextPath(next: string | null): string | null {
   if (!next || !next.startsWith("/") || next.startsWith("//")) return null;
   return next;
+}
+
+function absoluteUrl(request: NextRequest, pathWithSearch: string) {
+  return new URL(pathWithSearch, getRequestOrigin(request));
 }
 
 export async function proxy(request: NextRequest) {
@@ -39,23 +44,17 @@ export async function proxy(request: NextRequest) {
   const isAuthRoute = matchesPrefix(pathname, AUTH_PATH_PREFIXES);
 
   if (isProtected && !user) {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = ROUTES.login;
-    loginUrl.searchParams.set("next", pathname + request.nextUrl.search);
+    const next = pathname + request.nextUrl.search;
+    const loginUrl = absoluteUrl(
+      request,
+      `${ROUTES.login}?next=${encodeURIComponent(next)}`,
+    );
     return applySessionCookies(NextResponse.redirect(loginUrl), sessionCookies);
   }
 
   if (isAuthRoute && user) {
     const next = safeNextPath(request.nextUrl.searchParams.get("next"));
-    const dest = request.nextUrl.clone();
-    if (next) {
-      const target = new URL(next, request.nextUrl.origin);
-      dest.pathname = target.pathname;
-      dest.search = target.search;
-    } else {
-      dest.pathname = ROUTES.dashboard;
-      dest.search = "";
-    }
+    const dest = absoluteUrl(request, next ?? ROUTES.dashboard);
     return applySessionCookies(NextResponse.redirect(dest), sessionCookies);
   }
 

@@ -24,8 +24,8 @@ export default async function MarketplaceSellPage() {
           Sell your expertise
         </h1>
         <p className="mt-2 text-[var(--muted-foreground)]">
-          Publish consultations and knowledge packs. Platform commission:{" "}
-          {Math.round(MARKETPLACE_COMMISSION_RATE * 100)}%.
+          Publish consultations, service packages, and knowledge packs. Platform
+          commission: {Math.round(MARKETPLACE_COMMISSION_RATE * 100)}%.
         </p>
       </div>
 

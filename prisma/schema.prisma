@@ -155,6 +155,7 @@ enum MarketplaceListingType {
   CONSULTATION
   KNOWLEDGE_PACK
   EXPERT_SUBSCRIPTION
+  SERVICE_PACKAGE
 }
 
 enum MarketplaceListingStatus {

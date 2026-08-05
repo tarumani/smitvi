@@ -75,10 +75,11 @@ Leave GoDaddy **email MX** records alone if you use GoDaddy email.
 1. Production project → copy URL, anon key, service role key.
 2. `DATABASE_URL`: use a Postgres URL Fly can reach (direct or pooler; prefer direct/`sslmode=require` if migrate fails on pooler).
 3. Auth → URL configuration (required for signup / Google):
-   - Site URL: `https://smitvi.com`
+   - Site URL: `https://smitvi.com` (never `0.0.0.0` — browsers reject that host)
    - Redirect URLs:
      - `https://smitvi.com/auth/callback`
      - `https://www.smitvi.com/auth/callback`
+     - `http://localhost:3000/auth/callback` (local dev only)
 4. Auth → Providers → enable **Google** (required for “Continue with Google”):
    - Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client (Web)
    - Authorized redirect URI must be exactly:
@@ -91,10 +92,18 @@ Leave GoDaddy **email MX** records alone if you use GoDaddy email.
    - After signup, users must open the confirmation email before they can use the app.
    - The Smitvi app also blocks unverified sessions server-side and offers “Resend verification email” on login.
    - Unverified login often shows “Invalid login credentials” from Supabase until the link is opened.
-6. Storage → create a **private** bucket named exactly `knowledge`
+6. **Custom SMTP is required for production signup emails** (Auth → SMTP):
+   - Enable Custom SMTP and **Save** (toggle alone is not enough until saved).
+   - Use port **587** (STARTTLS) unless your provider documents otherwise.
+   - Sender / admin email must be allowed by your SMTP provider (verified domain or mailbox).
+   - Set **Sender name** to `Smitvi`.
+   - After saving, raise Auth → Rate Limits if needed (custom SMTP starts low).
+   - If signup shows “Error sending confirmation mail”, open **Logs → Auth** and your SMTP provider’s logs — wrong password, blocked port, or unverified domain are the usual causes.
+   - GoDaddy/cPanel example: host `smtpout.secureserver.net` (or your cPanel “Outgoing Server”), port `587`, username = full email, password = that mailbox password.
+7. Storage → create a **private** bucket named exactly `knowledge`
    (required for PDF/knowledge uploads; without it uploads fail with “Bucket not found”).
    The app will also try to auto-create this bucket on first upload if the service role key allows it.
-7. GitHub Actions build needs these repo secrets (inlined at build time):
+8. GitHub Actions build needs these repo secrets (inlined at build time):
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `FLY_API_TOKEN`

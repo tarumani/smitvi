@@ -3,6 +3,15 @@ export const APP_TAGLINE = "The Global Human Intelligence Network" as const;
 /** Canonical production origin (also set NEXT_PUBLIC_APP_URL in deploy env). */
 export const PRODUCTION_APP_URL = "https://smitvi.com" as const;
 
+/** Human labels for marketplace listing product types. */
+export const MARKETPLACE_LISTING_TYPE_LABELS = {
+  CONSULTATION: "Consultation",
+  KNOWLEDGE_PACK: "Knowledge pack",
+  EXPERT_SUBSCRIPTION: "Expert subscription",
+  SERVICE_PACKAGE: "Service package",
+  COURSE: "Course",
+} as const;
+
 export const ROUTES = {
   home: "/",
   login: "/login",

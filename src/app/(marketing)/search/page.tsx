@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Search as SearchIcon } from "lucide-react";
+import { ArrowRight, Search as SearchIcon } from "lucide-react";
 import { container } from "@/application/container";
 import { PageHero } from "@/components/layout/page-hero";
 import { Avatar } from "@/components/ui/avatar";
@@ -108,22 +108,40 @@ export default async function SearchPage({ searchParams }: PageProps) {
         {results.people.length ? (
           <section className="space-y-4">
             <h2 className="font-display text-xl font-semibold">People</h2>
-            <div className="grid gap-3">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(16.5rem,1fr))] gap-3">
               {results.people.map((person) => (
                 <Link
                   key={person.username}
                   href={ROUTES.publicProfile(person.username)}
                   className="group"
                 >
-                  <GlassCard className="flex items-center gap-3 p-4 transition-colors group-hover:bg-[var(--surface-elevated)]">
-                    <Avatar src={person.avatarUrl} name={person.displayName} />
-                    <div>
-                      <p className="font-semibold">{person.displayName}</p>
-                      <p className="text-sm text-[var(--muted-foreground)]">
+                  <GlassCard className="flex h-full items-start gap-3 p-4 transition-colors group-hover:bg-[var(--surface-elevated)]">
+                    <Avatar
+                      src={person.avatarUrl}
+                      name={person.displayName}
+                      className="h-11 w-11"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-semibold group-hover:text-[var(--accent)]">
+                        {person.displayName}
+                      </p>
+                      <p className="mt-0.5 truncate text-sm text-[var(--muted-foreground)]">
                         @{person.username}
-                        {person.headline ? ` · ${person.headline}` : ""}
+                      </p>
+                      {person.headline ? (
+                        <p className="mt-1 line-clamp-2 text-sm text-[var(--muted-foreground)]">
+                          {person.headline}
+                        </p>
+                      ) : null}
+                      <p className="mt-2 text-xs text-[var(--muted)]">
+                        {person.ratingAverage > 0
+                          ? `${person.ratingAverage.toFixed(1)}★`
+                          : "New"}
+                        {" · "}
+                        {person.followersCount} followers
                       </p>
                     </div>
+                    <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-[var(--muted)] transition-transform group-hover:translate-x-0.5 group-hover:text-[var(--accent)]" />
                   </GlassCard>
                 </Link>
               ))}

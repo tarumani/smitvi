@@ -1,5 +1,6 @@
 import type { UserEntity, UserPlan, UserRole } from "@/domain/user/entities";
 import type {
+  AdminUserListFilter,
   AdminUserListItem,
   SyncUserInput,
   UserRepository,
@@ -7,6 +8,52 @@ import type {
 import { ForbiddenError } from "@/domain/shared/errors";
 import { prisma } from "@/infrastructure/database/prisma";
 import { toUserEntity } from "@/infrastructure/database/mappers";
+import { Prisma } from "@/generated/prisma/client";
+
+const INCOMPLETE_ONBOARDING_WHERE = {
+  OR: [
+    { profile: { is: null } },
+    { profile: { isOnboarded: false } },
+  ],
+} satisfies Prisma.UserWhereInput;
+
+function adminUserListWhere(options?: {
+  query?: string;
+  filter?: AdminUserListFilter;
+}): Prisma.UserWhereInput {
+  const q = options?.query?.trim();
+  const filter = options?.filter ?? "all";
+  const and: Prisma.UserWhereInput[] = [];
+
+  if (q) {
+    and.push({
+      OR: [
+        { email: { contains: q, mode: "insensitive" } },
+        {
+          profile: {
+            OR: [
+              { username: { contains: q, mode: "insensitive" } },
+              { displayName: { contains: q, mode: "insensitive" } },
+            ],
+          },
+        },
+      ],
+    });
+  }
+
+  if (filter === "incomplete") {
+    and.push(INCOMPLETE_ONBOARDING_WHERE);
+  } else if (filter === "dormant") {
+    and.push(INCOMPLETE_ONBOARDING_WHERE);
+    and.push({ knowledgeSources: { none: {} } });
+    and.push({ conversations: { none: {} } });
+  }
+
+  return {
+    deletedAt: null,
+    ...(and.length > 0 ? { AND: and } : {}),
+  };
+}
 
 export class PrismaUserRepository implements UserRepository {
   async findById(id: string): Promise<UserEntity | null> {
@@ -91,31 +138,23 @@ export class PrismaUserRepository implements UserRepository {
     });
   }
 
+  async countForAdminList(options?: {
+    query?: string;
+    filter?: AdminUserListFilter;
+  }): Promise<number> {
+    return prisma.user.count({
+      where: adminUserListWhere(options),
+    });
+  }
+
   async listForAdmin(options?: {
     query?: string;
+    filter?: AdminUserListFilter;
     take?: number;
     skip?: number;
   }): Promise<AdminUserListItem[]> {
-    const q = options?.query?.trim();
     const rows = await prisma.user.findMany({
-      where: {
-        deletedAt: null,
-        ...(q
-          ? {
-              OR: [
-                { email: { contains: q, mode: "insensitive" } },
-                {
-                  profile: {
-                    OR: [
-                      { username: { contains: q, mode: "insensitive" } },
-                      { displayName: { contains: q, mode: "insensitive" } },
-                    ],
-                  },
-                },
-              ],
-            }
-          : {}),
-      },
+      where: adminUserListWhere(options),
       orderBy: { createdAt: "desc" },
       take: options?.take ?? 50,
       skip: options?.skip ?? 0,
@@ -126,6 +165,7 @@ export class PrismaUserRepository implements UserRepository {
             displayName: true,
             avatarUrl: true,
             publicTwinEnabled: true,
+            isOnboarded: true,
           },
         },
         _count: {
@@ -145,6 +185,7 @@ export class PrismaUserRepository implements UserRepository {
             displayName: row.profile.displayName,
             avatarUrl: row.profile.avatarUrl,
             publicTwinEnabled: row.profile.publicTwinEnabled,
+            isOnboarded: row.profile.isOnboarded,
           }
         : null,
       knowledgeCount: row._count.knowledgeSources,

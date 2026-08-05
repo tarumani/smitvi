@@ -6,7 +6,12 @@ import { jsonCreated, jsonError, jsonOk } from "@/infrastructure/http/respond";
 import { getRateLimiter } from "@/infrastructure/http/rate-limit";
 
 const createSchema = z.object({
-  type: z.enum(["CONSULTATION", "KNOWLEDGE_PACK", "EXPERT_SUBSCRIPTION"]),
+  type: z.enum([
+    "CONSULTATION",
+    "KNOWLEDGE_PACK",
+    "EXPERT_SUBSCRIPTION",
+    "SERVICE_PACKAGE",
+  ]),
   title: z.string().trim().min(3).max(160),
   description: z.string().trim().min(10).max(2000),
   currency: z.string().trim().length(3).default("USD"),

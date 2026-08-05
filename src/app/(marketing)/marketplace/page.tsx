@@ -8,7 +8,11 @@ import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { BuyButton } from "@/components/marketplace/buy-button";
 import { DEMO_MARKETPLACE_LISTINGS } from "@/config/demo-content";
-import { MARKETPLACE_COMMISSION_RATE, ROUTES } from "@/config/constants";
+import {
+  MARKETPLACE_COMMISSION_RATE,
+  MARKETPLACE_LISTING_TYPE_LABELS,
+  ROUTES,
+} from "@/config/constants";
 
 export const metadata: Metadata = {
   title: "Marketplace",
@@ -77,7 +81,9 @@ export default async function MarketplacePage() {
                   </span>
                 </div>
                 <p className="mt-5 text-xs font-semibold tracking-[0.16em] text-[var(--accent)] uppercase">
-                  {listing.type.replaceAll("_", " ")}
+                  {MARKETPLACE_LISTING_TYPE_LABELS[
+                    listing.type as keyof typeof MARKETPLACE_LISTING_TYPE_LABELS
+                  ] ?? listing.type.replaceAll("_", " ")}
                 </p>
                 <h2 className="mt-2 font-display text-xl font-semibold">
                   {listing.title}
@@ -135,7 +141,9 @@ export default async function MarketplacePage() {
                     </div>
                   </div>
                   <p className="mt-5 text-xs font-semibold tracking-[0.16em] text-[var(--accent)] uppercase">
-                    {listing.type.replaceAll("_", " ")}
+                    {MARKETPLACE_LISTING_TYPE_LABELS[
+                      listing.type as keyof typeof MARKETPLACE_LISTING_TYPE_LABELS
+                    ] ?? listing.type.replaceAll("_", " ")}
                   </p>
                   <h2 className="mt-2 font-display text-xl font-semibold">
                     {listing.title}

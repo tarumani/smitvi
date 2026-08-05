@@ -3,6 +3,7 @@ import { ROUTES } from "@/config/constants";
 import { container } from "@/application/container";
 import { createSupabaseServerClient } from "@/infrastructure/auth/supabase/server";
 import { getClientIp } from "@/infrastructure/http/respond";
+import { getRequestOrigin } from "@/infrastructure/http/request-origin";
 
 function getSafeNextPath(value: string | null): string {
   if (!value || !value.startsWith("/") || value.startsWith("//")) {
@@ -13,11 +14,14 @@ function getSafeNextPath(value: string | null): string {
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
+  const origin = getRequestOrigin(request);
   const code = url.searchParams.get("code");
   const next = getSafeNextPath(url.searchParams.get("next"));
 
   if (!code) {
-    return NextResponse.redirect(new URL(`${ROUTES.login}?error=missing_code`, url.origin));
+    return NextResponse.redirect(
+      new URL(`${ROUTES.login}?error=missing_code`, origin),
+    );
   }
 
   const supabase = await createSupabaseServerClient();
@@ -25,7 +29,7 @@ export async function GET(request: Request) {
 
   if (error || !data.user?.email) {
     return NextResponse.redirect(
-      new URL(`${ROUTES.login}?error=auth_callback_failed`, url.origin),
+      new URL(`${ROUTES.login}?error=auth_callback_failed`, origin),
     );
   }
 
@@ -42,7 +46,7 @@ export async function GET(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${ROUTES.login}?next=${encodeURIComponent(next)}&verify=1`,
-        url.origin,
+        origin,
       ),
     );
   }
@@ -62,5 +66,5 @@ export async function GET(request: Request) {
   const profile = await container.profiles.findSummaryByUserId(data.user.id);
   const destination = profile?.isOnboarded ? next : ROUTES.onboarding;
 
-  return NextResponse.redirect(new URL(destination, url.origin));
+  return NextResponse.redirect(new URL(destination, origin));
 }

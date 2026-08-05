@@ -6,12 +6,15 @@ export type SyncUserInput = {
   readonly emailVerified: boolean;
 };
 
+export type AdminUserListFilter = "all" | "incomplete" | "dormant";
+
 export type AdminUserListItem = UserEntity & {
   readonly profile: {
     readonly username: string;
     readonly displayName: string;
     readonly avatarUrl: string | null;
     readonly publicTwinEnabled: boolean;
+    readonly isOnboarded: boolean;
   } | null;
   readonly knowledgeCount: number;
   readonly conversationCount: number;
@@ -27,9 +30,14 @@ export interface UserRepository {
   setBanned(id: string, isBanned: boolean): Promise<UserEntity>;
   listForAdmin(options?: {
     query?: string;
+    filter?: AdminUserListFilter;
     take?: number;
     skip?: number;
   }): Promise<AdminUserListItem[]>;
+  countForAdminList(options?: {
+    query?: string;
+    filter?: AdminUserListFilter;
+  }): Promise<number>;
   countAll(): Promise<number>;
   countBanned(): Promise<number>;
   /** Permanently remove app user row (auth deletion handled separately). */

@@ -178,4 +178,32 @@ export class PrismaMarketplaceRepository {
       take: 50,
     });
   }
+
+  /** Net seller earnings from completed marketplace orders (PAID / FULFILLED). */
+  async sumSellerNetEarningsCents(sellerId: string): Promise<number> {
+    const result = await prisma.marketplaceOrder.aggregate({
+      where: {
+        sellerId,
+        status: { in: ["PAID", "FULFILLED"] },
+      },
+      _sum: { netAmountCents: true },
+    });
+    return result._sum.netAmountCents ?? 0;
+  }
+
+  async sumSellerNetEarningsThisMonthCents(sellerId: string): Promise<number> {
+    const startOfMonth = new Date();
+    startOfMonth.setUTCDate(1);
+    startOfMonth.setUTCHours(0, 0, 0, 0);
+
+    const result = await prisma.marketplaceOrder.aggregate({
+      where: {
+        sellerId,
+        status: { in: ["PAID", "FULFILLED"] },
+        paidAt: { gte: startOfMonth },
+      },
+      _sum: { netAmountCents: true },
+    });
+    return result._sum.netAmountCents ?? 0;
+  }
 }

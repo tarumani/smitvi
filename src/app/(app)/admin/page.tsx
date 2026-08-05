@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminOverviewPage() {
-  const [users, twins, knowledge, conversations, failedUploads, bannedUsers] =
+  const [users, twins, knowledge, conversations, failedUploads, bannedUsers, incompleteOnboarding] =
     await Promise.all([
       container.users.countAll(),
       container.profiles.countAll(),
@@ -17,10 +17,16 @@ export default async function AdminOverviewPage() {
       container.conversations.countAll(),
       container.knowledge.countByStatus("FAILED"),
       container.users.countBanned(),
+      container.users.countForAdminList({ filter: "incomplete" }),
     ]);
 
   const cards = [
     { label: "Users", value: users, href: ROUTES.adminUsers },
+    {
+      label: "Incomplete onboarding",
+      value: incompleteOnboarding,
+      href: `${ROUTES.adminUsers}?filter=incomplete`,
+    },
     { label: "Twins / profiles", value: twins, href: ROUTES.adminTwins },
     { label: "Knowledge uploads", value: knowledge, href: ROUTES.adminKnowledge },
     { label: "Conversations", value: conversations, href: ROUTES.adminModeration },
