@@ -38,8 +38,8 @@ See full blueprint in product approval chat (IA, flows, schema, API, 52-week roa
 
 | Sprint | Focus |
 |--------|--------|
-| S1 | Brand, docs, `/hub/*` aliases ✅ |
-| S2 | Network Home v1 (curated, never empty) |
+| S1 | Brand, docs, `/hub/*` aliases | Done |
+| S2 | Network Home v1 (curated, never empty) | Done |
 | S3 | Onboarding archetype picker |
 | S4 | Connect sources + ImportJob schema |
 | S5 | Build animation + celebrate |

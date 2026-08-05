@@ -238,6 +238,101 @@ export class PrismaSearchRepository {
       sourceCount: Number(row.source_count),
     }));
   }
+
+  async latestPublicKnowledge(limit = 8) {
+    const rows = await prisma.knowledgeSource.findMany({
+      where: { isPublic: true, status: "READY" },
+      orderBy: { updatedAt: "desc" },
+      take: limit,
+      include: {
+        user: {
+          include: {
+            profile: {
+              select: {
+                username: true,
+                displayName: true,
+                visibility: true,
+                isOnboarded: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return rows
+      .filter(
+        (row) =>
+          row.user.profile?.isOnboarded &&
+          row.user.profile.visibility === "PUBLIC",
+      )
+      .map((row) => ({
+        id: row.id,
+        title: row.title,
+        summary: row.summary,
+        topics: row.topics,
+        tags: row.tags,
+        ownerUsername: row.user.profile!.username,
+        ownerDisplayName: row.user.profile!.displayName,
+      }));
+  }
+
+  async networkOpenQuestions(limit = 8) {
+    const sources = await prisma.knowledgeSource.findMany({
+      where: { isPublic: true, status: "READY" },
+      orderBy: { updatedAt: "desc" },
+      take: 40,
+      include: {
+        user: {
+          include: {
+            profile: {
+              select: {
+                username: true,
+                displayName: true,
+                visibility: true,
+                isOnboarded: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const questions: Array<{
+      question: string;
+      topic: string;
+      ownerUsername: string;
+      ownerDisplayName: string;
+    }> = [];
+
+    for (const source of sources) {
+      const profile = source.user.profile;
+      if (!profile?.isOnboarded || profile.visibility !== "PUBLIC") continue;
+      if (!Array.isArray(source.faqs)) continue;
+      const topic =
+        source.topics[0] ?? source.tags[0] ?? "Expertise";
+      for (const faq of source.faqs) {
+        if (
+          typeof faq === "object" &&
+          faq !== null &&
+          "question" in faq &&
+          typeof faq.question === "string" &&
+          faq.question.trim().length > 8
+        ) {
+          questions.push({
+            question: faq.question.trim(),
+            topic,
+            ownerUsername: profile.username,
+            ownerDisplayName: profile.displayName,
+          });
+        }
+        if (questions.length >= limit) break;
+      }
+      if (questions.length >= limit) break;
+    }
+
+    return questions.slice(0, limit);
+  }
 }
 
 function emptyResults(): SearchResultGroup {

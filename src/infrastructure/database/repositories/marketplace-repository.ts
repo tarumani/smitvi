@@ -206,4 +206,41 @@ export class PrismaMarketplaceRepository {
     });
     return result._sum.netAmountCents ?? 0;
   }
+
+  async topEarners(limit = 5) {
+    const grouped = await prisma.marketplaceOrder.groupBy({
+      by: ["sellerId"],
+      where: { status: { in: ["PAID", "FULFILLED"] } },
+      _sum: { netAmountCents: true },
+      orderBy: { _sum: { netAmountCents: "desc" } },
+      take: limit,
+    });
+
+    if (grouped.length === 0) return [];
+
+    const sellerIds = grouped.map((row) => row.sellerId);
+    const profiles = await prisma.profile.findMany({
+      where: { userId: { in: sellerIds }, isOnboarded: true },
+      select: {
+        userId: true,
+        username: true,
+        displayName: true,
+        headline: true,
+      },
+    });
+    const profileByUser = new Map(profiles.map((p) => [p.userId, p]));
+
+    return grouped
+      .map((row) => {
+        const profile = profileByUser.get(row.sellerId);
+        if (!profile) return null;
+        return {
+          username: profile.username,
+          displayName: profile.displayName,
+          headline: profile.headline,
+          netEarningsCents: row._sum.netAmountCents ?? 0,
+        };
+      })
+      .filter((row): row is NonNullable<typeof row> => row !== null);
+  }
 }

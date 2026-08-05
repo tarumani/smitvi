@@ -1,17 +1,16 @@
-import { DemoSection } from "@/components/landing/demo-section";
+import { container } from "@/application/container";
 import { ExpertsSection } from "@/components/landing/experts-section";
 import { Hero } from "@/components/landing/hero";
-import { HowItHelps } from "@/components/landing/how-it-helps";
 import { HowItWorks } from "@/components/landing/how-it-works";
-import { ProductSection } from "@/components/landing/product-section";
+import { NetworkHome } from "@/components/network/network-home";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const network = await container.getNetworkHome.execute();
+
   return (
     <>
       <Hero />
-      <HowItHelps />
-      <DemoSection />
-      <ProductSection />
+      <NetworkHome {...network} />
       <HowItWorks />
       <ExpertsSection />
     </>
