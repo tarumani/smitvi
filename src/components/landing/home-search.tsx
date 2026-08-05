@@ -6,7 +6,7 @@ export function HomeSearch() {
   return (
     <form
       action="/search"
-      className="animate-fade-up-delay-2 mt-7 w-full max-w-xl"
+      className="animate-fade-up-delay-2 mt-5 w-full max-w-lg"
     >
       <label className="mb-2 block text-xs font-semibold tracking-[0.14em] text-[var(--accent)] uppercase">
         Search the network
@@ -17,7 +17,7 @@ export function HomeSearch() {
           <Input
             name="q"
             placeholder="Search experts, skills, topics…"
-            className="h-14 border-0 bg-transparent pr-[7rem] pl-12 text-base shadow-none ring-0 focus-visible:ring-0"
+            className="h-12 border-0 bg-transparent pr-[6.5rem] pl-11 text-sm shadow-none ring-0 focus-visible:ring-0"
             aria-label="Search Smitvi"
           />
           <Button
