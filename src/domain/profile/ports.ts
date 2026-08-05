@@ -14,4 +14,6 @@ export interface ProfileRepository {
   usernameExists(username: string, excludeUserId?: string): Promise<boolean>;
   create(userId: string, input: CreateProfileInput): Promise<ProfileEntity>;
   update(userId: string, input: UpdateProfileInput): Promise<ProfileEntity>;
+  completeOnboarding(userId: string): Promise<ProfileEntity>;
+  updateReputationScore(userId: string, score: number): Promise<void>;
 }

@@ -1,5 +1,16 @@
 import { slugifySkill } from "@/domain/profile/value-objects";
+import { cosineSimilarity } from "@/domain/knowledge/similarity";
+import { embedTexts } from "@/infrastructure/ai/openai-client";
 import { prisma } from "@/infrastructure/database/prisma";
+
+export type SemanticSearchMatch = {
+  chunkId: string;
+  content: string;
+  score: number;
+  sourceTitle: string;
+  ownerUsername: string;
+  ownerDisplayName: string;
+};
 
 export type SearchResultGroup = {
   people: Array<{
@@ -21,6 +32,7 @@ export type SearchResultGroup = {
     ownerDisplayName: string;
   }>;
   questions: Array<{ question: string; sourceTitle: string; ownerUsername: string }>;
+  semanticMatches: SemanticSearchMatch[];
 };
 
 /** Variants so "visual design" matches "visual-designing" / "Visual Designing". */
@@ -63,7 +75,8 @@ export class PrismaSearchRepository {
       { slug: { contains: variant, mode: "insensitive" as const } },
     ]);
 
-    const [people, skills, knowledgeRows, topicRows] = await Promise.all([
+    const [people, skills, knowledgeRows, topicRows, semanticMatches] =
+      await Promise.all([
       prisma.profile.findMany({
         where: {
           visibility: "PUBLIC",
@@ -137,6 +150,7 @@ export class PrismaSearchRepository {
         ORDER BY source_count DESC
         LIMIT ${limit}
       `,
+      this.searchSemanticPublic(q, limit),
     ]);
 
     const questions = knowledgeRows
@@ -198,7 +212,65 @@ export class PrismaSearchRepository {
           ownerDisplayName: source.user.profile!.displayName,
         })),
       questions,
+      semanticMatches,
     };
+  }
+
+  async searchSemanticPublic(
+    query: string,
+    limit = 8,
+  ): Promise<SemanticSearchMatch[]> {
+    const q = query.trim();
+    if (q.length < 2) return [];
+
+    const [queryEmbedding] = await embedTexts([q]);
+    if (!queryEmbedding?.length) return [];
+
+    const chunks = await prisma.knowledgeChunk.findMany({
+      where: {
+        source: {
+          isPublic: true,
+          status: "READY",
+          organizationId: null,
+          user: {
+            profile: {
+              visibility: "PUBLIC",
+              isOnboarded: true,
+            },
+          },
+        },
+      },
+      include: {
+        source: {
+          select: { title: true },
+          include: {
+            user: {
+              include: {
+                profile: {
+                  select: { username: true, displayName: true },
+                },
+              },
+            },
+          },
+        },
+      },
+      take: 1500,
+    });
+
+    return chunks
+      .map((chunk) => ({
+        chunkId: chunk.id,
+        content: chunk.content,
+        score: cosineSimilarity(queryEmbedding, chunk.embedding),
+        sourceTitle: chunk.source.title,
+        ownerUsername: chunk.source.user.profile?.username ?? "",
+        ownerDisplayName: chunk.source.user.profile?.displayName ?? "",
+      }))
+      .filter(
+        (row) => row.score >= 0.72 && row.ownerUsername.length > 0,
+      )
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit);
   }
 
   async trendingExperts(limit = 8) {
@@ -379,5 +451,6 @@ function emptyResults(): SearchResultGroup {
     topics: [],
     knowledge: [],
     questions: [],
+    semanticMatches: [],
   };
 }

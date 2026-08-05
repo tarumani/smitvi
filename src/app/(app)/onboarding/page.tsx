@@ -1,47 +1,12 @@
-import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentSession } from "@/application/auth/get-current-session";
-import { container } from "@/application/container";
-import { GlassCard } from "@/components/ui/glass-card";
-import { ProfileForm } from "@/components/profile/profile-form";
-import { APP_OUTCOME, ROUTES } from "@/config/constants";
+import { resolveOnboardingRoute } from "@/application/onboarding/resolve-onboarding-route";
+import { ROUTES } from "@/config/constants";
 
-export const metadata: Metadata = {
-  title: "Onboarding",
-};
-
-export default async function OnboardingPage() {
+export default async function OnboardingIndexPage() {
   const session = await getCurrentSession();
   if (!session) {
     redirect(ROUTES.login);
   }
-
-  if (session.profile?.isOnboarded) {
-    redirect(ROUTES.hub.dashboard);
-  }
-
-  const profile = await container.getMyProfile.execute(session.user.id);
-  const defaultDisplayName = session.email.split("@")[0] ?? "";
-
-  return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight">
-          Choose your username
-        </h1>
-        <p className="mt-2 text-[var(--muted-foreground)]">
-          {APP_OUTCOME} Pick smitvi.com/@username — your public storefront for
-          chat, consults, and marketplace offers.
-        </p>
-      </div>
-      <GlassCard className="p-6 sm:p-8">
-        <ProfileForm
-          mode={profile ? "edit" : "create"}
-          initialProfile={profile}
-          defaultDisplayName={defaultDisplayName}
-          defaultUsername={defaultDisplayName}
-        />
-      </GlassCard>
-    </div>
-  );
+  redirect(resolveOnboardingRoute(session.profile));
 }

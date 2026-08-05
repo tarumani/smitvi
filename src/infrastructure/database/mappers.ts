@@ -103,6 +103,9 @@ export function toProfileEntity(profile: ProfileWithRelations): ProfileEntity {
     followingCount: profile.followingCount,
     ratingAverage: profile.ratingAverage,
     ratingCount: profile.ratingCount,
+    hubArchetypeId: profile.hubArchetypeId,
+    reputationScore: profile.reputationScore,
+    onboardingStep: profile.onboardingStep,
     skills: profile.skills.map(toSkillEntity),
     experiences: profile.experiences
       .slice()
@@ -134,5 +137,8 @@ export function toProfileSummary(profile: Profile): ProfileSummary {
     followersCount: profile.followersCount,
     ratingAverage: profile.ratingAverage,
     ratingCount: profile.ratingCount,
+    hubArchetypeId: profile.hubArchetypeId,
+    reputationScore: profile.reputationScore,
+    onboardingStep: profile.onboardingStep,
   };
 }

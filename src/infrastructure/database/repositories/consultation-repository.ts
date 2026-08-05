@@ -133,6 +133,12 @@ export class PrismaConsultationRepository {
     });
   }
 
+  async countPendingForExpert(expertUserId: string): Promise<number> {
+    return prisma.consultationRequest.count({
+      where: { expertUserId, status: "PENDING" },
+    });
+  }
+
   async updateRequestStatus(
     id: string,
     expertUserId: string,

@@ -17,6 +17,7 @@ import {
   Settings,
   Shield,
   Store,
+  Users,
 } from "lucide-react";
 import { AccountMenu } from "@/components/landing/account-menu";
 import { SmitviLogo } from "@/components/brand/smitvi-logo";
@@ -36,6 +37,7 @@ type AppShellProps = {
 const baseNavItems = [
   { href: ROUTES.hub.dashboard, label: "Dashboard", icon: LayoutDashboard },
   { href: ROUTES.hub.intelligence, label: TRAIN_TWIN_LABEL, icon: BookOpen },
+  { href: ROUTES.hub.leads, label: "Leads", icon: Users },
   { href: ROUTES.twinChat, label: "Twin Chat", icon: MessageSquare },
   { href: ROUTES.inbox, label: "Twin Inbox", icon: Inbox },
   { href: ROUTES.organizations, label: "Workspaces", icon: Building2 },

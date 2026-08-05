@@ -12,6 +12,42 @@ import type {
 import { prisma } from "@/infrastructure/database/prisma";
 
 export class PrismaMarketplaceRepository {
+  async listActiveBySeller(sellerId: string) {
+    return prisma.marketplaceListing.findMany({
+      where: { sellerId, status: "ACTIVE" },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+    });
+  }
+
+  async countRecentSellerOrders(sellerId: string, days = 30): Promise<number> {
+    const since = new Date();
+    since.setUTCDate(since.getUTCDate() - days);
+    return prisma.marketplaceOrder.count({
+      where: {
+        sellerId,
+        createdAt: { gte: since },
+        status: { in: ["PENDING", "PAID", "FULFILLED"] },
+      },
+    });
+  }
+
+  async listRecentSellerOrders(sellerId: string, take = 30) {
+    return prisma.marketplaceOrder.findMany({
+      where: { sellerId },
+      orderBy: { createdAt: "desc" },
+      take,
+      include: {
+        listing: { select: { title: true, type: true } },
+        buyer: {
+          include: {
+            profile: { select: { username: true, displayName: true } },
+          },
+        },
+      },
+    });
+  }
+
   async listActive(limit = 40) {
     return prisma.marketplaceListing.findMany({
       where: { status: "ACTIVE" },

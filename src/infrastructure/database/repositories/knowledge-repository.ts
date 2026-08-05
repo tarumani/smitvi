@@ -133,6 +133,37 @@ export class PrismaKnowledgeRepository {
     return toSourceEntity(row);
   }
 
+  async createFromWebsite(input: {
+    userId: string;
+    title: string;
+    sourceUrl: string;
+    extractedText: string;
+  }): Promise<KnowledgeSourceEntity> {
+    const row = await prisma.knowledgeSource.create({
+      data: {
+        userId: input.userId,
+        type: "WEBSITE",
+        title: input.title,
+        sourceUrl: input.sourceUrl,
+        extractedText: input.extractedText,
+        status: "PENDING",
+        isPublic: false,
+      },
+    });
+    return toSourceEntity(row);
+  }
+
+  async getExtractedTextForUser(
+    id: string,
+    userId: string,
+  ): Promise<string | null> {
+    const row = await prisma.knowledgeSource.findFirst({
+      where: { id, userId },
+      select: { extractedText: true },
+    });
+    return row?.extractedText ?? null;
+  }
+
   async updateStatus(
     id: string,
     status: KnowledgeProcessingStatus,

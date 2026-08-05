@@ -11,6 +11,8 @@ const createSchema = z.object({
     "KNOWLEDGE_PACK",
     "EXPERT_SUBSCRIPTION",
     "SERVICE_PACKAGE",
+    "TEMPLATE",
+    "PROMPT_PACK",
   ]),
   title: z.string().trim().min(3).max(160),
   description: z.string().trim().min(10).max(2000),

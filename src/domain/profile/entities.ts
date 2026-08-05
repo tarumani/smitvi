@@ -53,6 +53,9 @@ export type ProfileEntity = {
   readonly followingCount: number;
   readonly ratingAverage: number;
   readonly ratingCount: number;
+  readonly hubArchetypeId: string | null;
+  readonly reputationScore: number;
+  readonly onboardingStep: string | null;
   readonly skills: readonly SkillEntity[];
   readonly experiences: readonly ExperienceEntity[];
   readonly socialLinks: readonly SocialLinkEntity[];
@@ -76,4 +79,7 @@ export type ProfileSummary = {
   readonly followersCount: number;
   readonly ratingAverage: number;
   readonly ratingCount: number;
+  readonly hubArchetypeId: string | null;
+  readonly reputationScore: number;
+  readonly onboardingStep: string | null;
 };

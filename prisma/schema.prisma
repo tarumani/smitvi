@@ -156,6 +156,20 @@ enum MarketplaceListingType {
   KNOWLEDGE_PACK
   EXPERT_SUBSCRIPTION
   SERVICE_PACKAGE
+  TEMPLATE
+  PROMPT_PACK
+}
+
+enum ImportJobType {
+  WEBSITE
+  PDF
+}
+
+enum ImportJobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
 }
 
 enum MarketplaceListingStatus {
@@ -218,6 +232,7 @@ model User {
   consultationOffer    ConsultationOffer?
   consultationRequestsReceived ConsultationRequest[] @relation("ConsultationExpert")
   consultationRequestsSent     ConsultationRequest[] @relation("ConsultationRequester")
+  importJobs                   ImportJob[]
 
   @@index([role])
   @@index([plan])
@@ -245,6 +260,9 @@ model Profile {
   followingCount     Int               @default(0) @map("following_count")
   ratingAverage      Float             @default(0) @map("rating_average")
   ratingCount        Int               @default(0) @map("rating_count")
+  hubArchetypeId     String?           @map("hub_archetype_id") @db.VarChar(40)
+  reputationScore    Float             @default(0) @map("reputation_score")
+  onboardingStep     String?           @map("onboarding_step") @db.VarChar(32)
   createdAt          DateTime          @default(now()) @map("created_at")
   updatedAt          DateTime          @updatedAt @map("updated_at")
 
@@ -761,4 +779,24 @@ model ConsultationRequest {
   @@index([requesterUserId, createdAt])
   @@index([offerId, createdAt])
   @@map("consultation_requests")
+}
+
+/// HI-OS — onboarding import jobs (website / PDF)
+model ImportJob {
+  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String          @map("user_id") @db.Uuid
+  type              ImportJobType
+  status            ImportJobStatus @default(PENDING)
+  sourceUrl         String?         @map("source_url")
+  storagePath       String?         @map("storage_path")
+  knowledgeSourceId String?         @map("knowledge_source_id") @db.Uuid
+  errorMessage      String?         @map("error_message")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@map("import_jobs")
 }

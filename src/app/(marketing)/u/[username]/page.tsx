@@ -10,6 +10,7 @@ import { ConsultationRequestForm } from "@/components/consultations/consultation
 import { FollowButton } from "@/components/profile/follow-button";
 import { ShareProfileButton } from "@/components/profile/share-profile-button";
 import { ReviewForm } from "@/components/profile/review-form";
+import { IntelligenceHubTabs } from "@/components/profile/intelligence-hub-tabs";
 import { ROUTES } from "@/config/constants";
 import { getExampleHubByUsername } from "@/config/example-hubs";
 
@@ -46,10 +47,13 @@ export default async function PublicProfilePage({ params }: PageProps) {
     ? await container.social.isFollowing(session.user.id, profile.userId)
     : false;
 
-  const [publicKnowledge, reviews, consultationOffer] = await Promise.all([
+  const [publicKnowledge, reviews, consultationOffer, reputationScore, offerListings] =
+    await Promise.all([
     container.knowledge.listPublicByUser(profile.userId),
     container.social.listReviews(profile.userId),
     container.consultations.getEnabledOfferByUserId(profile.userId),
+    container.updateReputation.execute(profile.userId),
+    container.marketplace.listActiveBySeller(profile.userId),
   ]);
 
   const consultationPriceLabel = consultationOffer
@@ -57,6 +61,183 @@ export default async function PublicProfilePage({ params }: PageProps) {
       ? "Free intro"
       : `${(consultationOffer.priceCents / 100).toFixed(2)} ${consultationOffer.currency}`
     : "";
+
+  const overviewPanel = (
+    <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+      <div className="space-y-6">
+        <GlassCard className="p-6">
+          {profile.headline ? (
+            <p className="text-lg font-medium">{profile.headline}</p>
+          ) : null}
+          <p className="mt-3 text-[var(--muted-foreground)]">
+            {profile.bio || "No bio yet."}
+          </p>
+          <div className="mt-5 flex flex-wrap gap-4 text-sm text-[var(--muted)]">
+            <span>{profile.followersCount} followers</span>
+            <span>
+              {profile.ratingAverage.toFixed(1)} ★ ({profile.ratingCount})
+            </span>
+            <span>Reputation {reputationScore}/100</span>
+            {profile.location ? <span>{profile.location}</span> : null}
+          </div>
+          {profile.skills.length ? (
+            <div className="mt-5 flex flex-wrap gap-2">
+              {profile.skills.map((skill) => (
+                <span
+                  key={skill.id}
+                  className="rounded-lg border border-[var(--border)] px-2.5 py-1 text-xs"
+                >
+                  {skill.name}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </GlassCard>
+
+        <section className="space-y-3">
+          <h2 className="font-display text-xl font-semibold">Projects</h2>
+          {profile.portfolio.length === 0 ? (
+            <GlassCard className="p-5 text-sm text-[var(--muted-foreground)]">
+              No projects published yet.
+            </GlassCard>
+          ) : (
+            profile.portfolio.map((item) => (
+              <GlassCard key={item.id} className="overflow-hidden p-0">
+                {item.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    className="h-40 w-full object-cover"
+                  />
+                ) : null}
+                <div className="p-5">
+                  <p className="font-semibold">{item.title}</p>
+                  {item.description ? (
+                    <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                      {item.description}
+                    </p>
+                  ) : null}
+                  {item.url ? (
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-block text-sm text-[var(--accent)] hover:underline"
+                    >
+                      View project
+                    </a>
+                  ) : null}
+                </div>
+              </GlassCard>
+            ))
+          )}
+        </section>
+      </div>
+
+      <div className="space-y-6">
+        <GlassCard className="p-5">
+          <h2 className="font-semibold">Consultation</h2>
+          {consultationOffer ? (
+            <div className="mt-3 space-y-4">
+              {consultationOffer.headline ? (
+                <p className="text-sm font-medium">{consultationOffer.headline}</p>
+              ) : null}
+              {consultationOffer.description ? (
+                <p className="text-sm text-[var(--muted-foreground)]">
+                  {consultationOffer.description}
+                </p>
+              ) : null}
+              {isOwner ? (
+                <Button asChild variant="secondary" size="sm">
+                  <Link href={ROUTES.consultationSettings}>Manage consultations</Link>
+                </Button>
+              ) : (
+                <ConsultationRequestForm
+                  username={profile.username}
+                  defaultName={session?.profile?.displayName ?? ""}
+                  defaultEmail={session?.email ?? ""}
+                  durationMinutes={consultationOffer.durationMinutes}
+                  priceLabel={consultationPriceLabel}
+                />
+              )}
+            </div>
+          ) : (
+            <div className="mt-2 space-y-3">
+              <p className="text-sm text-[var(--muted-foreground)]">
+                {isOwner
+                  ? "Turn on consultations to accept booking requests on this profile."
+                  : "This expert is not accepting consultations right now."}
+              </p>
+              {isOwner ? (
+                <Button asChild variant="secondary" size="sm">
+                  <Link href={ROUTES.consultationSettings}>Set up consultations</Link>
+                </Button>
+              ) : null}
+            </div>
+          )}
+        </GlassCard>
+
+        <GlassCard className="space-y-4 p-5">
+          <h2 className="font-semibold">Reviews</h2>
+          {reviews.length === 0 ? (
+            <p className="text-sm text-[var(--muted-foreground)]">No reviews yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {reviews.map((review) => (
+                <div
+                  key={review.id}
+                  className="border-t border-[var(--border)] pt-3 first:border-0 first:pt-0"
+                >
+                  <p className="text-sm font-medium">
+                    {review.rating} ★ · @{review.reviewerUsername}
+                  </p>
+                  {review.comment ? (
+                    <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+                      {review.comment}
+                    </p>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          )}
+          {!isOwner ? (
+            <ReviewForm
+              username={profile.username}
+              isAuthenticated={Boolean(session)}
+            />
+          ) : null}
+        </GlassCard>
+      </div>
+    </div>
+  );
+
+  const knowledgePanel = (
+    <section className="space-y-3">
+      <h2 className="font-display text-xl font-semibold">Public knowledge</h2>
+      {publicKnowledge.length === 0 ? (
+        <GlassCard className="p-5 text-sm text-[var(--muted-foreground)]">
+          No public expertise published yet.
+        </GlassCard>
+      ) : (
+        publicKnowledge.map((source) => (
+          <GlassCard key={source.id} className="p-5">
+            <p className="font-semibold">{source.title}</p>
+            {source.summary ? (
+              <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                {source.summary}
+              </p>
+            ) : null}
+            {source.topics.length ? (
+              <p className="mt-3 text-xs text-[var(--muted)]">
+                {source.topics.join(" · ")}
+              </p>
+            ) : null}
+          </GlassCard>
+        ))
+      )}
+    </section>
+  );
 
   return (
     <div className="pb-16">
@@ -99,182 +280,20 @@ export default async function PublicProfilePage({ params }: PageProps) {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-          <div className="space-y-6">
-            <GlassCard className="p-6">
-              {profile.headline ? (
-                <p className="text-lg font-medium">{profile.headline}</p>
-              ) : null}
-              <p className="mt-3 text-[var(--muted-foreground)]">
-                {profile.bio || "No bio yet."}
-              </p>
-              <div className="mt-5 flex flex-wrap gap-4 text-sm text-[var(--muted)]">
-                <span>{profile.followersCount} followers</span>
-                <span>
-                  {profile.ratingAverage.toFixed(1)} ★ ({profile.ratingCount})
-                </span>
-                {profile.location ? <span>{profile.location}</span> : null}
-              </div>
-              {profile.skills.length ? (
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {profile.skills.map((skill) => (
-                    <span
-                      key={skill.id}
-                      className="rounded-lg border border-[var(--border)] px-2.5 py-1 text-xs"
-                    >
-                      {skill.name}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-            </GlassCard>
-
-            <section className="space-y-3">
-              <h2 className="font-display text-xl font-semibold">Expertise</h2>
-              {publicKnowledge.length === 0 ? (
-                <GlassCard className="p-5 text-sm text-[var(--muted-foreground)]">
-                  No public expertise published yet.
-                </GlassCard>
-              ) : (
-                publicKnowledge.map((source) => (
-                  <GlassCard key={source.id} className="p-5">
-                    <p className="font-semibold">{source.title}</p>
-                    {source.summary ? (
-                      <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-                        {source.summary}
-                      </p>
-                    ) : null}
-                    {source.topics.length ? (
-                      <p className="mt-3 text-xs text-[var(--muted)]">
-                        {source.topics.join(" · ")}
-                      </p>
-                    ) : null}
-                  </GlassCard>
-                ))
-              )}
-            </section>
-
-            <section className="space-y-3">
-              <h2 className="font-display text-xl font-semibold">Projects</h2>
-              {profile.portfolio.length === 0 ? (
-                <GlassCard className="p-5 text-sm text-[var(--muted-foreground)]">
-                  No projects published yet.
-                </GlassCard>
-              ) : (
-                profile.portfolio.map((item) => (
-                  <GlassCard key={item.id} className="overflow-hidden p-0">
-                    {item.imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={item.imageUrl}
-                        alt={item.title}
-                        className="h-40 w-full object-cover"
-                      />
-                    ) : null}
-                    <div className="p-5">
-                      <p className="font-semibold">{item.title}</p>
-                      {item.description ? (
-                        <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-                          {item.description}
-                        </p>
-                      ) : null}
-                      {item.url ? (
-                        <a
-                          href={item.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-3 inline-block text-sm text-[var(--accent)] hover:underline"
-                        >
-                          View project
-                        </a>
-                      ) : null}
-                    </div>
-                  </GlassCard>
-                ))
-              )}
-            </section>
-          </div>
-
-          <div className="space-y-6">
-            <GlassCard className="p-5">
-              <h2 className="font-semibold">Consultation</h2>
-              {consultationOffer ? (
-                <div className="mt-3 space-y-4">
-                  {consultationOffer.headline ? (
-                    <p className="text-sm font-medium">
-                      {consultationOffer.headline}
-                    </p>
-                  ) : null}
-                  {consultationOffer.description ? (
-                    <p className="text-sm text-[var(--muted-foreground)]">
-                      {consultationOffer.description}
-                    </p>
-                  ) : null}
-                  {isOwner ? (
-                    <Button asChild variant="secondary" size="sm">
-                      <Link href={ROUTES.consultationSettings}>
-                        Manage consultations
-                      </Link>
-                    </Button>
-                  ) : (
-                    <ConsultationRequestForm
-                      username={profile.username}
-                      defaultName={session?.profile?.displayName ?? ""}
-                      defaultEmail={session?.email ?? ""}
-                      durationMinutes={consultationOffer.durationMinutes}
-                      priceLabel={consultationPriceLabel}
-                    />
-                  )}
-                </div>
-              ) : (
-                <div className="mt-2 space-y-3">
-                  <p className="text-sm text-[var(--muted-foreground)]">
-                    {isOwner
-                      ? "Turn on consultations to accept booking requests on this profile."
-                      : "This expert is not accepting consultations right now."}
-                  </p>
-                  {isOwner ? (
-                    <Button asChild variant="secondary" size="sm">
-                      <Link href={ROUTES.consultationSettings}>
-                        Set up consultations
-                      </Link>
-                    </Button>
-                  ) : null}
-                </div>
-              )}
-            </GlassCard>
-
-            <GlassCard className="space-y-4 p-5">
-              <h2 className="font-semibold">Reviews</h2>
-              {reviews.length === 0 ? (
-                <p className="text-sm text-[var(--muted-foreground)]">
-                  No reviews yet.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {reviews.map((review) => (
-                    <div key={review.id} className="border-t border-[var(--border)] pt-3 first:border-0 first:pt-0">
-                      <p className="text-sm font-medium">
-                        {review.rating} ★ · @{review.reviewerUsername}
-                      </p>
-                      {review.comment ? (
-                        <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-                          {review.comment}
-                        </p>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {!isOwner ? (
-                <ReviewForm
-                  username={profile.username}
-                  isAuthenticated={Boolean(session)}
-                />
-              ) : null}
-            </GlassCard>
-          </div>
-        </div>
+        <IntelligenceHubTabs
+          username={profile.username}
+          publicTwinEnabled={profile.publicTwinEnabled}
+          overview={overviewPanel}
+          knowledge={knowledgePanel}
+          offers={offerListings.map((listing) => ({
+            id: listing.id,
+            title: listing.title,
+            description: listing.description,
+            priceCents: listing.priceCents,
+            currency: listing.currency,
+            type: listing.type,
+          }))}
+        />
       </div>
     </div>
   );

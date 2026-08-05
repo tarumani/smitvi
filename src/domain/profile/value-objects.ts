@@ -7,7 +7,13 @@ import {
   USERNAME_MAX,
   USERNAME_MIN,
 } from "@/config/constants";
+import { HUB_ARCHETYPES } from "@/config/brand";
 import { ValidationError } from "@/domain/shared/errors";
+
+const hubArchetypeIds = HUB_ARCHETYPES.map((item) => item.id) as [
+  string,
+  ...string[],
+];
 
 const usernameRegex = /^[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?$/;
 
@@ -105,6 +111,11 @@ export const createProfileSchema = z.object({
     .max(10)
     .default([]),
   portfolio: z.array(portfolioItemSchema).max(20).default([]),
+  hubArchetypeId: z.enum(hubArchetypeIds).optional().nullable(),
+  onboardingStep: z
+    .enum(["archetype", "profile", "connect", "build", "celebrate"])
+    .optional()
+    .nullable(),
 });
 
 export const updateProfileSchema = createProfileSchema.partial().extend({

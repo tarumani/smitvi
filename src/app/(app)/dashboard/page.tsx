@@ -60,12 +60,17 @@ export default async function DashboardPage() {
   const userId = session.user.id;
   const sources = await container.knowledge.listByUser(userId);
 
-  const [engagement, totalEarningsCents, monthlyEarningsCents] =
+  const [engagement, totalEarningsCents, monthlyEarningsCents, inboxCount, pendingConsults, marketplaceOrders] =
     await Promise.all([
       container.conversations.getOwnerTwinEngagementStats(userId),
       container.marketplace.sumSellerNetEarningsCents(userId),
       container.marketplace.sumSellerNetEarningsThisMonthCents(userId),
+      container.conversations.countInboxForOwner(userId),
+      container.consultations.countPendingForExpert(userId),
+      container.marketplace.countRecentSellerOrders(userId),
     ]);
+
+  const leadsCount = inboxCount + pendingConsults + marketplaceOrders;
 
   const twinStatus = resolveTwinStatus(sources);
 
@@ -94,6 +99,30 @@ export default async function DashboardPage() {
       emoji: "📈",
       label: "Estimated Monthly Income",
       value: formatInrFromMinorUnits(monthlyEarningsCents),
+    },
+  ] as const;
+
+  const businessCards = [
+    {
+      emoji: "📥",
+      label: "Leads",
+      value: String(leadsCount),
+      detail: "Inbox threads, consult requests, and recent orders",
+      href: ROUTES.hub.leads,
+    },
+    {
+      emoji: "📅",
+      label: "Pending consults",
+      value: String(pendingConsults),
+      detail: "Booking requests awaiting your response",
+      href: ROUTES.consultationSettings,
+    },
+    {
+      emoji: "🛒",
+      label: "Marketplace orders",
+      value: String(marketplaceOrders),
+      detail: "Buyer orders in the last 30 days",
+      href: ROUTES.marketplaceOrders,
     },
   ] as const;
 
@@ -160,6 +189,29 @@ export default async function DashboardPage() {
             </Link>
           </Button>
         </GlassCard>
+      </div>
+
+      <div>
+        <h2 className="font-display text-xl font-semibold">Business</h2>
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          {businessCards.map((card) => (
+            <GlassCard key={card.label} className="p-5">
+              <p className="text-sm text-[var(--muted-foreground)]">
+                <span className="mr-1.5" aria-hidden>
+                  {card.emoji}
+                </span>
+                {card.label}
+              </p>
+              <p className="mt-2 font-display text-2xl font-bold tracking-tight">
+                {card.value}
+              </p>
+              <p className="mt-1 text-xs text-[var(--muted)]">{card.detail}</p>
+              <Button asChild variant="ghost" className="mt-2 h-auto p-0">
+                <Link href={card.href}>View</Link>
+              </Button>
+            </GlassCard>
+          ))}
+        </div>
       </div>
     </div>
   );

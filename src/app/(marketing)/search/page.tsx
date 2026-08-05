@@ -31,6 +31,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
           topics: [],
           knowledge: [],
           questions: [],
+          semanticMatches: [],
         };
 
   const hasResults =
@@ -38,7 +39,8 @@ export default async function SearchPage({ searchParams }: PageProps) {
       results.skills.length +
       results.topics.length +
       results.knowledge.length +
-      results.questions.length >
+      results.questions.length +
+      results.semanticMatches.length >
     0;
 
   return (
@@ -167,6 +169,28 @@ export default async function SearchPage({ searchParams }: PageProps) {
                       {item.summary}
                     </p>
                   ) : null}
+                </GlassCard>
+              </Link>
+            ))}
+          </section>
+        ) : null}
+
+        {results.semanticMatches.length ? (
+          <section className="space-y-4">
+            <h2 className="font-display text-xl font-semibold">
+              Semantic matches
+            </h2>
+            {results.semanticMatches.map((match) => (
+              <Link
+                key={match.chunkId}
+                href={ROUTES.publicProfile(match.ownerUsername)}
+              >
+                <GlassCard className="mb-3 p-5 transition-colors hover:bg-[var(--surface-elevated)]">
+                  <p className="line-clamp-3 text-sm">{match.content}</p>
+                  <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                    {match.sourceTitle} · @{match.ownerUsername} ·{" "}
+                    {Math.round(match.score * 100)}% match
+                  </p>
                 </GlassCard>
               </Link>
             ))}

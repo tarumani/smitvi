@@ -21,7 +21,7 @@ export class ProcessKnowledgeSource {
 
   async execute(sourceId: string, userId: string): Promise<void> {
     const source = await this.knowledge.findByIdForUser(sourceId, userId);
-    if (!source || !source.storagePath) {
+    if (!source) {
       return;
     }
 
@@ -29,8 +29,17 @@ export class ProcessKnowledgeSource {
 
     try {
       await this.knowledge.updateStatus(sourceId, "EXTRACTING");
-      const bytes = await readUpload(source.storagePath);
-      const extractedText = await extractTextFromFile(bytes, source.type);
+      let extractedText: string;
+      if (source.storagePath) {
+        const bytes = await readUpload(source.storagePath);
+        extractedText = await extractTextFromFile(bytes, source.type);
+      } else {
+        const fromDb = await this.knowledge.getExtractedTextForUser(
+          sourceId,
+          userId,
+        );
+        extractedText = fromDb ?? "";
+      }
 
       if (!extractedText || extractedText.length < 20) {
         throw new ValidationError(

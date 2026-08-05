@@ -29,6 +29,16 @@ const LISTING_TYPES = [
     label: "Expert subscription",
     hint: "Monthly ongoing access or retainership",
   },
+  {
+    value: "TEMPLATE",
+    label: "Template",
+    hint: "Reusable design or code templates",
+  },
+  {
+    value: "PROMPT_PACK",
+    label: "Prompt pack",
+    hint: "Curated prompts for AI workflows",
+  },
 ] as const;
 
 type ListingTypeValue = (typeof LISTING_TYPES)[number]["value"];

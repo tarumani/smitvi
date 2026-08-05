@@ -78,7 +78,9 @@ export class PrismaProfileRepository implements ProfileRepository {
             timezone: input.timezone ?? null,
             visibility: input.visibility,
             publicTwinEnabled: input.publicTwinEnabled,
-            isOnboarded: true,
+            isOnboarded: false,
+            hubArchetypeId: input.hubArchetypeId ?? null,
+            onboardingStep: input.onboardingStep ?? "connect",
           },
         });
 
@@ -137,7 +139,14 @@ export class PrismaProfileRepository implements ProfileRepository {
             timezone: input.timezone === undefined ? undefined : input.timezone,
             visibility: input.visibility,
             publicTwinEnabled: input.publicTwinEnabled,
-            isOnboarded: true,
+            hubArchetypeId:
+              input.hubArchetypeId === undefined
+                ? undefined
+                : input.hubArchetypeId,
+            onboardingStep:
+              input.onboardingStep === undefined
+                ? undefined
+                : input.onboardingStep,
           },
         });
 
@@ -167,6 +176,25 @@ export class PrismaProfileRepository implements ProfileRepository {
       }
       throw error;
     }
+  }
+
+  async completeOnboarding(userId: string): Promise<ProfileEntity> {
+    const profile = await prisma.profile.update({
+      where: { userId },
+      data: {
+        isOnboarded: true,
+        onboardingStep: "celebrate",
+      },
+      include: profileInclude,
+    });
+    return toProfileEntity(profile);
+  }
+
+  async updateReputationScore(userId: string, score: number): Promise<void> {
+    await prisma.profile.update({
+      where: { userId },
+      data: { reputationScore: score },
+    });
   }
 
   private async syncPortfolio(

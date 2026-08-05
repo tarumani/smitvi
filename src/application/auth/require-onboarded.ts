@@ -4,23 +4,30 @@ import {
   requireSession,
   type CurrentSession,
 } from "@/application/auth/get-current-session";
+import { resolveOnboardingRoute } from "@/application/onboarding/resolve-onboarding-route";
 import { ROUTES } from "@/config/constants";
 
 export function hasCompletedUsernameSetup(
   session: CurrentSession | null | undefined,
 ): boolean {
-  return Boolean(
-    session?.profile?.isOnboarded && session.profile.username?.trim(),
-  );
+  return Boolean(session?.profile?.isOnboarded);
 }
 
-/** Require a claimed @username (onboarding complete). */
+/** Require full onboarding (celebrate complete). */
 export async function requireOnboardedSession(): Promise<CurrentSession> {
   const session = await requireSession();
   if (!hasCompletedUsernameSetup(session)) {
-    redirect(ROUTES.onboarding);
+    redirect(resolveOnboardingRoute(session.profile));
   }
   return session;
+}
+
+function isOnboardingPath(pathname: string | null): boolean {
+  if (!pathname) return false;
+  return (
+    pathname === ROUTES.onboarding ||
+    pathname.startsWith(`${ROUTES.onboarding}/`)
+  );
 }
 
 export async function redirectIfOnboardingIncomplete(
@@ -31,12 +38,10 @@ export async function redirectIfOnboardingIncomplete(
     redirect(ROUTES.login);
   }
 
-  const onOnboarding =
-    pathname === ROUTES.onboarding ||
-    Boolean(pathname?.startsWith(`${ROUTES.onboarding}/`));
+  const onOnboarding = isOnboardingPath(pathname);
 
   if (!hasCompletedUsernameSetup(session) && !onOnboarding) {
-    redirect(ROUTES.onboarding);
+    redirect(resolveOnboardingRoute(session.profile));
   }
 
   if (hasCompletedUsernameSetup(session) && onOnboarding) {

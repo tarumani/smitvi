@@ -15,6 +15,8 @@ type ProfileFormProps = {
   initialProfile?: ProfileEntity | null;
   defaultDisplayName?: string;
   defaultUsername?: string;
+  /** Multi-step onboarding — routes to connect after save. */
+  onboardingMode?: boolean;
 };
 
 function suggestUsername(value: string) {
@@ -42,6 +44,7 @@ export function ProfileForm({
   initialProfile,
   defaultDisplayName = "",
   defaultUsername = "",
+  onboardingMode = false,
 }: ProfileFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -84,6 +87,9 @@ export function ProfileForm({
             .filter(Boolean),
           visibility: "PUBLIC" as const,
           publicTwinEnabled: form.publicTwinEnabled,
+          ...(onboardingMode
+            ? { onboardingStep: "connect" as const }
+            : {}),
         };
 
         const response = await fetch("/api/v1/profiles/me", {
@@ -106,7 +112,11 @@ export function ProfileForm({
         }
 
         toast.success(mode === "create" ? "Profile created" : "Profile updated");
-        router.replace(ROUTES.hub.dashboard);
+        if (onboardingMode) {
+          router.replace(ROUTES.onboardingConnect);
+        } else {
+          router.replace(ROUTES.hub.dashboard);
+        }
         router.refresh();
       } catch (error) {
         const message =

@@ -1,6 +1,11 @@
 import { CreateProfile } from "@/application/profile/create-profile";
 import { GetMyProfile } from "@/application/profile/get-my-profile";
 import { UpdateProfile } from "@/application/profile/update-profile";
+import { CompleteOnboarding } from "@/application/profile/complete-onboarding";
+import { SaveOnboardingArchetype } from "@/application/onboarding/save-onboarding-archetype";
+import { UpdateReputation } from "@/application/reputation/update-reputation";
+import { CreateImportJob } from "@/application/import/create-import-job";
+import { ProcessImportJob } from "@/application/import/process-import-job";
 import { SyncAuthenticatedUser } from "@/application/auth/sync-authenticated-user";
 import { UploadKnowledge } from "@/application/knowledge/upload-knowledge";
 import { ProcessKnowledgeSource } from "@/application/knowledge/process-knowledge-source";
@@ -23,6 +28,7 @@ import { PrismaMarketplaceRepository } from "@/infrastructure/database/repositor
 import { PrismaOrganizationRepository } from "@/infrastructure/database/repositories/organization-repository";
 import { PrismaApiKeyRepository } from "@/infrastructure/database/repositories/api-key-repository";
 import { PrismaConsultationRepository } from "@/infrastructure/database/repositories/consultation-repository";
+import { PrismaImportJobRepository } from "@/infrastructure/database/repositories/import-job-repository";
 
 const users = new PrismaUserRepository();
 const profiles = new PrismaProfileRepository();
@@ -36,13 +42,23 @@ const marketplace = new PrismaMarketplaceRepository();
 const organizations = new PrismaOrganizationRepository();
 const apiKeys = new PrismaApiKeyRepository();
 const consultations = new PrismaConsultationRepository();
+const importJobs = new PrismaImportJobRepository();
 const processKnowledgeSource = new ProcessKnowledgeSource(knowledge, auditLogs);
+const processImportJob = new ProcessImportJob(
+  importJobs,
+  knowledge,
+  processKnowledgeSource,
+);
 
 export const container = {
   syncAuthenticatedUser: new SyncAuthenticatedUser(users, auditLogs),
   getMyProfile: new GetMyProfile(profiles),
   createProfile: new CreateProfile(profiles, auditLogs),
   updateProfile: new UpdateProfile(profiles, auditLogs),
+  completeOnboarding: new CompleteOnboarding(profiles, auditLogs),
+  saveOnboardingArchetype: new SaveOnboardingArchetype(profiles, auditLogs),
+  updateReputation: new UpdateReputation(profiles, knowledge),
+  createImportJob: new CreateImportJob(importJobs, processImportJob),
   uploadKnowledge: new UploadKnowledge(
     knowledge,
     processKnowledgeSource,
@@ -71,5 +87,6 @@ export const container = {
   organizations,
   apiKeys,
   consultations,
+  importJobs,
   auditLogs,
 };

@@ -24,8 +24,20 @@ export const MARKETPLACE_LISTING_TYPE_LABELS = {
   KNOWLEDGE_PACK: "Knowledge pack",
   EXPERT_SUBSCRIPTION: "Expert subscription",
   SERVICE_PACKAGE: "Service package",
+  TEMPLATE: "Template",
+  PROMPT_PACK: "Prompt pack",
   COURSE: "Course",
 } as const;
+
+export const ONBOARDING_STEPS = [
+  "archetype",
+  "profile",
+  "connect",
+  "build",
+  "celebrate",
+] as const;
+
+export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
 
 export const ROUTES = {
   home: "/",
@@ -45,6 +57,7 @@ export const ROUTES = {
     consultations: "/hub/consultations",
     analytics: "/hub/analytics",
     settings: "/hub/settings",
+    leads: "/hub/leads",
   },
   twinChat: "/chat",
   inbox: "/inbox",
@@ -73,6 +86,11 @@ export const ROUTES = {
   consultationSettings: "/settings/consultations",
   developers: "/developers",
   onboarding: "/onboarding",
+  onboardingArchetype: "/onboarding/archetype",
+  onboardingProfile: "/onboarding/profile",
+  onboardingConnect: "/onboarding/connect",
+  onboardingBuild: "/onboarding/build",
+  onboardingCelebrate: "/onboarding/celebrate",
   admin: "/admin",
   adminUsers: "/admin/users",
   adminTwins: "/admin/twins",

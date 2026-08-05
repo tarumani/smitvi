@@ -40,16 +40,16 @@ See full blueprint in product approval chat (IA, flows, schema, API, 52-week roa
 |--------|--------|
 | S1 | Brand, docs, `/hub/*` aliases | Done |
 | S2 | Network Home v1 (curated, never empty) | Done |
-| S3 | Onboarding archetype picker |
-| S4 | Connect sources + ImportJob schema |
-| S5 | Build animation + celebrate |
-| S6 | Intelligence Hub public tabs |
-| S7 | Business dashboard cards |
-| S8 | Unified leads / business inbox |
-| S9 | Reputation scores v1 |
-| S10 | Semantic search MVP |
-| S11 | Template + prompt pack SKUs |
-| S12 | Import PDF + website |
+| S3 | Onboarding archetype picker | Done |
+| S4 | Connect sources + ImportJob schema | Done |
+| S5 | Build animation + celebrate | Done |
+| S6 | Intelligence Hub public tabs | Done |
+| S7 | Business dashboard cards | Done |
+| S8 | Unified leads / business inbox | Done |
+| S9 | Reputation scores v1 | Done |
+| S10 | Semantic search MVP | Done |
+| S11 | Template + prompt pack SKUs | Done |
+| S12 | Import PDF + website | Done |
 
 ## Technical stack
 
