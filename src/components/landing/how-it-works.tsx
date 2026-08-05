@@ -3,19 +3,19 @@ const steps = [
     step: "01",
     title: "Claim your identity",
     description:
-      "Create your profile and @username — the public home of your Knowledge Twin.",
+      "Pick your @username — the public URL of your Intelligence Hub.",
   },
   {
     step: "02",
-    title: "Upload your mind",
+    title: "Train your AI Twin",
     description:
-      "Bring PDFs, repos, Notion, Drive, YouTube, and more into a private intelligence graph.",
+      "Connect LinkedIn, docs, Notion, and more — your hub learns from what you already know.",
   },
   {
     step: "03",
     title: "Launch and earn",
     description:
-      "Open public chat, courses, and consultations from one expert surface.",
+      "Get discovered on the network, take consults, and sell on the marketplace.",
   },
 ] as const;
 
