@@ -101,7 +101,7 @@ export function AccountMenu({ user }: AccountMenuProps) {
 
           <div className="p-1.5">
             <MenuLink
-              href={ROUTES.dashboard}
+              href={ROUTES.hub.dashboard}
               icon={LayoutDashboard}
               onClick={() => setOpen(false)}
             >

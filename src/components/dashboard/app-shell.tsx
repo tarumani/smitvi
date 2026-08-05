@@ -34,8 +34,8 @@ type AppShellProps = {
 };
 
 const baseNavItems = [
-  { href: ROUTES.dashboard, label: "Dashboard", icon: LayoutDashboard },
-  { href: ROUTES.knowledge, label: TRAIN_TWIN_LABEL, icon: BookOpen },
+  { href: ROUTES.hub.dashboard, label: "Dashboard", icon: LayoutDashboard },
+  { href: ROUTES.hub.intelligence, label: TRAIN_TWIN_LABEL, icon: BookOpen },
   { href: ROUTES.twinChat, label: "Twin Chat", icon: MessageSquare },
   { href: ROUTES.inbox, label: "Twin Inbox", icon: Inbox },
   { href: ROUTES.organizations, label: "Workspaces", icon: Building2 },
@@ -49,8 +49,8 @@ const baseNavItems = [
 ] as const;
 
 const mobileNavItems = [
-  { href: ROUTES.dashboard, label: "Home", icon: LayoutDashboard },
-  { href: ROUTES.knowledge, label: TRAIN_TWIN_NAV_SHORT, icon: BookOpen },
+  { href: ROUTES.hub.dashboard, label: "Home", icon: LayoutDashboard },
+  { href: ROUTES.hub.intelligence, label: TRAIN_TWIN_NAV_SHORT, icon: BookOpen },
   { href: ROUTES.organizations, label: "Orgs", icon: Building2 },
   { href: ROUTES.profileSettings, label: "You", icon: Settings },
 ] as const;
@@ -89,7 +89,7 @@ export function AppShell({
       {/* Fixed sidebar — independent from page scroll */}
       <aside className="hidden h-svh w-60 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--surface-elevated)] lg:flex">
         <div className="shrink-0 border-b border-[var(--border)] px-4 py-4">
-          <SmitviLogo href={ROUTES.dashboard} size="sm" />
+          <SmitviLogo href={ROUTES.hub.dashboard} size="sm" />
         </div>
 
         <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-4 [scrollbar-width:thin]">

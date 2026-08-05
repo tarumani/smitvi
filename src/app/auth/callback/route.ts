@@ -7,7 +7,7 @@ import { getRequestOrigin } from "@/infrastructure/http/request-origin";
 
 function getSafeNextPath(value: string | null): string {
   if (!value || !value.startsWith("/") || value.startsWith("//")) {
-    return ROUTES.dashboard;
+    return ROUTES.hub.dashboard;
   }
   return value;
 }

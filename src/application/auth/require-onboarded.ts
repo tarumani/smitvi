@@ -40,7 +40,7 @@ export async function redirectIfOnboardingIncomplete(
   }
 
   if (hasCompletedUsernameSetup(session) && onOnboarding) {
-    redirect(ROUTES.dashboard);
+    redirect(ROUTES.hub.dashboard);
   }
 
   return session;

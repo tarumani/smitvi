@@ -54,7 +54,7 @@ export async function proxy(request: NextRequest) {
 
   if (isAuthRoute && user) {
     const next = safeNextPath(request.nextUrl.searchParams.get("next"));
-    const dest = absoluteUrl(request, next ?? ROUTES.dashboard);
+    const dest = absoluteUrl(request, next ?? ROUTES.hub.dashboard);
     return applySessionCookies(NextResponse.redirect(dest), sessionCookies);
   }
 

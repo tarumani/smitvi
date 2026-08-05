@@ -154,7 +154,7 @@ export default async function DashboardPage() {
             </p>
           </div>
           <Button asChild className="mt-4 w-full sm:w-auto">
-            <Link href={ROUTES.knowledge}>
+            <Link href={ROUTES.hub.intelligence}>
               <Upload className="h-4 w-4" />
               {TRAIN_TWIN_LABEL}
             </Link>

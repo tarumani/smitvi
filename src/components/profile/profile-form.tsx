@@ -106,7 +106,7 @@ export function ProfileForm({
         }
 
         toast.success(mode === "create" ? "Profile created" : "Profile updated");
-        router.replace(ROUTES.dashboard);
+        router.replace(ROUTES.hub.dashboard);
         router.refresh();
       } catch (error) {
         const message =

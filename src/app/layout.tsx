@@ -5,7 +5,8 @@ import { Hanken_Grotesk } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { THEME_STORAGE_KEY } from "@/components/providers/theme-script";
 import { RegisterServiceWorker } from "@/components/pwa/register-sw";
-import { APP_NAME, APP_OUTCOME, APP_TAGLINE, TRAIN_TWIN_LABEL } from "@/config/constants";
+import { APP_VISION } from "@/config/brand";
+import { APP_NAME, APP_TAGLINE, TRAIN_TWIN_LABEL } from "@/config/constants";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
     default: `${APP_NAME} — ${APP_TAGLINE}`,
     template: `%s · ${APP_NAME}`,
   },
-  description: `${APP_OUTCOME} ${TRAIN_TWIN_LABEL}, public profile, marketplace, and consultations on ${APP_NAME}.`,
+  description: `${APP_TAGLINE} ${APP_VISION} ${TRAIN_TWIN_LABEL} and marketplace on ${APP_NAME}.`,
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
   ),

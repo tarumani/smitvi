@@ -17,7 +17,7 @@ export default async function OnboardingPage() {
   }
 
   if (session.profile?.isOnboarded) {
-    redirect(ROUTES.dashboard);
+    redirect(ROUTES.hub.dashboard);
   }
 
   const profile = await container.getMyProfile.execute(session.user.id);

@@ -1,10 +1,20 @@
-export const APP_NAME = "Smitvi" as const;
-export const APP_TAGLINE = "The Global Human Intelligence Network" as const;
-/** Primary user outcome — reinforce across product UI. */
-export const APP_OUTCOME = "Earn money from what you know." as const;
-export const TRAIN_TWIN_LABEL = "Train Your AI Twin" as const;
-/** Shorter label for compact nav (mobile). */
-export const TRAIN_TWIN_NAV_SHORT = "Train Twin" as const;
+export {
+  APP_NAME,
+  APP_VISION,
+  APP_MISSION,
+  APP_TAGLINE,
+  APP_TAGLINE_LINES,
+  APP_OUTCOME,
+  INTELLIGENCE_HUB_LABEL,
+  TRAIN_TWIN_LABEL,
+  TRAIN_TWIN_NAV_SHORT,
+  HUB_ARCHETYPES,
+  PLATFORM_PILLARS,
+  CREATOR_LEVELS,
+  PRODUCT_LITMUS_QUESTION,
+} from "@/config/brand";
+export type { HubArchetypeId } from "@/config/brand";
+
 /** Canonical production origin (also set NEXT_PUBLIC_APP_URL in deploy env). */
 export const PRODUCTION_APP_URL = "https://smitvi.com" as const;
 
@@ -22,8 +32,20 @@ export const ROUTES = {
   login: "/login",
   signup: "/signup",
   authCallback: "/auth/callback",
+  /** @deprecated Prefer ROUTES.hub.dashboard — kept for bookmarks and emails */
   dashboard: "/dashboard",
+  /** @deprecated Prefer ROUTES.hub.intelligence */
   knowledge: "/knowledge",
+  hub: {
+    root: "/hub",
+    dashboard: "/hub/dashboard",
+    intelligence: "/hub/intelligence",
+    audience: "/hub/audience",
+    marketplace: "/hub/marketplace",
+    consultations: "/hub/consultations",
+    analytics: "/hub/analytics",
+    settings: "/hub/settings",
+  },
   twinChat: "/chat",
   inbox: "/inbox",
   inboxConversation: (id: string) => `/inbox/${id}` as const,
@@ -71,6 +93,7 @@ export const FREE_AI_CHATS_PER_DAY = 5;
 export const MARKETPLACE_COMMISSION_RATE = 0.2;
 
 export const PROTECTED_PATH_PREFIXES = [
+  "/hub",
   "/dashboard",
   "/knowledge",
   "/chat",
