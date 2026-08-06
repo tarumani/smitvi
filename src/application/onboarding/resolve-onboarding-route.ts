@@ -1,6 +1,5 @@
-import type { OnboardingFlowStep } from "@/config/onboarding-flow";
 import {
-  ONBOARDING_FLOW_STEPS,
+  normalizeOnboardingStep,
   routeForOnboardingStep,
 } from "@/config/onboarding-flow";
 import { ROUTES } from "@/config/constants";
@@ -11,13 +10,6 @@ type ProfileLike = Pick<
   "isOnboarded" | "username" | "onboardingStep"
 > | null;
 
-function normalizeStep(step: string | null | undefined): OnboardingFlowStep {
-  if (step && ONBOARDING_FLOW_STEPS.includes(step as OnboardingFlowStep)) {
-    return step as OnboardingFlowStep;
-  }
-  return "welcome";
-}
-
 /** Next onboarding step for authenticated users who have not finished activation. */
 export function resolveOnboardingRoute(profile: ProfileLike): string {
   if (!profile) {
@@ -27,7 +19,7 @@ export function resolveOnboardingRoute(profile: ProfileLike): string {
     return ROUTES.hub.dashboard;
   }
 
-  const step = normalizeStep(profile.onboardingStep);
+  const step = normalizeOnboardingStep(profile.onboardingStep);
   if (step === "score") {
     return routeForOnboardingStep("score");
   }

@@ -30,6 +30,15 @@ function isOnboardingPath(pathname: string | null): boolean {
   );
 }
 
+/** Profile editing is allowed before the activation funnel is complete. */
+function isProfileSettingsPath(pathname: string | null): boolean {
+  if (!pathname) return false;
+  return (
+    pathname === ROUTES.profileSettings ||
+    pathname === ROUTES.hub.settings
+  );
+}
+
 export async function redirectIfOnboardingIncomplete(
   pathname: string | null,
 ): Promise<CurrentSession | null> {
@@ -40,7 +49,13 @@ export async function redirectIfOnboardingIncomplete(
 
   const onOnboarding = isOnboardingPath(pathname);
 
-  if (!hasCompletedUsernameSetup(session) && !onOnboarding) {
+  const onProfileSettings = isProfileSettingsPath(pathname);
+
+  if (
+    !hasCompletedUsernameSetup(session) &&
+    !onOnboarding &&
+    !onProfileSettings
+  ) {
     redirect(resolveOnboardingRoute(session.profile));
   }
 

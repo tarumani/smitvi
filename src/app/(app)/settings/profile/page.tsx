@@ -7,6 +7,7 @@ import { ProfileForm } from "@/components/profile/profile-form";
 import { ProjectsEditor } from "@/components/profile/projects-editor";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
+import { resolveOnboardingRoute } from "@/application/onboarding/resolve-onboarding-route";
 import { ROUTES } from "@/config/constants";
 
 export const metadata: Metadata = {
@@ -19,13 +20,9 @@ export default async function ProfileSettingsPage() {
     redirect(ROUTES.login);
   }
 
-  if (!session.profile?.isOnboarded) {
-    redirect(ROUTES.onboarding);
-  }
-
   const profile = await container.getMyProfile.execute(session.user.id);
   if (!profile) {
-    redirect(ROUTES.onboarding);
+    redirect(resolveOnboardingRoute(session.profile));
   }
 
   return (

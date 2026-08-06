@@ -84,10 +84,30 @@ export const INTELLIGENCE_BADGES = [
   { id: "hi_pro", label: "Human Intelligence Pro", minScore: 90 },
 ] as const;
 
+/** Maps pre–v2 onboarding step ids to the current funnel. */
+const LEGACY_ONBOARDING_STEPS: Record<string, OnboardingFlowStep> = {
+  archetype: "profession",
+  profile: "bio",
+  connect: "knowledge",
+  build: "follow",
+  celebrate: "score",
+};
+
+export function normalizeOnboardingStep(
+  step: string | null | undefined,
+): OnboardingFlowStep {
+  if (step && ONBOARDING_FLOW_STEPS.includes(step as OnboardingFlowStep)) {
+    return step as OnboardingFlowStep;
+  }
+  if (step && step in LEGACY_ONBOARDING_STEPS) {
+    return LEGACY_ONBOARDING_STEPS[step];
+  }
+  return "welcome";
+}
+
 export function onboardingStepIndex(step: string | null | undefined): number {
-  if (!step) return 0;
-  const idx = ONBOARDING_FLOW_STEPS.indexOf(step as OnboardingFlowStep);
-  return idx >= 0 ? idx : 0;
+  const normalized = normalizeOnboardingStep(step);
+  return ONBOARDING_FLOW_STEPS.indexOf(normalized);
 }
 
 export function onboardingProgressPercent(step: string | null | undefined): number {
