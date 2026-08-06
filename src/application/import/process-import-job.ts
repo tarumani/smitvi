@@ -90,7 +90,11 @@ async function extractForJobType(
     }
     case "WEBSITE":
     default: {
-      const text = await fetchWebsiteText(sourceUrl);
+      const text = await fetchWebsiteText(sourceUrl, {
+        preferReader:
+          sourceUrl.includes("notion.") ||
+          sourceUrl.includes("docs.google.com"),
+      });
       const title = new URL(sourceUrl).hostname.replace(/^www\./, "");
       return { title, text, knowledgeType: "WEBSITE" };
     }

@@ -1,9 +1,19 @@
 import { ValidationError } from "@/domain/shared/errors";
-import { fetchWebsiteText } from "@/infrastructure/web/fetch-website-text";
+import {
+  fetchReaderText,
+  fetchWebsiteText,
+} from "@/infrastructure/web/fetch-website-text";
 
-const GITHUB_HEADERS = {
-  Accept: "application/vnd.github+json",
-  "User-Agent": "SmitviImport/1.0 (+https://smitvi.com)",
+const GITHUB_HEADERS = (): Record<string, string> => {
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github+json",
+    "User-Agent": "SmitviImport/1.0 (+https://smitvi.com)",
+  };
+  const token = process.env.GITHUB_IMPORT_TOKEN?.trim();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  return headers;
 };
 
 function decodeBase64Utf8(data: string): string {
@@ -31,7 +41,7 @@ export async function fetchGitHubImportText(
     const repoName = repo.replace(/\.git$/, "");
     const readmeRes = await fetch(
       `https://api.github.com/repos/${owner}/${repoName}/readme`,
-      { headers: GITHUB_HEADERS },
+      { headers: GITHUB_HEADERS() },
     );
     if (!readmeRes.ok) {
       throw new ValidationError(
@@ -58,11 +68,11 @@ export async function fetchGitHubImportText(
     const username = segments[0];
     const [userRes, reposRes] = await Promise.all([
       fetch(`https://api.github.com/users/${username}`, {
-        headers: GITHUB_HEADERS,
+        headers: GITHUB_HEADERS(),
       }),
       fetch(
         `https://api.github.com/users/${username}/repos?sort=updated&per_page=10`,
-        { headers: GITHUB_HEADERS },
+        { headers: GITHUB_HEADERS() },
       ),
     ]);
     if (!userRes.ok) {
@@ -272,7 +282,12 @@ export async function fetchLinkedInImportText(
   }
 
   try {
-    const text = await fetchWebsiteText(url.toString());
+    let text: string;
+    try {
+      text = await fetchReaderText(url.toString());
+    } catch {
+      text = await fetchWebsiteText(url.toString(), { preferReader: true });
+    }
     const slug = path.split("/").filter(Boolean).pop() ?? "LinkedIn";
     return {
       title: `LinkedIn · ${slug}`,
@@ -280,7 +295,7 @@ export async function fetchLinkedInImportText(
     };
   } catch {
     throw new ValidationError(
-      "LinkedIn blocked this import. Export your profile as PDF or paste your About section under Train Twin → upload text.",
+      "We could not read this LinkedIn page automatically. Paste your About / experience text below, or upload a LinkedIn PDF export.",
     );
   }
 }

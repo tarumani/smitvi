@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { ROUTES } from "@/config/constants";
 import { cn } from "@/lib/utils";
 
@@ -237,7 +238,52 @@ function InteractiveSourcePanel({
 }) {
   const router = useRouter();
   const [url, setUrl] = useState("");
+  const [pasteTitle, setPasteTitle] = useState("");
+  const [pasteText, setPasteText] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [isPastePending, startPasteTransition] = useTransition();
+
+  async function importPastedText(defaultTitle: string) {
+    const content = pasteText.trim();
+    if (content.length < 40) {
+      toast.error("Add at least a few sentences of profile or page text");
+      return;
+    }
+    const safeTitle =
+      pasteTitle.trim() ||
+      content.split(/\r?\n/).find((line) => line.trim())?.slice(0, 80) ||
+      defaultTitle;
+    const fileName = `${safeTitle
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 60) || "import"}.txt`;
+    const file = new File([content], fileName, { type: "text/plain" });
+    const form = new FormData();
+    form.append("file", file);
+    form.append("title", safeTitle);
+    const response = await fetch("/api/v1/knowledge", {
+      method: "POST",
+      body: form,
+    });
+    const json: unknown = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        typeof json === "object" &&
+          json !== null &&
+          "error" in json &&
+          typeof (json as { error?: { message?: string } }).error?.message ===
+            "string"
+          ? (json as { error: { message: string } }).error.message
+          : "Import failed",
+      );
+    }
+    toast.success(`${source.label} text imported — training your Twin`);
+    setPasteText("");
+    setPasteTitle("");
+    onImported?.();
+    router.refresh();
+  }
 
   if (!source.available) {
     return null;
@@ -321,6 +367,48 @@ function InteractiveSourcePanel({
         <Button type="submit" disabled={isPending}>
           Import from {source.label}
         </Button>
+        {source.id === "linkedin" ||
+        source.id === "notion" ||
+        source.id === "google-docs" ? (
+          <div className="space-y-3 border-t border-[var(--border)] pt-4">
+            <p className="text-sm font-medium">
+              Or paste text {source.id === "linkedin" ? "(recommended for LinkedIn)" : ""}
+            </p>
+            <Input
+              placeholder="Title (optional)"
+              value={pasteTitle}
+              onChange={(event) => setPasteTitle(event.target.value)}
+            />
+            <Textarea
+              placeholder={
+                source.id === "linkedin"
+                  ? "Paste your LinkedIn About, headline, and experience…"
+                  : "Paste the page content you want your Twin to learn…"
+              }
+              className="min-h-[120px]"
+              value={pasteText}
+              onChange={(event) => setPasteText(event.target.value)}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={isPastePending}
+              onClick={() => {
+                startPasteTransition(async () => {
+                  try {
+                    await importPastedText(`${source.label} import`);
+                  } catch (error) {
+                    toast.error(
+                      error instanceof Error ? error.message : "Import failed",
+                    );
+                  }
+                });
+              }}
+            >
+              Import pasted text
+            </Button>
+          </div>
+        ) : null}
       </form>
     );
   }
