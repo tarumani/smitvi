@@ -14,6 +14,7 @@ import { CreateSubscriptionCheckout } from "@/application/billing/create-subscri
 import { CreateMarketplaceCheckout } from "@/application/billing/create-marketplace-checkout";
 import { HandleStripeWebhook } from "@/application/billing/handle-stripe-webhook";
 import { HandleRazorpayWebhook } from "@/application/billing/handle-razorpay-webhook";
+import { GetFollowingFeed } from "@/application/discover/get-following-feed";
 import { GetNetworkHome } from "@/application/network/get-network-home";
 import { CreateOrganization } from "@/application/organization/create-organization";
 import { PrismaAuditLogRepository } from "@/infrastructure/database/repositories/audit-repository";
@@ -76,6 +77,7 @@ export const container = {
   ),
   createOrganization: new CreateOrganization(organizations, auditLogs),
   getNetworkHome: new GetNetworkHome(search, marketplace),
+  getFollowingFeed: new GetFollowingFeed(),
   users,
   profiles,
   knowledge,

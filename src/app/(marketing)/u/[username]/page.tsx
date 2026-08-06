@@ -66,6 +66,10 @@ export default async function PublicProfilePage({ params }: PageProps) {
   const isFollowing = session
     ? await container.social.isFollowing(session.user.id, profile.userId)
     : false;
+  const viewerProfile =
+    session && !isOwner
+      ? await container.getMyProfile.execute(session.user.id)
+      : null;
 
   const [publicKnowledge, reviews, consultationOffer, reputationScore, offerListings] =
     await Promise.all([
@@ -125,6 +129,8 @@ export default async function PublicProfilePage({ params }: PageProps) {
       username={profile.username}
       isFollowing={isFollowing}
       isOwner={isOwner}
+      viewerIsAuthenticated={Boolean(session)}
+      viewerDigestEnabled={viewerProfile?.hubDigestEmailEnabled ?? true}
       followSlot={
         <FollowButton
           username={profile.username}

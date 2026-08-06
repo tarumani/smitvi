@@ -9,7 +9,9 @@ import {
   Tags,
   UserPlus,
 } from "lucide-react";
+import { getCurrentSession } from "@/application/auth/get-current-session";
 import { container } from "@/application/container";
+import { DiscoverFollowingFeed } from "@/components/discover/discover-following-feed";
 import { PageHero } from "@/components/layout/page-hero";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -30,10 +32,19 @@ export const metadata: Metadata = {
 };
 
 export default async function DiscoverPage() {
-  const [liveTrending, liveNew, liveTopics] = await Promise.all([
+  const session = await getCurrentSession();
+
+  const [liveTrending, liveNew, liveTopics, followingFeed, myProfile] =
+    await Promise.all([
     container.search.trendingExperts(),
     container.search.newExperts(),
     container.search.trendingTopics(),
+    session
+      ? container.getFollowingFeed.execute(session.user.id)
+      : Promise.resolve([]),
+    session
+      ? container.getMyProfile.execute(session.user.id)
+      : Promise.resolve(null),
   ]);
 
   const usingDemoExperts = liveTrending.length === 0;
@@ -97,6 +108,13 @@ export default async function DiscoverPage() {
             Be the first real expert →
           </Link>
         </p>
+      ) : null}
+
+      {session && myProfile && myProfile.followingCount > 0 ? (
+        <DiscoverFollowingFeed
+          items={followingFeed}
+          followingCount={myProfile.followingCount}
+        />
       ) : null}
 
       {/* 2. How Discover works — numbered guide strip */}

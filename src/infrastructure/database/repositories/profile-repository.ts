@@ -147,6 +147,7 @@ export class PrismaProfileRepository implements ProfileRepository {
               input.onboardingStep === undefined
                 ? undefined
                 : input.onboardingStep,
+            hubDigestEmailEnabled: input.hubDigestEmailEnabled,
           },
         });
 

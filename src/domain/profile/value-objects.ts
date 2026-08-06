@@ -116,6 +116,7 @@ export const createProfileSchema = z.object({
     .enum(["archetype", "profile", "connect", "build", "celebrate"])
     .optional()
     .nullable(),
+  hubDigestEmailEnabled: z.boolean().optional(),
 });
 
 export const updateProfileSchema = createProfileSchema.partial().extend({

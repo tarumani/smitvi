@@ -56,6 +56,7 @@ export type ProfileEntity = {
   readonly hubArchetypeId: string | null;
   readonly reputationScore: number;
   readonly onboardingStep: string | null;
+  readonly hubDigestEmailEnabled: boolean;
   readonly skills: readonly SkillEntity[];
   readonly experiences: readonly ExperienceEntity[];
   readonly socialLinks: readonly SocialLinkEntity[];

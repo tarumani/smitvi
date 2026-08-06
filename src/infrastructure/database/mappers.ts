@@ -106,6 +106,7 @@ export function toProfileEntity(profile: ProfileWithRelations): ProfileEntity {
     hubArchetypeId: profile.hubArchetypeId,
     reputationScore: profile.reputationScore,
     onboardingStep: profile.onboardingStep,
+    hubDigestEmailEnabled: profile.hubDigestEmailEnabled,
     skills: profile.skills.map(toSkillEntity),
     experiences: profile.experiences
       .slice()
