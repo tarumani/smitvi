@@ -23,7 +23,7 @@ export default async function OnboardingConnectPage() {
           Connect your knowledge
         </h1>
         <p className="mt-2 text-[var(--muted-foreground)]">
-          Import a website or upload PDFs to train your Twin.
+          Connect LinkedIn, Notion, docs, and more — pick a source below.
         </p>
       </div>
       <GlassCard className="p-6 sm:p-8">

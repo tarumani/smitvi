@@ -13,7 +13,6 @@ const NAV_LINKS = [
   { href: ROUTES.marketplace, label: "Marketplace" },
   { href: ROUTES.howItHelps, label: "How it helps" },
   { href: ROUTES.pricing, label: "Pricing" },
-  { href: ROUTES.developers, label: "Developers" },
 ] as const;
 
 function linkActive(pathname: string, href: string) {

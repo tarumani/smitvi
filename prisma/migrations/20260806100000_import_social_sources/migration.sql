@@ -1,0 +1,5 @@
+-- Import jobs: LinkedIn, GitHub, YouTube
+
+ALTER TYPE "ImportJobType" ADD VALUE IF NOT EXISTS 'LINKEDIN';
+ALTER TYPE "ImportJobType" ADD VALUE IF NOT EXISTS 'GITHUB';
+ALTER TYPE "ImportJobType" ADD VALUE IF NOT EXISTS 'YOUTUBE';

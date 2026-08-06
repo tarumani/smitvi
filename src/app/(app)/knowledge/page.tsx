@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentSession } from "@/application/auth/get-current-session";
 import { container } from "@/application/container";
+import { ConnectSourceGrid } from "@/components/knowledge/connect-source-grid";
 import { KnowledgeUploader } from "@/components/knowledge/knowledge-uploader";
 import { VisibilityToggle } from "@/components/knowledge/visibility-toggle";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,10 @@ export default async function KnowledgePage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button asChild variant="secondary">
+          <Button
+            asChild
+            className="bg-[var(--accent)] font-semibold shadow-md ring-2 ring-[var(--accent)]/30 hover:bg-[var(--accent)]/90"
+          >
             <Link href={ROUTES.marketplaceSell}>Sell your expertise</Link>
           </Button>
           <Button asChild variant="secondary">
@@ -51,7 +55,20 @@ export default async function KnowledgePage() {
         </div>
       </div>
 
-      <KnowledgeUploader />
+      <GlassCard className="p-5 sm:p-6">
+        <h2 className="font-display text-lg font-semibold">
+          Connect sources
+        </h2>
+        <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+          LinkedIn, Notion, Google Docs, website, and file uploads — your hub
+          learns from what you already know.
+        </p>
+        <ConnectSourceGrid mode="interactive" className="mt-4" />
+      </GlassCard>
+
+      <div id="knowledge-upload">
+        <KnowledgeUploader />
+      </div>
 
       {sources.length === 0 ? (
         <EmptyState

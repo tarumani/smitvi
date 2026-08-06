@@ -2,16 +2,28 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import {
+  BookOpen,
+  Link2,
+  MessageSquare,
+  Package,
+  Sparkles,
+  Star,
+  UserRound,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ROUTES } from "@/config/constants";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { id: "overview", label: "Overview" },
-  { id: "knowledge", label: "Knowledge" },
-  { id: "chat", label: "Chat" },
-  { id: "offers", label: "Offers" },
+  { id: "overview", label: "Overview", icon: UserRound },
+  { id: "knowledge", label: "Knowledge", icon: BookOpen },
+  { id: "ask", label: "Ask", icon: MessageSquare },
+  { id: "book", label: "Book", icon: Sparkles },
+  { id: "offers", label: "Offers", icon: Package },
+  { id: "reviews", label: "Reviews", icon: Star },
+  { id: "connect", label: "Connect", icon: Link2 },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -25,11 +37,59 @@ type OfferItem = {
   type: string;
 };
 
+type HubEngagementBarProps = {
+  username: string;
+  publicTwinEnabled: boolean;
+  hasConsultation: boolean;
+  offerCount: number;
+  isOwner: boolean;
+  showFollow: boolean;
+  followSlot: React.ReactNode;
+};
+
+export function HubEngagementBar({
+  username,
+  publicTwinEnabled,
+  hasConsultation,
+  offerCount,
+  isOwner,
+  showFollow,
+  followSlot,
+}: HubEngagementBarProps) {
+  if (isOwner) return null;
+
+  return (
+    <div className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface)]/60 p-3">
+      {showFollow ? followSlot : null}
+      {publicTwinEnabled ? (
+        <Button asChild size="sm">
+          <Link href={ROUTES.publicTwinChat(username)}>Ask the Twin</Link>
+        </Button>
+      ) : null}
+      {hasConsultation ? (
+        <Button asChild size="sm" variant="secondary">
+          <a href="#hub-tab-book">Book a consult</a>
+        </Button>
+      ) : null}
+      {offerCount > 0 ? (
+        <Button asChild size="sm" variant="secondary">
+          <a href="#hub-tab-offers">Shop offers ({offerCount})</a>
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
 type IntelligenceHubTabsProps = {
   username: string;
   publicTwinEnabled: boolean;
   overview: React.ReactNode;
   knowledge: React.ReactNode;
+  book: React.ReactNode;
+  reviews: React.ReactNode;
+  connect: React.ReactNode;
+  ownerPulse?: React.ReactNode;
+  faqQuestions: string[];
   offers: OfferItem[];
 };
 
@@ -38,56 +98,114 @@ export function IntelligenceHubTabs({
   publicTwinEnabled,
   overview,
   knowledge,
+  book,
+  reviews,
+  connect,
+  ownerPulse,
+  faqQuestions,
   offers,
 }: IntelligenceHubTabsProps) {
   const [tab, setTab] = useState<TabId>("overview");
+  const chatHref = ROUTES.publicTwinChat(username);
+
+  const defaultPrompts = [
+    "What are you best known for?",
+    "Summarize your public expertise",
+    "What should I ask before hiring you?",
+  ];
+  const prompts =
+    faqQuestions.length > 0
+      ? faqQuestions.slice(0, 6)
+      : defaultPrompts;
 
   return (
-    <div className="mt-8 space-y-6">
-      <div className="flex flex-wrap gap-2 border-b border-[var(--border)] pb-3">
-        {TABS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => setTab(item.id)}
-            className={cn(
-              "rounded-full px-4 py-2 text-sm font-medium transition-colors",
-              tab === item.id
-                ? "bg-[var(--accent-soft)] text-[var(--accent)]"
-                : "text-[var(--muted-foreground)] hover:bg-[var(--surface)]",
-            )}
-          >
-            {item.label}
-          </button>
-        ))}
+    <div className="mt-6 space-y-6">
+      {ownerPulse ? <div className="mb-2">{ownerPulse}</div> : null}
+
+      <div className="-mx-1 flex gap-2 overflow-x-auto border-b border-[var(--border)] pb-3 [scrollbar-width:thin]">
+        {TABS.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              id={
+                item.id === "book"
+                  ? "hub-tab-book"
+                  : item.id === "offers"
+                    ? "hub-tab-offers"
+                    : undefined
+              }
+              onClick={() => setTab(item.id)}
+              className={cn(
+                "flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors sm:px-4",
+                tab === item.id
+                  ? "bg-[var(--accent-soft)] text-[var(--accent)]"
+                  : "text-[var(--muted-foreground)] hover:bg-[var(--surface)]",
+              )}
+            >
+              <Icon className="h-3.5 w-3.5 opacity-80" />
+              {item.label}
+            </button>
+          );
+        })}
       </div>
 
       {tab === "overview" ? overview : null}
-
       {tab === "knowledge" ? knowledge : null}
 
-      {tab === "chat" ? (
-        <GlassCard className="space-y-4 p-6">
-          <h2 className="font-display text-xl font-semibold">Twin Chat</h2>
-          <p className="text-sm text-[var(--muted-foreground)]">
-            Ask questions grounded in this hub&apos;s public knowledge.
-          </p>
-          {publicTwinEnabled ? (
-            <Button asChild>
-              <Link href={ROUTES.publicTwinChat(username)}>Open chat</Link>
-            </Button>
-          ) : (
-            <p className="text-sm text-[var(--muted)]">Twin chat is unavailable.</p>
-          )}
-        </GlassCard>
+      {tab === "ask" ? (
+        <div className="space-y-6">
+          <GlassCard className="space-y-4 p-6">
+            <h2 className="font-display text-xl font-semibold">Ask the Twin</h2>
+            <p className="text-sm text-[var(--muted-foreground)]">
+              Get answers grounded in this hub&apos;s public knowledge — with
+              citations when available.
+            </p>
+            {publicTwinEnabled ? (
+              <Button asChild size="lg">
+                <Link href={chatHref}>Start Twin chat</Link>
+              </Button>
+            ) : (
+              <p className="text-sm text-[var(--muted)]">
+                Twin chat is not enabled on this hub yet.
+              </p>
+            )}
+          </GlassCard>
+          <section>
+            <h3 className="text-sm font-semibold tracking-wide text-[var(--muted)] uppercase">
+              Try asking
+            </h3>
+            <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+              {prompts.map((question) => (
+                <li key={question}>
+                  <Link
+                    href={publicTwinEnabled ? chatHref : "#"}
+                    className={cn(
+                      "block rounded-xl border border-[var(--border)] bg-[var(--glass)] px-4 py-3 text-sm transition-colors hover:border-[var(--accent)] hover:bg-[var(--accent-soft)]/40",
+                      !publicTwinEnabled && "pointer-events-none opacity-50",
+                    )}
+                  >
+                    {question}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
       ) : null}
+
+      {tab === "book" ? book : null}
 
       {tab === "offers" ? (
         <section className="space-y-3">
-          <h2 className="font-display text-xl font-semibold">Offers</h2>
+          <h2 className="font-display text-xl font-semibold">Marketplace offers</h2>
+          <p className="text-sm text-[var(--muted-foreground)]">
+            Knowledge packs, templates, and services from this expert.
+          </p>
           {offers.length === 0 ? (
             <GlassCard className="p-5 text-sm text-[var(--muted-foreground)]">
-              No marketplace offers yet.
+              No marketplace offers yet. Follow this hub for updates.
             </GlassCard>
           ) : (
             offers.map((listing) => (
@@ -102,11 +220,17 @@ export function IntelligenceHubTabs({
                 <p className="mt-3 text-sm font-medium">
                   ${(listing.priceCents / 100).toFixed(0)} {listing.currency}
                 </p>
+                <Button asChild size="sm" className="mt-4" variant="secondary">
+                  <Link href={ROUTES.marketplace}>View on marketplace</Link>
+                </Button>
               </GlassCard>
             ))
           )}
         </section>
       ) : null}
+
+      {tab === "reviews" ? reviews : null}
+      {tab === "connect" ? connect : null}
     </div>
   );
 }

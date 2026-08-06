@@ -163,6 +163,9 @@ enum MarketplaceListingType {
 enum ImportJobType {
   WEBSITE
   PDF
+  LINKEDIN
+  GITHUB
+  YOUTUBE
 }
 
 enum ImportJobStatus {

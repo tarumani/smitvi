@@ -139,10 +139,23 @@ export class PrismaKnowledgeRepository {
     sourceUrl: string;
     extractedText: string;
   }): Promise<KnowledgeSourceEntity> {
+    return this.createFromExtractedUrl({
+      ...input,
+      type: "WEBSITE",
+    });
+  }
+
+  async createFromExtractedUrl(input: {
+    userId: string;
+    type: "WEBSITE" | "GITHUB" | "YOUTUBE";
+    title: string;
+    sourceUrl: string;
+    extractedText: string;
+  }): Promise<KnowledgeSourceEntity> {
     const row = await prisma.knowledgeSource.create({
       data: {
         userId: input.userId,
-        type: "WEBSITE",
+        type: input.type,
         title: input.title,
         sourceUrl: input.sourceUrl,
         extractedText: input.extractedText,

@@ -8,6 +8,7 @@ import {
   Building2,
   Compass,
   CalendarDays,
+  CircleDollarSign,
   CreditCard,
   Inbox,
   KeyRound,
@@ -22,7 +23,7 @@ import {
 import { AccountMenu } from "@/components/landing/account-menu";
 import { SmitviLogo } from "@/components/brand/smitvi-logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
-import { ROUTES, TRAIN_TWIN_LABEL, TRAIN_TWIN_NAV_SHORT, APP_OUTCOME } from "@/config/constants";
+import { ROUTES, TRAIN_TWIN_LABEL, TRAIN_TWIN_NAV_SHORT } from "@/config/constants";
 import { cn } from "@/lib/utils";
 
 type AppShellProps = {
@@ -37,6 +38,12 @@ type AppShellProps = {
 const baseNavItems = [
   { href: ROUTES.hub.dashboard, label: "Dashboard", icon: LayoutDashboard },
   { href: ROUTES.hub.intelligence, label: TRAIN_TWIN_LABEL, icon: BookOpen },
+  {
+    href: ROUTES.marketplaceSell,
+    label: "Sell your expertise",
+    icon: CircleDollarSign,
+    highlight: true,
+  },
   { href: ROUTES.hub.leads, label: "Leads", icon: Users },
   { href: ROUTES.twinChat, label: "Twin Chat", icon: MessageSquare },
   { href: ROUTES.inbox, label: "Twin Inbox", icon: Inbox },
@@ -99,15 +106,23 @@ export function AppShell({
             const Icon = item.icon;
             const active =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const highlighted = "highlight" in item && item.highlight;
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                  active
-                    ? "bg-[var(--accent-soft)] text-[var(--accent)]"
-                    : "text-[var(--muted-foreground)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]",
+                  highlighted &&
+                    !active &&
+                    "border border-[var(--accent)]/40 bg-[var(--accent-soft)]/80 font-semibold text-[var(--accent)] shadow-sm",
+                  highlighted &&
+                    active &&
+                    "border border-[var(--accent)] bg-[var(--accent)] font-semibold text-[var(--accent-foreground)] shadow-md",
+                  !highlighted &&
+                    (active
+                      ? "bg-[var(--accent-soft)] text-[var(--accent)]"
+                      : "text-[var(--muted-foreground)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]"),
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" />
@@ -118,15 +133,18 @@ export function AppShell({
         </nav>
 
         <div className="shrink-0 border-t border-[var(--border)] p-4">
-          <div className="rounded-2xl bg-[var(--accent-soft)]/60 px-3 py-3">
-            <p className="text-[10px] font-semibold tracking-[0.14em] text-[var(--accent)] uppercase">
-              {APP_OUTCOME}
-            </p>
-            <p className="mt-1.5 text-xs leading-relaxed text-[var(--muted-foreground)]">
-              {TRAIN_TWIN_LABEL}, get discovered, and sell consults or packs on
-              the marketplace.
-            </p>
-          </div>
+          <Link
+            href={ROUTES.marketplaceSell}
+            className="flex flex-col rounded-2xl border-2 border-[var(--accent)] bg-[var(--accent)] px-3 py-3 text-[var(--accent-foreground)] shadow-md transition-transform hover:scale-[1.02] active:scale-[0.99]"
+          >
+            <span className="flex items-center gap-2 text-sm font-bold">
+              <CircleDollarSign className="h-4 w-4" />
+              Sell your expertise
+            </span>
+            <span className="mt-1 text-[11px] font-medium leading-snug opacity-90">
+              List consults, packs, and offers on the marketplace.
+            </span>
+          </Link>
         </div>
       </aside>
 

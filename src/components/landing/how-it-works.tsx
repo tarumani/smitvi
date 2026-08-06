@@ -1,3 +1,5 @@
+import { ConnectSourceGrid, ConnectSourcesMarketingCta } from "@/components/knowledge/connect-source-grid";
+
 const steps = [
   {
     step: "01",
@@ -63,6 +65,12 @@ export function HowItWorks() {
                 <p className="mt-2 max-w-md text-sm leading-relaxed text-[var(--muted-foreground)] sm:text-base">
                   {item.description}
                 </p>
+                {item.step === "02" ? (
+                  <>
+                    <ConnectSourceGrid mode="marketing" />
+                    <ConnectSourcesMarketingCta />
+                  </>
+                ) : null}
               </li>
             ))}
           </ol>

@@ -14,7 +14,6 @@ const PRODUCT_LINKS = [
 const COMPANY_LINKS = [
   { href: ROUTES.about, label: "About" },
   { href: ROUTES.contact, label: "Contact" },
-  { href: ROUTES.developers, label: "Developers" },
   { href: ROUTES.signup, label: "Create Twin" },
   { href: ROUTES.login, label: "Sign in" },
 ] as const;
