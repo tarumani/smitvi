@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { resolveOnboardingRoute } from "@/application/onboarding/resolve-onboarding-route";
 import { ROUTES } from "@/config/constants";
 import { container } from "@/application/container";
 import { createSupabaseServerClient } from "@/infrastructure/auth/supabase/server";
@@ -64,7 +65,9 @@ export async function GET(request: Request) {
   );
 
   const profile = await container.profiles.findSummaryByUserId(data.user.id);
-  const destination = profile?.isOnboarded ? next : ROUTES.onboarding;
+  const destination = profile?.isOnboarded
+    ? next
+    : resolveOnboardingRoute(profile);
 
   return NextResponse.redirect(new URL(destination, origin));
 }

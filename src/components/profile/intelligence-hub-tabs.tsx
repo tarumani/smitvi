@@ -5,10 +5,11 @@ import { useCallback, useEffect, useState } from "react";
 import {
   Activity,
   BookOpen,
+  Bot,
+  CalendarDays,
   Link2,
-  MessageSquare,
-  Package,
-  Sparkles,
+  Rss,
+  ShoppingBag,
   Star,
   UserRound,
 } from "lucide-react";
@@ -25,9 +26,9 @@ const TABS = [
   { id: "overview", label: "Overview", icon: UserRound },
   { id: "activity", label: "Activity", icon: Activity },
   { id: "knowledge", label: "Knowledge", icon: BookOpen },
-  { id: "ask", label: "Ask", icon: MessageSquare },
-  { id: "book", label: "Book", icon: Sparkles },
-  { id: "offers", label: "Offers", icon: Package },
+  { id: "ask", label: "Ask", icon: Bot },
+  { id: "book", label: "Book", icon: CalendarDays },
+  { id: "offers", label: "Offers", icon: ShoppingBag },
   { id: "reviews", label: "Reviews", icon: Star },
   { id: "connect", label: "Connect", icon: Link2 },
 ] as const;
@@ -79,21 +80,33 @@ export function HubEngagementBar({
       {showFollow ? followSlot : null}
       {publicTwinEnabled ? (
         <Button asChild size="sm">
-          <Link href={ROUTES.publicTwinChat(username)}>Ask the Twin</Link>
+          <Link href={ROUTES.publicTwinChat(username)}>
+            <Bot className="h-4 w-4" />
+            Ask the Twin
+          </Link>
         </Button>
       ) : null}
       {hasConsultation ? (
         <Button asChild size="sm" variant="secondary">
-          <a href="#hub-tab-book">Book a consult</a>
+          <a href="#hub-tab-book" className="inline-flex items-center gap-1.5">
+            <CalendarDays className="h-4 w-4" />
+            Book a consult
+          </a>
         </Button>
       ) : null}
       {offerCount > 0 ? (
         <Button asChild size="sm" variant="secondary">
-          <a href="#hub-tab-offers">Shop offers ({offerCount})</a>
+          <a href="#hub-tab-offers" className="inline-flex items-center gap-1.5">
+            <ShoppingBag className="h-4 w-4" />
+            Shop offers ({offerCount})
+          </a>
         </Button>
       ) : null}
       <Button asChild size="sm" variant="ghost">
-        <a href="#hub-tab-activity">See activity</a>
+        <a href="#hub-tab-activity" className="inline-flex items-center gap-1.5">
+          <Rss className="h-4 w-4" />
+          See activity
+        </a>
       </Button>
     </div>
   );
@@ -107,7 +120,6 @@ type IntelligenceHubTabsProps = {
   book: React.ReactNode;
   reviews: React.ReactNode;
   connect: React.ReactNode;
-  ownerPulse?: React.ReactNode;
   faqQuestions: string[];
   offers: OfferItem[];
   activityItems: HubActivityItem[];
@@ -122,7 +134,6 @@ export function IntelligenceHubTabs({
   book,
   reviews,
   connect,
-  ownerPulse,
   faqQuestions,
   offers,
   activityItems,
@@ -158,8 +169,6 @@ export function IntelligenceHubTabs({
 
   return (
     <div className="mt-6 space-y-6">
-      {ownerPulse ? <div className="mb-2">{ownerPulse}</div> : null}
-
       <div className="-mx-1 flex gap-2 overflow-x-auto border-b border-[var(--border)] pb-3 [scrollbar-width:thin]">
         {TABS.map((item) => {
           const Icon = item.icon;
@@ -170,14 +179,23 @@ export function IntelligenceHubTabs({
               id={`hub-tab-${item.id}`}
               onClick={() => selectTab(item.id)}
               className={cn(
-                "flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors sm:px-4",
+                "flex shrink-0 items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-colors sm:px-4",
                 tab === item.id
                   ? "bg-[var(--accent-soft)] text-[var(--accent)]"
                   : "text-[var(--muted-foreground)] hover:bg-[var(--surface)]",
               )}
             >
-              <Icon className="h-3.5 w-3.5 opacity-80" />
-              {item.label}
+              <span
+                className={cn(
+                  "flex h-7 w-7 shrink-0 items-center justify-center rounded-full",
+                  tab === item.id
+                    ? "bg-[var(--accent)]/15 text-[var(--accent)]"
+                    : "bg-[var(--surface)] text-[var(--muted-foreground)]",
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" aria-hidden />
+              </span>
+              <span>{item.label}</span>
             </button>
           );
         })}

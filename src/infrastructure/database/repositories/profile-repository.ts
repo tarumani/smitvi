@@ -80,7 +80,7 @@ export class PrismaProfileRepository implements ProfileRepository {
             publicTwinEnabled: input.publicTwinEnabled,
             isOnboarded: false,
             hubArchetypeId: input.hubArchetypeId ?? null,
-            onboardingStep: input.onboardingStep ?? "connect",
+            onboardingStep: input.onboardingStep ?? "welcome",
           },
         });
 

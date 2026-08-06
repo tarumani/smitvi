@@ -11,6 +11,7 @@ import {
   ROUTES,
   TRAIN_TWIN_LABEL,
 } from "@/config/constants";
+import { IntelligenceActivationHub } from "@/components/dashboard/intelligence-activation-hub";
 import { formatInrFromMinorUnits } from "@/lib/format-money";
 
 export const metadata: Metadata = {
@@ -143,6 +144,11 @@ export default async function DashboardPage() {
           </Link>
         </p>
       </div>
+
+      <IntelligenceActivationHub
+        userId={userId}
+        emailVerified={session.user.emailVerified}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat) => (

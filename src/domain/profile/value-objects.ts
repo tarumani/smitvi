@@ -113,7 +113,21 @@ export const createProfileSchema = z.object({
   portfolio: z.array(portfolioItemSchema).max(20).default([]),
   hubArchetypeId: z.enum(hubArchetypeIds).optional().nullable(),
   onboardingStep: z
-    .enum(["archetype", "profile", "connect", "build", "celebrate"])
+    .enum([
+      "welcome",
+      "profession",
+      "interests",
+      "photo",
+      "bio",
+      "knowledge",
+      "follow",
+      "score",
+      "archetype",
+      "profile",
+      "connect",
+      "build",
+      "celebrate",
+    ])
     .optional()
     .nullable(),
   hubDigestEmailEnabled: z.boolean().optional(),

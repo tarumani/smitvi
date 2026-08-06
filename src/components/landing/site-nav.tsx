@@ -3,16 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { CircleHelp, Compass, Menu, Store, Tags, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/config/constants";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
-  { href: ROUTES.discover, label: "Discover" },
-  { href: ROUTES.marketplace, label: "Marketplace" },
-  { href: ROUTES.howItHelps, label: "How it helps" },
-  { href: ROUTES.pricing, label: "Pricing" },
+  { href: ROUTES.discover, label: "Discover", icon: Compass },
+  { href: ROUTES.marketplace, label: "Marketplace", icon: Store },
+  { href: ROUTES.howItHelps, label: "How it helps", icon: CircleHelp },
+  { href: ROUTES.pricing, label: "Pricing", icon: Tags },
 ] as const;
 
 function linkActive(pathname: string, href: string) {
@@ -31,21 +31,25 @@ export function SiteNav({ variant, signedIn = false }: SiteNavProps) {
   if (variant === "desktop") {
     return (
       <nav className="flex items-center gap-7 text-sm font-medium text-[var(--muted-foreground)]">
-        {NAV_LINKS.map((link) => (
+        {NAV_LINKS.map((link) => {
+          const Icon = link.icon;
+          return (
           <Link
             key={link.href}
             href={link.href}
             className={cn(
-              "relative transition-colors hover:text-[var(--foreground)]",
+              "relative inline-flex items-center gap-1.5 transition-colors hover:text-[var(--foreground)]",
               linkActive(pathname, link.href) && "text-[var(--foreground)]",
             )}
           >
+            <Icon className="h-4 w-4 shrink-0 opacity-80" aria-hidden />
             {link.label}
             {linkActive(pathname, link.href) ? (
               <span className="absolute -bottom-2 left-0 h-0.5 w-full rounded-full bg-[var(--accent)]" />
             ) : null}
           </Link>
-        ))}
+          );
+        })}
       </nav>
     );
   }
@@ -65,21 +69,25 @@ export function SiteNav({ variant, signedIn = false }: SiteNavProps) {
       {open ? (
         <div className="absolute inset-x-0 top-full border-b border-[var(--border)] bg-[var(--background)]/95 px-4 py-4 shadow-lg backdrop-blur-xl">
           <nav className="flex flex-col gap-1">
-            {NAV_LINKS.map((link) => (
+            {NAV_LINKS.map((link) => {
+              const Icon = link.icon;
+              return (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
                 className={cn(
-                  "rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                  "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                   linkActive(pathname, link.href)
                     ? "bg-[var(--accent-soft)] text-[var(--foreground)]"
                     : "text-[var(--muted-foreground)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]",
                 )}
               >
+                <Icon className="h-4 w-4 shrink-0 opacity-80" aria-hidden />
                 {link.label}
               </Link>
-            ))}
+              );
+            })}
             {!signedIn ? (
               <div className="mt-2 grid grid-cols-2 gap-2 border-t border-[var(--border)] pt-3 sm:hidden">
                 <Button asChild variant="secondary" size="sm">

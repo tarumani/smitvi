@@ -372,32 +372,6 @@ export default async function PublicProfilePage({ params }: PageProps) {
     </GlassCard>
   );
 
-  const ownerPulse = isOwner ? (
-    <GlassCard className="border-[var(--accent)]/30 bg-[var(--accent-soft)]/30 p-5">
-      <p className="text-sm font-semibold text-[var(--accent)]">
-        Keep your hub active
-      </p>
-      <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-        Train sources, respond to leads, and publish offers so visitors keep
-        coming back.
-      </p>
-      <div className="mt-4 flex flex-wrap gap-2">
-        <Button asChild size="sm">
-          <Link href={ROUTES.hub.intelligence}>Train Twin</Link>
-        </Button>
-        <Button asChild size="sm" variant="secondary">
-          <Link href={ROUTES.hub.leads}>Leads</Link>
-        </Button>
-        <Button asChild size="sm" variant="secondary">
-          <Link href={ROUTES.marketplaceSell}>Sell expertise</Link>
-        </Button>
-        <Button asChild size="sm" variant="ghost">
-          <Link href={ROUTES.hub.dashboard}>Dashboard</Link>
-        </Button>
-      </div>
-    </GlassCard>
-  ) : null;
-
   const knowledgePanel = (
     <section className="space-y-3">
       <h2 className="font-display text-xl font-semibold">Public knowledge</h2>
@@ -456,7 +430,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
                 <Link href={ROUTES.profileSettings}>Edit profile</Link>
               </Button>
             )}
-            {profile.publicTwinEnabled ? (
+            {!isOwner && profile.publicTwinEnabled ? (
               <Button asChild>
                 <Link href={ROUTES.publicTwinChat(profile.username)}>
                   Chat with Twin
@@ -490,7 +464,6 @@ export default async function PublicProfilePage({ params }: PageProps) {
           book={bookPanel}
           reviews={reviewsPanel}
           connect={connectPanel}
-          ownerPulse={ownerPulse}
           faqQuestions={faqQuestions}
           activityItems={activityItems}
           activityUpdatesBanner={activityUpdatesBanner}

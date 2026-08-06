@@ -1,30 +1,39 @@
-import type { ProfileEntity, ProfileSummary } from "@/domain/profile/entities";
+import type { OnboardingFlowStep } from "@/config/onboarding-flow";
+import {
+  ONBOARDING_FLOW_STEPS,
+  routeForOnboardingStep,
+} from "@/config/onboarding-flow";
 import { ROUTES } from "@/config/constants";
+import type { ProfileEntity, ProfileSummary } from "@/domain/profile/entities";
 
 type ProfileLike = Pick<
   ProfileEntity | ProfileSummary,
-  "isOnboarded" | "hubArchetypeId" | "username" | "onboardingStep"
+  "isOnboarded" | "username" | "onboardingStep"
 > | null;
 
-/** Next onboarding step for authenticated users who have not finished celebrate. */
+function normalizeStep(step: string | null | undefined): OnboardingFlowStep {
+  if (step && ONBOARDING_FLOW_STEPS.includes(step as OnboardingFlowStep)) {
+    return step as OnboardingFlowStep;
+  }
+  return "welcome";
+}
+
+/** Next onboarding step for authenticated users who have not finished activation. */
 export function resolveOnboardingRoute(profile: ProfileLike): string {
   if (!profile) {
-    return ROUTES.onboardingArchetype;
+    return routeForOnboardingStep("welcome");
   }
   if (profile.isOnboarded) {
     return ROUTES.hub.dashboard;
   }
-  if (!profile.hubArchetypeId) {
-    return ROUTES.onboardingArchetype;
+
+  const step = normalizeStep(profile.onboardingStep);
+  if (step === "score") {
+    return routeForOnboardingStep("score");
   }
-  if (!profile.username?.trim()) {
-    return ROUTES.onboardingProfile;
+  if (!profile.username?.trim() && step !== "welcome" && step !== "profession") {
+    return routeForOnboardingStep("bio");
   }
 
-  const step = profile.onboardingStep;
-  if (step === "celebrate") return ROUTES.onboardingCelebrate;
-  if (step === "build") return ROUTES.onboardingBuild;
-  if (step === "connect") return ROUTES.onboardingConnect;
-
-  return ROUTES.onboardingConnect;
+  return routeForOnboardingStep(step);
 }

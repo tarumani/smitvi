@@ -3,10 +3,17 @@ import { getCurrentSession } from "@/application/auth/get-current-session";
 import { resolveOnboardingRoute } from "@/application/onboarding/resolve-onboarding-route";
 import { ROUTES } from "@/config/constants";
 
-export default async function OnboardingIndexPage() {
+export default async function OnboardingFlowLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const session = await getCurrentSession();
   if (!session) {
     redirect(ROUTES.login);
   }
-  redirect(resolveOnboardingRoute(session.profile));
+  if (session.profile?.isOnboarded) {
+    redirect(ROUTES.hub.dashboard);
+  }
+  return <>{children}</>;
 }
