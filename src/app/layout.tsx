@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
+import Script from "next/script";
 import { cookies } from "next/headers";
 import { Hanken_Grotesk } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -11,6 +12,8 @@ import { Toaster } from "sonner";
 import "./globals.css";
 
 /** Free for commercial use (SIL OFL 1.1) via Google Fonts. */
+const ADSENSE_CLIENT = "ca-pub-2821950237713771";
+
 const hankenGrotesk = Hanken_Grotesk({
   subsets: ["latin"],
   variable: "--font-sans-family",
@@ -39,6 +42,9 @@ export const metadata: Metadata = {
     title: APP_NAME,
     description: APP_TAGLINE,
     type: "website",
+  },
+  other: {
+    "google-adsense-account": ADSENSE_CLIENT,
   },
 };
 
@@ -81,6 +87,13 @@ export default async function RootLayout({
       <body
         className={`${hankenGrotesk.variable} app-atmosphere min-h-full font-sans antialiased`}
       >
+        <Script
+          id="google-adsense"
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <ThemeProvider initialTheme={theme} disableTransitionOnChange>
           {children}
           <RegisterServiceWorker />
