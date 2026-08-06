@@ -105,6 +105,8 @@ export const ROUTES = {
   organizationInvite: (token: string) => `/orgs/invite/${token}` as const,
   publicProfile: (username: string) => `/@${username}` as const,
   publicTwinChat: (username: string) => `/@${username}/chat` as const,
+  publicTwinChatWithPrompt: (username: string, question: string) =>
+    `/@${username}/chat?q=${encodeURIComponent(question)}` as const,
   share: (token: string) => `/share/${token}` as const,
 } as const;
 

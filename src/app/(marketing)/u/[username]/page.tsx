@@ -11,8 +11,28 @@ import { FollowButton } from "@/components/profile/follow-button";
 import { ShareProfileButton } from "@/components/profile/share-profile-button";
 import { ReviewForm } from "@/components/profile/review-form";
 import { IntelligenceHubTabs, HubEngagementBar } from "@/components/profile/intelligence-hub-tabs";
+import type { HubActivityItem } from "@/components/profile/hub-activity-feed";
+import { HubUpdatesBanner } from "@/components/profile/hub-updates-banner";
+import type { KnowledgeSourceType } from "@/domain/knowledge/entities";
 import { ROUTES } from "@/config/constants";
 import { getExampleHubByUsername } from "@/config/example-hubs";
+
+const KNOWLEDGE_SOURCE_LABELS: Record<KnowledgeSourceType, string> = {
+  PDF: "PDF",
+  DOCX: "Documents",
+  PPTX: "Slides",
+  TXT: "Text",
+  MARKDOWN: "Markdown",
+  ZIP: "Archives",
+  GITHUB: "GitHub",
+  YOUTUBE: "YouTube",
+  WEBSITE: "Website",
+  NOTION: "Notion",
+  GOOGLE_DRIVE: "Google Drive",
+  IMAGE: "Images",
+  VIDEO: "Video",
+  AUDIO: "Audio",
+};
 
 type PageProps = {
   params: Promise<{ username: string }>;
@@ -64,6 +84,55 @@ export default async function PublicProfilePage({ params }: PageProps) {
 
   const faqQuestions = publicKnowledge.flatMap((source) =>
     source.faqs.map((faq) => faq.question),
+  );
+
+  const trainedSourceLabels = [
+    ...new Set(
+      publicKnowledge.map(
+        (source) => KNOWLEDGE_SOURCE_LABELS[source.type] ?? source.type,
+      ),
+    ),
+  ];
+
+  const activityItems: HubActivityItem[] = [
+    ...publicKnowledge.map((source) => ({
+      id: `knowledge-${source.id}`,
+      kind: "knowledge" as const,
+      title: source.title,
+      detail: source.summary,
+      at: source.updatedAt.toISOString(),
+    })),
+    ...offerListings.map((listing) => ({
+      id: `offer-${listing.id}`,
+      kind: "offer" as const,
+      title: listing.title,
+      detail: listing.description,
+      at: listing.createdAt.toISOString(),
+    })),
+    ...reviews.map((review) => ({
+      id: `review-${review.id}`,
+      kind: "review" as const,
+      title: `${review.rating}★ from @${review.reviewerUsername}`,
+      detail: review.comment,
+      at: review.createdAt.toISOString(),
+    })),
+  ]
+    .sort((a, b) => b.at.localeCompare(a.at))
+    .slice(0, 24);
+
+  const activityUpdatesBanner = (
+    <HubUpdatesBanner
+      username={profile.username}
+      isFollowing={isFollowing}
+      isOwner={isOwner}
+      followSlot={
+        <FollowButton
+          username={profile.username}
+          initialFollowing={isFollowing}
+          isAuthenticated={Boolean(session)}
+        />
+      }
+    />
   );
 
   const overviewPanel = (
@@ -256,6 +325,27 @@ export default async function PublicProfilePage({ params }: PageProps) {
           ))}
         </ul>
       ) : null}
+      {trainedSourceLabels.length ? (
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)]/50 p-4">
+          <p className="text-sm font-medium">Twin trained from</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {trainedSourceLabels.map((label) => (
+              <span
+                key={label}
+                className="rounded-lg border border-[var(--border)] px-2.5 py-1 text-xs"
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+          {isOwner ? (
+            <p className="mt-3 text-xs text-[var(--muted-foreground)]">
+              Connect LinkedIn, GitHub, YouTube, Notion, and more from Train
+              Twin.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       {!profile.websiteUrl && profile.socialLinks.length === 0 ? (
         <p className="text-sm text-[var(--muted-foreground)]">
           {isOwner
@@ -264,9 +354,14 @@ export default async function PublicProfilePage({ params }: PageProps) {
         </p>
       ) : null}
       {isOwner ? (
-        <Button asChild variant="secondary" size="sm">
-          <Link href={ROUTES.profileSettings}>Edit links</Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="secondary" size="sm">
+            <Link href={ROUTES.profileSettings}>Edit links</Link>
+          </Button>
+          <Button asChild variant="secondary" size="sm">
+            <Link href={ROUTES.hub.intelligence}>Train Twin</Link>
+          </Button>
+        </div>
       ) : null}
     </GlassCard>
   );
@@ -391,6 +486,8 @@ export default async function PublicProfilePage({ params }: PageProps) {
           connect={connectPanel}
           ownerPulse={ownerPulse}
           faqQuestions={faqQuestions}
+          activityItems={activityItems}
+          activityUpdatesBanner={activityUpdatesBanner}
           offers={offerListings.map((listing) => ({
             id: listing.id,
             title: listing.title,

@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
+  Activity,
   BookOpen,
   Link2,
   MessageSquare,
@@ -15,9 +16,14 @@ import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ROUTES } from "@/config/constants";
 import { cn } from "@/lib/utils";
+import {
+  HubActivityFeed,
+  type HubActivityItem,
+} from "@/components/profile/hub-activity-feed";
 
 const TABS = [
   { id: "overview", label: "Overview", icon: UserRound },
+  { id: "activity", label: "Activity", icon: Activity },
   { id: "knowledge", label: "Knowledge", icon: BookOpen },
   { id: "ask", label: "Ask", icon: MessageSquare },
   { id: "book", label: "Book", icon: Sparkles },
@@ -27,6 +33,16 @@ const TABS = [
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
+
+const TAB_IDS = new Set<string>(TABS.map((t) => t.id));
+
+function tabFromHash(): TabId | null {
+  if (typeof window === "undefined") return null;
+  const raw = window.location.hash.replace(/^#/, "");
+  if (!raw.startsWith("hub-tab-")) return null;
+  const id = raw.slice("hub-tab-".length);
+  return TAB_IDS.has(id) ? (id as TabId) : null;
+}
 
 type OfferItem = {
   id: string;
@@ -76,6 +92,9 @@ export function HubEngagementBar({
           <a href="#hub-tab-offers">Shop offers ({offerCount})</a>
         </Button>
       ) : null}
+      <Button asChild size="sm" variant="ghost">
+        <a href="#hub-tab-activity">See activity</a>
+      </Button>
     </div>
   );
 }
@@ -91,6 +110,8 @@ type IntelligenceHubTabsProps = {
   ownerPulse?: React.ReactNode;
   faqQuestions: string[];
   offers: OfferItem[];
+  activityItems: HubActivityItem[];
+  activityUpdatesBanner?: React.ReactNode;
 };
 
 export function IntelligenceHubTabs({
@@ -104,9 +125,28 @@ export function IntelligenceHubTabs({
   ownerPulse,
   faqQuestions,
   offers,
+  activityItems,
+  activityUpdatesBanner,
 }: IntelligenceHubTabsProps) {
   const [tab, setTab] = useState<TabId>("overview");
   const chatHref = ROUTES.publicTwinChat(username);
+
+  const selectTab = useCallback((id: TabId) => {
+    setTab(id);
+    if (typeof window !== "undefined") {
+      window.history.replaceState(null, "", `#hub-tab-${id}`);
+    }
+  }, []);
+
+  useEffect(() => {
+    const sync = () => {
+      const fromHash = tabFromHash();
+      if (fromHash) setTab(fromHash);
+    };
+    sync();
+    window.addEventListener("hashchange", sync);
+    return () => window.removeEventListener("hashchange", sync);
+  }, []);
 
   const defaultPrompts = [
     "What are you best known for?",
@@ -114,9 +154,7 @@ export function IntelligenceHubTabs({
     "What should I ask before hiring you?",
   ];
   const prompts =
-    faqQuestions.length > 0
-      ? faqQuestions.slice(0, 6)
-      : defaultPrompts;
+    faqQuestions.length > 0 ? faqQuestions.slice(0, 6) : defaultPrompts;
 
   return (
     <div className="mt-6 space-y-6">
@@ -129,14 +167,8 @@ export function IntelligenceHubTabs({
             <button
               key={item.id}
               type="button"
-              id={
-                item.id === "book"
-                  ? "hub-tab-book"
-                  : item.id === "offers"
-                    ? "hub-tab-offers"
-                    : undefined
-              }
-              onClick={() => setTab(item.id)}
+              id={`hub-tab-${item.id}`}
+              onClick={() => selectTab(item.id)}
               className={cn(
                 "flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors sm:px-4",
                 tab === item.id
@@ -152,6 +184,14 @@ export function IntelligenceHubTabs({
       </div>
 
       {tab === "overview" ? overview : null}
+
+      {tab === "activity" ? (
+        <HubActivityFeed
+          items={activityItems}
+          updatesBanner={activityUpdatesBanner}
+        />
+      ) : null}
+
       {tab === "knowledge" ? knowledge : null}
 
       {tab === "ask" ? (
@@ -180,7 +220,11 @@ export function IntelligenceHubTabs({
               {prompts.map((question) => (
                 <li key={question}>
                   <Link
-                    href={publicTwinEnabled ? chatHref : "#"}
+                    href={
+                      publicTwinEnabled
+                        ? ROUTES.publicTwinChatWithPrompt(username, question)
+                        : "#"
+                    }
                     className={cn(
                       "block rounded-xl border border-[var(--border)] bg-[var(--glass)] px-4 py-3 text-sm transition-colors hover:border-[var(--accent)] hover:bg-[var(--accent-soft)]/40",
                       !publicTwinEnabled && "pointer-events-none opacity-50",

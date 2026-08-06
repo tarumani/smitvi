@@ -11,6 +11,7 @@ import { getExampleHubByUsername } from "@/config/example-hubs";
 
 type PageProps = {
   params: Promise<{ username: string }>;
+  searchParams: Promise<{ q?: string }>;
 };
 
 export async function generateMetadata({
@@ -20,8 +21,12 @@ export async function generateMetadata({
   return { title: `Chat with @${username}` };
 }
 
-export default async function PublicTwinChatPage({ params }: PageProps) {
+export default async function PublicTwinChatPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { username } = await params;
+  const { q: initialQuestion } = await searchParams;
   const profile = await container.profiles.findByUsername(username);
   if (
     !profile ||
@@ -37,9 +42,10 @@ export default async function PublicTwinChatPage({ params }: PageProps) {
 
   const session = await getCurrentSession();
   if (!session) {
-    redirect(
-      `${ROUTES.login}?next=${encodeURIComponent(ROUTES.publicTwinChat(username))}`,
-    );
+    const chatPath = initialQuestion
+      ? ROUTES.publicTwinChatWithPrompt(username, initialQuestion)
+      : ROUTES.publicTwinChat(username);
+    redirect(`${ROUTES.login}?next=${encodeURIComponent(chatPath)}`);
   }
 
   const publicKnowledge = await container.knowledge.listPublicByUser(
@@ -79,6 +85,7 @@ export default async function PublicTwinChatPage({ params }: PageProps) {
         ownerUserId={profile.userId}
         title={`@${username} Twin`}
         subtitle="Answers grounded only in this expert’s public knowledge."
+        initialQuestion={initialQuestion ?? null}
         suggestedQuestions={
           suggested.length
             ? suggested

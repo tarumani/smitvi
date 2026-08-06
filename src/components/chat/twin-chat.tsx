@@ -28,6 +28,8 @@ type ChatMessage = {
 type TwinChatProps = {
   initialConversationId?: string | null;
   suggestedQuestions?: string[];
+  /** Pre-fill and auto-send once when chat loads (e.g. from hub prompt chips). */
+  initialQuestion?: string | null;
   /** Chat against another expert's Twin (uses public knowledge only). */
   ownerUserId?: string | null;
   /** Company workspace Twin. */
@@ -45,6 +47,7 @@ export function TwinChat({
     "Summarize my uploaded documents",
     "What topics am I an expert in?",
   ],
+  initialQuestion = null,
   ownerUserId = null,
   organizationId = null,
   voiceEnabled = false,
@@ -58,6 +61,7 @@ export function TwinChat({
   const [input, setInput] = useState("");
   const [isPending, startTransition] = useTransition();
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const didAutoAsk = useRef(false);
 
   const canSend = useMemo(
     () => input.trim().length > 1 && !isPending,
@@ -67,6 +71,14 @@ export function TwinChat({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isPending]);
+
+  useEffect(() => {
+    const q = initialQuestion?.trim();
+    if (!q || q.length < 2 || didAutoAsk.current) return;
+    didAutoAsk.current = true;
+    ask(q);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fire once on mount with initialQuestion
+  }, [initialQuestion]);
 
   function ask(question: string) {
     const trimmed = question.trim();
