@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { AuthForm } from "@/components/auth/auth-form";
+import { CaptureReferralFromUrl } from "@/components/referral/capture-referral-from-url";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata: Metadata = {
@@ -14,6 +15,7 @@ function AuthFormFallback() {
 export default function SignupPage() {
   return (
     <Suspense fallback={<AuthFormFallback />}>
+      <CaptureReferralFromUrl />
       <AuthForm mode="signup" />
     </Suspense>
   );

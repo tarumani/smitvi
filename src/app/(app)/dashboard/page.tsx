@@ -14,7 +14,9 @@ import {
 import { IntelligenceActivationHub } from "@/components/dashboard/intelligence-activation-hub";
 import { TwinLaunchChecklist } from "@/components/dashboard/twin-launch-checklist";
 import { HubSharePromo } from "@/components/dashboard/hub-share-promo";
+import { ReferralInviteCard } from "@/components/dashboard/referral-invite-card";
 import { formatInrFromMinorUnits } from "@/lib/format-money";
+import { prisma } from "@/infrastructure/database/prisma";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -67,7 +69,7 @@ export default async function DashboardPage() {
   const consultationOffer =
     await container.consultations.getEnabledOfferByUserId(userId);
 
-  const [engagement, totalEarningsCents, monthlyEarningsCents, inboxCount, pendingConsults, marketplaceOrders] =
+  const [engagement, totalEarningsCents, monthlyEarningsCents, inboxCount, pendingConsults, marketplaceOrders, referralCount] =
     await Promise.all([
       container.conversations.getOwnerTwinEngagementStats(userId),
       container.marketplace.sumSellerNetEarningsCents(userId),
@@ -75,6 +77,9 @@ export default async function DashboardPage() {
       container.conversations.countInboxForOwner(userId),
       container.consultations.countPendingForExpert(userId),
       container.marketplace.countRecentSellerOrders(userId),
+      prisma.profile.count({
+        where: { referrerUsername: session.profile.username },
+      }),
     ]);
 
   const leadsCount = inboxCount + pendingConsults + marketplaceOrders;
@@ -165,6 +170,12 @@ export default async function DashboardPage() {
         headline={session.profile.headline ?? null}
         avatarUrl={session.profile.avatarUrl ?? null}
         twinReady={twinReady}
+      />
+
+      <ReferralInviteCard
+        username={session.profile.username}
+        displayName={session.profile.displayName}
+        referralCount={referralCount}
       />
 
       <IntelligenceActivationHub

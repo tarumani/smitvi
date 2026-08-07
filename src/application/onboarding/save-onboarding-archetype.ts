@@ -25,7 +25,7 @@ export class SaveOnboardingArchetype {
   async execute(
     userId: string | null | undefined,
     rawInput: unknown,
-    context?: { email?: string },
+    context?: { email?: string; referrerUsername?: string | null },
   ): Promise<ProfileEntity> {
     if (!userId) {
       throw new UnauthorizedError();
@@ -80,14 +80,21 @@ export class SaveOnboardingArchetype {
       onboardingStep: "profile",
     });
 
-    const profile = await this.profiles.create(userId, input);
+    const profile = await this.profiles.create(userId, input, {
+      referrerUsername: context?.referrerUsername ?? null,
+    });
 
     await this.auditLogs.create({
       actorId: userId,
       action: "PROFILE_CREATED",
       entityType: "profile",
       entityId: profile.id,
-      metadata: { username: profile.username, hubArchetypeId, onboarding: true },
+      metadata: {
+        username: profile.username,
+        hubArchetypeId,
+        onboarding: true,
+        referrerUsername: context?.referrerUsername ?? null,
+      },
     });
 
     return profile;

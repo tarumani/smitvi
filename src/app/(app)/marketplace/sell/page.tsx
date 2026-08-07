@@ -4,9 +4,10 @@ import { getCurrentSession } from "@/application/auth/get-current-session";
 import { container } from "@/application/container";
 import { FirstListingWizard } from "@/components/marketplace/first-listing-wizard";
 import { ListingForm } from "@/components/marketplace/listing-form";
+import { MarketplacePayoutExplainer } from "@/components/marketplace/marketplace-payout-explainer";
 import { GlassCard } from "@/components/ui/glass-card";
 import { defaultFirstListingTemplate } from "@/config/marketplace-listing-templates";
-import { MARKETPLACE_COMMISSION_RATE, ROUTES } from "@/config/constants";
+import { ROUTES } from "@/config/constants";
 import { prisma } from "@/infrastructure/database/prisma";
 
 export const metadata: Metadata = {
@@ -55,9 +56,11 @@ export default async function MarketplaceSellPage({ searchParams }: PageProps) {
         <p className="mt-2 text-[var(--muted-foreground)]">
           {showWizard
             ? "Turn your Twin and expertise into something buyers can purchase today."
-            : `Publish consultations, service packages, and knowledge packs. Platform commission: ${Math.round(MARKETPLACE_COMMISSION_RATE * 100)}%.`}
+            : "Publish consultations, service packages, and knowledge packs."}
         </p>
       </div>
+
+      <MarketplacePayoutExplainer />
 
       <GlassCard className="p-6 sm:p-8">
         {showWizard ? (

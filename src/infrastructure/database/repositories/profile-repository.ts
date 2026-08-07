@@ -58,6 +58,7 @@ export class PrismaProfileRepository implements ProfileRepository {
   async create(
     userId: string,
     input: CreateProfileInput,
+    options?: { referrerUsername?: string | null },
   ): Promise<ProfileEntity> {
     const username = input.username.toLowerCase();
     if (await this.usernameExists(username)) {
@@ -81,6 +82,7 @@ export class PrismaProfileRepository implements ProfileRepository {
             isOnboarded: false,
             hubArchetypeId: input.hubArchetypeId ?? null,
             onboardingStep: input.onboardingStep ?? "welcome",
+            referrerUsername: options?.referrerUsername ?? null,
           },
         });
 
