@@ -256,7 +256,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
           </p>
           {isOwner ? (
             <Button asChild variant="secondary" size="sm">
-              <Link href={ROUTES.consultationSettings}>Set up consultations</Link>
+              <Link href={ROUTES.consultationSetup}>Set up consultations</Link>
             </Button>
           ) : null}
         </div>

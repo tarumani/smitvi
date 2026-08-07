@@ -85,6 +85,7 @@ export const ROUTES = {
   passwordSettings: "/settings/password",
   apiKeysSettings: "/settings/api-keys",
   consultationSettings: "/settings/consultations",
+  consultationSetup: "/settings/consultations?setup=1",
   developers: "/developers",
   onboarding: "/onboarding",
   onboardingArchetype: "/onboarding/archetype",

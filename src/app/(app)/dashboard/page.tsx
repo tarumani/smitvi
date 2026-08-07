@@ -63,6 +63,8 @@ export default async function DashboardPage() {
   const sources = await container.knowledge.listByUser(userId);
   const sellerListings = await container.marketplace.listActiveBySeller(userId);
   const twinReady = sources.some((source) => source.status === "READY");
+  const consultationOffer =
+    await container.consultations.getEnabledOfferByUserId(userId);
 
   const [engagement, totalEarningsCents, monthlyEarningsCents, inboxCount, pendingConsults, marketplaceOrders] =
     await Promise.all([
@@ -152,6 +154,7 @@ export default async function DashboardPage() {
         username={session.profile.username}
         knowledgeCount={sources.length}
         twinReady={twinReady}
+        consultationsEnabled={Boolean(consultationOffer)}
         listingCount={sellerListings.length}
       />
 

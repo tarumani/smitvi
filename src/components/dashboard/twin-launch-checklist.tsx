@@ -8,6 +8,7 @@ type Props = {
   username: string;
   knowledgeCount: number;
   twinReady: boolean;
+  consultationsEnabled: boolean;
   listingCount: number;
 };
 
@@ -15,6 +16,7 @@ export function TwinLaunchChecklist({
   username,
   knowledgeCount,
   twinReady,
+  consultationsEnabled,
   listingCount,
 }: Props) {
   const profileDone = true;
@@ -44,6 +46,15 @@ export function TwinLaunchChecklist({
       action: twinReady ? "Add more" : "Finish training",
     },
     {
+      id: "book",
+      label: "Enable Book tab (consultations)",
+      done: consultationsEnabled,
+      href: consultationsEnabled
+        ? ROUTES.consultationSettings
+        : ROUTES.consultationSetup,
+      action: consultationsEnabled ? "Manage booking" : "Enable booking",
+    },
+    {
       id: "monetize",
       label: "Publish a marketplace offer",
       done: listingCount > 0,
@@ -54,7 +65,8 @@ export function TwinLaunchChecklist({
   ] as const;
 
   const completed = steps.filter((s) => s.done).length;
-  const allCoreDone = profileDone && hasKnowledge && twinReady;
+  const allCoreDone =
+    profileDone && hasKnowledge && twinReady && consultationsEnabled;
 
   if (allCoreDone && listingCount > 0) {
     return null;
@@ -82,6 +94,10 @@ export function TwinLaunchChecklist({
         ) : listingCount === 0 ? (
           <Button asChild className="shrink-0">
             <Link href={ROUTES.marketplaceSellFirst}>Create first listing</Link>
+          </Button>
+        ) : !consultationsEnabled ? (
+          <Button asChild className="shrink-0">
+            <Link href={ROUTES.consultationSetup}>Enable Book tab</Link>
           </Button>
         ) : null}
       </div>
