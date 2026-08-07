@@ -131,7 +131,6 @@ export const createProfileSchema = z.object({
     .optional()
     .nullable(),
   hubDigestEmailEnabled: z.boolean().optional(),
-  avatarUrl: optionalUrlSchema,
 });
 
 export const updateProfileSchema = createProfileSchema.partial().extend({

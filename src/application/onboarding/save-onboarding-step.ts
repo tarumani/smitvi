@@ -63,7 +63,7 @@ export class SaveOnboardingStep {
           where: { userId },
           data: {
             interests: list,
-            onboardingStep: "photo",
+            onboardingStep: "bio",
             ...(list.length >= 3
               ? { intelligencePoints: { increment: 10 } }
               : {}),
@@ -72,20 +72,8 @@ export class SaveOnboardingStep {
         if (list.length >= 3) {
           await this.syncInterestSkills(userId, list);
         }
-        return { nextStep: "photo" };
-      }
-      case "photo":
-        await prisma.profile.update({
-          where: { userId },
-          data: {
-            ...(body.avatarUrl ? { avatarUrl: body.avatarUrl } : {}),
-            onboardingStep: "bio",
-            ...(body.avatarUrl
-              ? { intelligencePoints: { increment: 10 } }
-              : {}),
-          },
-        });
         return { nextStep: "bio" };
+      }
       case "bio": {
         const username = body.username?.trim().toLowerCase();
         const displayName = body.displayName?.trim();
@@ -201,7 +189,6 @@ export class SaveOnboardingStep {
       ? parseInterests(profile as { interests?: unknown })
       : 0;
     const score = calculateIntelligenceScore({
-      hasAvatar: Boolean(profile?.avatarUrl),
       hasProfession: Boolean(
         (profile as { profession?: string | null })?.profession,
       ),

@@ -30,7 +30,6 @@ export async function IntelligenceActivationHub({
     : 0;
 
   const score = calculateIntelligenceScore({
-    hasAvatar: Boolean(profile.avatarUrl),
     hasProfession: Boolean(row?.profession),
     interestCount,
     hasBio: Boolean(profile.bio?.trim()),
@@ -154,15 +153,13 @@ export async function IntelligenceActivationHub({
         <ul className="mt-3 space-y-2 text-sm text-[var(--muted-foreground)]">
           {score.nextAchievements.map((item) => {
             const href =
-              item.id === "photo"
-                ? ROUTES.profileSettings
-                : item.id === "follow"
-                  ? ROUTES.discover
-                  : item.id === "knowledge"
-                    ? ROUTES.hub.intelligence
-                    : item.id === "bio"
-                      ? ROUTES.profileSettings
-                      : null;
+              item.id === "follow"
+                ? ROUTES.discover
+                : item.id === "knowledge"
+                  ? ROUTES.hub.intelligence
+                  : item.id === "bio"
+                    ? ROUTES.profileSettings
+                    : null;
             const content = (
               <>
                 {item.done ? "✓" : "○"} {item.label}{" "}

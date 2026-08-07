@@ -4,14 +4,12 @@ import {
 } from "@/config/onboarding-flow";
 
 export type IntelligenceScoreInput = {
-  hasAvatar: boolean;
   hasProfession: boolean;
   interestCount: number;
   hasBio: boolean;
   knowledgeSourceCount: number;
   followingCount: number;
   emailVerified: boolean;
-  skippedPhoto?: boolean;
 };
 
 export type IntelligenceScoreResult = {
@@ -31,7 +29,6 @@ export function calculateIntelligenceScore(
 ): IntelligenceScoreResult {
   let points = 0;
 
-  if (input.hasAvatar) points += INTELLIGENCE_POINT_WEIGHTS.profilePicture;
   if (input.hasProfession) points += INTELLIGENCE_POINT_WEIGHTS.profession;
   if (input.interestCount >= 3) points += INTELLIGENCE_POINT_WEIGHTS.interests;
   if (input.hasBio) points += INTELLIGENCE_POINT_WEIGHTS.bio;
@@ -47,12 +44,6 @@ export function calculateIntelligenceScore(
   const percent = capped;
 
   const nextAchievements = [
-    {
-      id: "photo",
-      label: "Add profile photo",
-      points: INTELLIGENCE_POINT_WEIGHTS.profilePicture,
-      done: input.hasAvatar,
-    },
     {
       id: "knowledge",
       label: "Upload knowledge",
