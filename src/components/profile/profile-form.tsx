@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ROUTES } from "@/config/constants";
 import type { ProfileEntity } from "@/domain/profile/entities";
+import { Avatar } from "@/components/ui/avatar";
 
 type ProfileFormProps = {
   mode: "create" | "edit";
@@ -36,6 +37,7 @@ type FormState = {
   websiteUrl: string;
   location: string;
   skills: string;
+  avatarUrl: string;
   publicTwinEnabled: boolean;
 };
 
@@ -58,6 +60,7 @@ export function ProfileForm({
     websiteUrl: initialProfile?.websiteUrl ?? "",
     location: initialProfile?.location ?? "",
     skills: initialProfile?.skills.map((skill) => skill.name).join(", ") ?? "",
+    avatarUrl: initialProfile?.avatarUrl ?? "",
     publicTwinEnabled: initialProfile?.publicTwinEnabled ?? true,
   });
 
@@ -81,6 +84,7 @@ export function ProfileForm({
           bio: form.bio || null,
           websiteUrl: form.websiteUrl || null,
           location: form.location || null,
+          avatarUrl: form.avatarUrl.trim() || null,
           skills: form.skills
             .split(",")
             .map((skill) => skill.trim())
@@ -128,6 +132,28 @@ export function ProfileForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+        <Avatar
+          src={form.avatarUrl.trim() || null}
+          name={form.displayName || "You"}
+          className="h-20 w-20 shrink-0"
+        />
+        <div className="min-w-0 flex-1 space-y-2">
+          <Label htmlFor="avatarUrl">Profile photo URL</Label>
+          <Input
+            id="avatarUrl"
+            type="url"
+            value={form.avatarUrl}
+            onChange={(event) => updateField("avatarUrl", event.target.value)}
+            placeholder="https://… (public image link)"
+          />
+          <p className="text-xs text-[var(--muted)]">
+            Paste a direct link to your photo (HTTPS). Saves +10 on your Human
+            Intelligence Score when set.
+          </p>
+        </div>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="username">Username</Label>

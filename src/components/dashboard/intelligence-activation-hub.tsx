@@ -152,12 +152,35 @@ export async function IntelligenceActivationHub({
       <GlassCard className="p-5">
         <p className="text-sm font-semibold">Next achievements</p>
         <ul className="mt-3 space-y-2 text-sm text-[var(--muted-foreground)]">
-          {score.nextAchievements.map((item) => (
-            <li key={item.id} className={item.done ? "text-[var(--accent)]" : ""}>
-              {item.done ? "✓" : "○"} {item.label}{" "}
-              <span className="text-[var(--muted)]">+{item.points} pts</span>
-            </li>
-          ))}
+          {score.nextAchievements.map((item) => {
+            const href =
+              item.id === "photo"
+                ? ROUTES.profileSettings
+                : item.id === "follow"
+                  ? ROUTES.discover
+                  : item.id === "knowledge"
+                    ? ROUTES.hub.intelligence
+                    : item.id === "bio"
+                      ? ROUTES.profileSettings
+                      : null;
+            const content = (
+              <>
+                {item.done ? "✓" : "○"} {item.label}{" "}
+                <span className="text-[var(--muted)]">+{item.points} pts</span>
+              </>
+            );
+            return (
+              <li key={item.id} className={item.done ? "text-[var(--accent)]" : ""}>
+                {!item.done && href ? (
+                  <Link href={href} className="hover:text-[var(--accent)] hover:underline">
+                    {content}
+                  </Link>
+                ) : (
+                  content
+                )}
+              </li>
+            );
+          })}
         </ul>
       </GlassCard>
     </div>
