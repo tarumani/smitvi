@@ -1,4 +1,9 @@
 import { slugifySkill } from "@/domain/profile/value-objects";
+import {
+  profileHasDiscoverableHubCopy,
+  qualifiedPublicHubProfileWhere,
+  qualifiedPublicKnowledgeSourceWhere,
+} from "@/domain/profile/qualified-public-hub";
 import { cosineSimilarity } from "@/domain/knowledge/similarity";
 import { embedTexts } from "@/infrastructure/ai/openai-client";
 import { prisma } from "@/infrastructure/database/prisma";
@@ -51,15 +56,7 @@ function searchVariants(query: string): string[] {
   );
 }
 
-const qualifiedPublicHubWhere = {
-  visibility: "PUBLIC" as const,
-  isOnboarded: true,
-  user: {
-    knowledgeSources: {
-      some: { isPublic: true, status: "READY" as const },
-    },
-  },
-};
+const qualifiedPublicHubWhere = qualifiedPublicHubProfileWhere;
 
 export class PrismaSearchRepository {
   async search(query: string, limit = 8): Promise<SearchResultGroup> {
@@ -79,30 +76,34 @@ export class PrismaSearchRepository {
       await Promise.all([
       prisma.profile.findMany({
         where: {
-          visibility: "PUBLIC",
-          isOnboarded: true,
-          OR: [
-            { username: { contains: q, mode: "insensitive" } },
-            { displayName: { contains: q, mode: "insensitive" } },
-            { headline: { contains: q, mode: "insensitive" } },
-            { bio: { contains: q, mode: "insensitive" } },
+          AND: [
+            qualifiedPublicHubProfileWhere,
             {
-              skills: {
-                some: {
-                  skill: {
-                    OR: skillNameOr,
+              OR: [
+                { username: { contains: q, mode: "insensitive" } },
+                { displayName: { contains: q, mode: "insensitive" } },
+                { headline: { contains: q, mode: "insensitive" } },
+                { bio: { contains: q, mode: "insensitive" } },
+                {
+                  skills: {
+                    some: {
+                      skill: {
+                        OR: skillNameOr,
+                      },
+                    },
                   },
                 },
-              },
+              ],
             },
           ],
         },
         orderBy: [{ ratingAverage: "desc" }, { followersCount: "desc" }],
-        take: limit,
+        take: limit * 4,
         select: {
           username: true,
           displayName: true,
           headline: true,
+          bio: true,
           avatarUrl: true,
           ratingAverage: true,
           followersCount: true,
@@ -119,22 +120,32 @@ export class PrismaSearchRepository {
       }),
       prisma.knowledgeSource.findMany({
         where: {
-          isPublic: true,
-          status: "READY",
-          OR: [
-            { title: { contains: q, mode: "insensitive" } },
-            { summary: { contains: q, mode: "insensitive" } },
-            { tags: { has: q } },
-            { topics: { has: q } },
+          AND: [
+            qualifiedPublicKnowledgeSourceWhere,
+            {
+              OR: [
+                { title: { contains: q, mode: "insensitive" } },
+                { summary: { contains: q, mode: "insensitive" } },
+                { tags: { has: q } },
+                { topics: { has: q } },
+              ],
+            },
           ],
         },
-        take: limit,
+        take: limit * 3,
         orderBy: { updatedAt: "desc" },
         include: {
           user: {
             include: {
               profile: {
-                select: { username: true, displayName: true, visibility: true },
+                select: {
+                  username: true,
+                  displayName: true,
+                  visibility: true,
+                  isOnboarded: true,
+                  bio: true,
+                  headline: true,
+                },
               },
             },
           },
@@ -142,9 +153,17 @@ export class PrismaSearchRepository {
       }),
       prisma.$queryRaw<Array<{ topic: string; source_count: bigint }>>`
         SELECT topic, COUNT(*)::bigint AS source_count
-        FROM knowledge_sources, unnest(topics) AS topic
-        WHERE is_public = true
-          AND status = 'READY'
+        FROM knowledge_sources ks
+        INNER JOIN profiles p ON p.user_id = ks.user_id
+        CROSS JOIN unnest(ks.topics) AS topic
+        WHERE ks.is_public = true
+          AND ks.status = 'READY'
+          AND p.visibility = 'PUBLIC'
+          AND p.is_onboarded = true
+          AND (
+            length(trim(coalesce(p.bio, ''))) > 0
+            OR length(trim(coalesce(p.headline, ''))) > 0
+          )
           AND topic ILIKE ${like}
         GROUP BY topic
         ORDER BY source_count DESC
@@ -155,8 +174,10 @@ export class PrismaSearchRepository {
 
     const questions = knowledgeRows
       .flatMap((source) => {
-        const username = source.user.profile?.username;
-        if (!username || source.user.profile?.visibility !== "PUBLIC") return [];
+        const profile = source.user.profile;
+        if (!profile?.username || !profileHasDiscoverableHubCopy(profile)) {
+          return [];
+        }
         if (!Array.isArray(source.faqs)) return [];
         return source.faqs
           .map((faq) => {
@@ -170,7 +191,7 @@ export class PrismaSearchRepository {
               return {
                 question: faq.question,
                 sourceTitle: source.title,
-                ownerUsername: username,
+                ownerUsername: profile.username,
               };
             }
             return null;
@@ -180,14 +201,17 @@ export class PrismaSearchRepository {
       .slice(0, limit);
 
     return {
-      people: people.map((person) => ({
-        username: person.username,
-        displayName: person.displayName,
-        headline: person.headline,
-        avatarUrl: person.avatarUrl,
-        ratingAverage: person.ratingAverage,
-        followersCount: person.followersCount,
-      })),
+      people: people
+        .filter((person) => profileHasDiscoverableHubCopy(person))
+        .slice(0, limit)
+        .map(({ bio: _bio, ...person }) => ({
+          username: person.username,
+          displayName: person.displayName,
+          headline: person.headline,
+          avatarUrl: person.avatarUrl,
+          ratingAverage: person.ratingAverage,
+          followersCount: person.followersCount,
+        })),
       skills: skills.map((skill) => ({
         name: skill.name,
         slug: skill.slug,
@@ -200,9 +224,10 @@ export class PrismaSearchRepository {
       knowledge: knowledgeRows
         .filter(
           (source) =>
-            source.user.profile?.visibility === "PUBLIC" &&
-            source.user.profile.username,
+            source.user.profile &&
+            profileHasDiscoverableHubCopy(source.user.profile),
         )
+        .slice(0, limit)
         .map((source) => ({
           id: source.id,
           title: source.title,
@@ -239,17 +264,7 @@ export class PrismaSearchRepository {
   ): Promise<SemanticSearchMatch[]> {
     const chunks = await prisma.knowledgeChunk.findMany({
       where: {
-        source: {
-          isPublic: true,
-          status: "READY",
-          organizationId: null,
-          user: {
-            profile: {
-              visibility: "PUBLIC",
-              isOnboarded: true,
-            },
-          },
-        },
+        source: qualifiedPublicKnowledgeSourceWhere,
       },
       include: {
         source: {
@@ -257,7 +272,12 @@ export class PrismaSearchRepository {
             user: {
               include: {
                 profile: {
-                  select: { username: true, displayName: true },
+                  select: {
+                    username: true,
+                    displayName: true,
+                    bio: true,
+                    headline: true,
+                  },
                 },
               },
             },
@@ -275,12 +295,26 @@ export class PrismaSearchRepository {
         sourceTitle: chunk.source.title,
         ownerUsername: chunk.source.user.profile?.username ?? "",
         ownerDisplayName: chunk.source.user.profile?.displayName ?? "",
+        profile: chunk.source.user.profile,
       }))
       .filter(
-        (row) => row.score >= 0.72 && row.ownerUsername.length > 0,
+        (row) =>
+          row.score >= 0.72 &&
+          row.ownerUsername.length > 0 &&
+          row.profile &&
+          profileHasDiscoverableHubCopy(row.profile),
       )
       .sort((a, b) => b.score - a.score)
-      .slice(0, limit);
+      .slice(0, limit)
+      .map(({ profile: _profile, ...row }) => row);
+  }
+
+  async countQualifiedPublicHubs(): Promise<number> {
+    const rows = await prisma.profile.findMany({
+      where: qualifiedPublicHubProfileWhere,
+      select: { bio: true, headline: true },
+    });
+    return rows.filter((row) => profileHasDiscoverableHubCopy(row)).length;
   }
 
   async trendingExperts(limit = 8) {
@@ -301,7 +335,7 @@ export class PrismaSearchRepository {
     });
 
     return rows
-      .filter((profile) => profileHasPublicHubDescription(profile))
+      .filter((profile) => profileHasDiscoverableHubCopy(profile))
       .slice(0, limit)
       .map(({ bio: _bio, ratingAverage: _rating, ...expert }) => expert);
   }
@@ -323,7 +357,7 @@ export class PrismaSearchRepository {
     });
 
     return rows
-      .filter((profile) => profileHasPublicHubDescription(profile))
+      .filter((profile) => profileHasDiscoverableHubCopy(profile))
       .slice(0, limit)
       .map(({ bio: _bio, createdAt, ...expert }) => ({
         ...expert,
@@ -336,8 +370,17 @@ export class PrismaSearchRepository {
       Array<{ topic: string; source_count: bigint }>
     >`
       SELECT topic, COUNT(*)::bigint AS source_count
-      FROM knowledge_sources, unnest(topics) AS topic
-      WHERE is_public = true AND status = 'READY'
+      FROM knowledge_sources ks
+      INNER JOIN profiles p ON p.user_id = ks.user_id
+      CROSS JOIN unnest(ks.topics) AS topic
+      WHERE ks.is_public = true
+        AND ks.status = 'READY'
+        AND p.visibility = 'PUBLIC'
+        AND p.is_onboarded = true
+        AND (
+          length(trim(coalesce(p.bio, ''))) > 0
+          OR length(trim(coalesce(p.headline, ''))) > 0
+        )
       GROUP BY topic
       ORDER BY source_count DESC
       LIMIT ${limit}
@@ -350,9 +393,9 @@ export class PrismaSearchRepository {
 
   async latestPublicKnowledge(limit = 8) {
     const rows = await prisma.knowledgeSource.findMany({
-      where: { isPublic: true, status: "READY" },
+      where: qualifiedPublicKnowledgeSourceWhere,
       orderBy: { updatedAt: "desc" },
-      take: limit,
+      take: limit * 4,
       include: {
         user: {
           include: {
@@ -362,6 +405,8 @@ export class PrismaSearchRepository {
                 displayName: true,
                 visibility: true,
                 isOnboarded: true,
+                bio: true,
+                headline: true,
               },
             },
           },
@@ -372,9 +417,10 @@ export class PrismaSearchRepository {
     return rows
       .filter(
         (row) =>
-          row.user.profile?.isOnboarded &&
-          row.user.profile.visibility === "PUBLIC",
+          row.user.profile &&
+          profileHasDiscoverableHubCopy(row.user.profile),
       )
+      .slice(0, limit)
       .map((row) => ({
         id: row.id,
         title: row.title,
@@ -388,9 +434,9 @@ export class PrismaSearchRepository {
 
   async networkOpenQuestions(limit = 8) {
     const sources = await prisma.knowledgeSource.findMany({
-      where: { isPublic: true, status: "READY" },
+      where: qualifiedPublicKnowledgeSourceWhere,
       orderBy: { updatedAt: "desc" },
-      take: 40,
+      take: 60,
       include: {
         user: {
           include: {
@@ -400,6 +446,8 @@ export class PrismaSearchRepository {
                 displayName: true,
                 visibility: true,
                 isOnboarded: true,
+                bio: true,
+                headline: true,
               },
             },
           },
@@ -416,7 +464,7 @@ export class PrismaSearchRepository {
 
     for (const source of sources) {
       const profile = source.user.profile;
-      if (!profile?.isOnboarded || profile.visibility !== "PUBLIC") continue;
+      if (!profile || !profileHasDiscoverableHubCopy(profile)) continue;
       if (!Array.isArray(source.faqs)) continue;
       const topic =
         source.topics[0] ?? source.tags[0] ?? "Expertise";
@@ -442,16 +490,6 @@ export class PrismaSearchRepository {
 
     return questions.slice(0, limit);
   }
-}
-
-/** Public hub listings: profile copy plus at least one public READY source (see trendingExperts). */
-function profileHasPublicHubDescription(profile: {
-  bio: string | null;
-  headline: string | null;
-}): boolean {
-  const bio = profile.bio?.trim() ?? "";
-  const headline = profile.headline?.trim() ?? "";
-  return bio.length > 0 || headline.length > 0;
 }
 
 function emptyResults(): SearchResultGroup {

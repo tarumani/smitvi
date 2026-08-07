@@ -43,6 +43,7 @@ export default async function AdminGrowthPage() {
     {
       label: "Public hubs (discoverable)",
       value: String(metrics.qualifiedPublicHubs),
+      hint: "bio/headline + public READY source",
     },
     {
       label: "Active listings",

@@ -1,4 +1,5 @@
 import { prisma } from "@/infrastructure/database/prisma";
+import { PrismaSearchRepository } from "@/infrastructure/database/repositories/search-repository";
 
 export type GrowthMetrics = {
   totalUsers: number;
@@ -36,17 +37,7 @@ export class GetGrowthMetrics {
           knowledgeSources: { some: { status: "READY" } },
         },
       }),
-      prisma.profile.count({
-        where: {
-          visibility: "PUBLIC",
-          isOnboarded: true,
-          user: {
-            knowledgeSources: {
-              some: { isPublic: true, status: "READY" },
-            },
-          },
-        },
-      }),
+      new PrismaSearchRepository().countQualifiedPublicHubs(),
       prisma.marketplaceListing.count({ where: { status: "ACTIVE" } }),
       prisma.marketplaceOrder.count({
         where: { status: { in: ["PAID", "FULFILLED"] } },
