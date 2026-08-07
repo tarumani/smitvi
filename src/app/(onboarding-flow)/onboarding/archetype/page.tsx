@@ -11,16 +11,16 @@ export const metadata: Metadata = {
 export default function OnboardingArchetypePage() {
   return (
     <OnboardingClassicLayout active="archetype">
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">
+          <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
             What kind of hub are you building?
           </h1>
-          <p className="mt-2 text-[var(--muted-foreground)]">
+          <p className="mt-1.5 text-sm text-[var(--muted-foreground)]">
             {APP_OUTCOME} Pick an archetype — you can refine everything later.
           </p>
         </div>
-        <GlassCard className="p-6 sm:p-8">
+        <GlassCard className="p-4 sm:p-6">
           <ArchetypePicker />
         </GlassCard>
       </div>

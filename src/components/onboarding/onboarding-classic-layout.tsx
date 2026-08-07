@@ -27,15 +27,15 @@ export function OnboardingClassicLayout({ active, children }: Props) {
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,var(--accent-soft),transparent)]"
       />
-      <div className="relative mx-auto flex min-h-svh w-full max-w-2xl flex-col px-4 py-6 sm:px-6 sm:py-8">
-        <header className="mb-6 flex items-center justify-between gap-4">
+      <div className="relative mx-auto w-full max-w-2xl px-4 py-5 sm:px-6 sm:py-6">
+        <header className="mb-4 flex items-center justify-between gap-4">
           <SmitviLogo href={ROUTES.home} size="sm" />
           <span className="text-xs font-medium tabular-nums text-[var(--muted)]">
             Step {activeIndex + 1} of {STEPS.length}
           </span>
         </header>
 
-        <nav aria-label="Onboarding progress" className="mb-8">
+        <nav aria-label="Onboarding progress" className="mb-5">
           <ol className="flex gap-1">
             {STEPS.map((step, index) => {
               const done = index < activeIndex;
@@ -61,9 +61,9 @@ export function OnboardingClassicLayout({ active, children }: Props) {
           </p>
         </nav>
 
-        <main className="flex-1 pb-6">{children}</main>
+        <main className="pb-8">{children}</main>
 
-        <footer className="border-t border-[var(--border)] pt-4 text-center text-xs text-[var(--muted)]">
+        <footer className="border-t border-[var(--border)] py-3 text-center text-xs text-[var(--muted)]">
           Need help?{" "}
           <Link href={ROUTES.contact} className="text-[var(--accent)] hover:underline">
             Contact us

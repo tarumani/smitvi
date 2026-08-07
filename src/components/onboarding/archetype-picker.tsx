@@ -51,45 +51,50 @@ export function ArchetypePicker() {
   return (
     <>
       <BusyOverlay active={isPending} label="Setting up your hub…" />
-      <div className="flex max-h-[min(58vh,calc(100dvh-15rem))] flex-col gap-4">
-        <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-          <div className="grid gap-3 sm:grid-cols-2">
-            {HUB_ARCHETYPES.map((archetype) => {
-              const active = selected === archetype.id;
-              return (
-                <button
-                  key={archetype.id}
-                  type="button"
-                  disabled={isPending}
-                  onClick={() => setSelected(archetype.id)}
-                  className={cn(
-                    "rounded-2xl border px-4 py-3.5 text-left transition-colors",
-                    active
-                      ? "border-[var(--accent)] bg-[var(--accent-soft)]"
-                      : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--accent)]/50",
-                  )}
-                >
-                  <p className="font-semibold">{archetype.label}</p>
-                  <p className="mt-1 text-xs text-[var(--muted-foreground)]">
-                    Shape your hub voice and offers
-                  </p>
-                </button>
-              );
-            })}
-          </div>
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-2.5">
+          {HUB_ARCHETYPES.map((archetype) => {
+            const active = selected === archetype.id;
+            return (
+              <button
+                key={archetype.id}
+                type="button"
+                disabled={isPending}
+                onClick={() => setSelected(archetype.id)}
+                className={cn(
+                  "rounded-xl border px-3 py-2.5 text-left transition-colors sm:py-3",
+                  active
+                    ? "border-[var(--accent)] bg-[var(--accent-soft)] ring-1 ring-[var(--accent)]/40"
+                    : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--accent)]/50",
+                )}
+              >
+                <p className="text-sm font-semibold leading-tight">
+                  {archetype.label}
+                </p>
+                <p className="mt-0.5 hidden text-[10px] leading-snug text-[var(--muted-foreground)] sm:block">
+                  Hub voice & offers
+                </p>
+              </button>
+            );
+          })}
         </div>
-        <div className="sticky bottom-0 shrink-0 border-t border-[var(--border)] bg-[var(--surface)]/95 pt-4 backdrop-blur-sm">
+
+        <div className="flex flex-col gap-3 border-t border-[var(--border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
           {isPending ? (
-            <p className="mb-3 flex items-center gap-2 text-sm text-[var(--muted-foreground)]">
+            <p className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]">
               <Spinner />
               Creating your profile…
             </p>
-          ) : null}
+          ) : (
+            <p className="text-xs text-[var(--muted-foreground)]">
+              {selected ? "Tap Continue when ready." : "Select one archetype to continue."}
+            </p>
+          )}
           <Button
             type="button"
             disabled={!selected || isPending}
             onClick={continueFlow}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto sm:shrink-0"
           >
             {isPending ? "Please wait…" : "Continue"}
           </Button>
