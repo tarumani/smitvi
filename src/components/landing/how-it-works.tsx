@@ -1,4 +1,5 @@
 import { ConnectSourceGrid, ConnectSourcesMarketingCta } from "@/components/knowledge/connect-source-grid";
+import { MarketingVisual } from "@/components/marketing/marketing-illustrations";
 
 const steps = [
   {
@@ -48,6 +49,9 @@ export function HowItWorks() {
               A clear path from profile to live Twin — without rebuilding your
               knowledge every time someone asks.
             </p>
+            <div className="mt-8 max-lg:mx-auto max-lg:max-w-sm">
+              <MarketingVisual id="journey" compact className="lg:[&>div]:aspect-[4/3]" />
+            </div>
           </div>
 
           <ol className="relative space-y-0 border-l border-[var(--accent)]/30 pl-8">

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ROUTES } from "@/config/constants";
 import { cn } from "@/lib/utils";
+import { MarketingVisual } from "@/components/marketing/marketing-illustrations";
 import {
   ExpertProfileLink,
   SampleContentBadge,
@@ -61,17 +62,20 @@ export function NetworkHomeExplore(props: NetworkHomeExploreProps) {
     >
       <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
         {/* Header */}
-        <div className="max-w-2xl">
-          <p className="text-sm font-semibold tracking-[0.14em] text-[var(--accent)] uppercase">
-            Explore the network
-          </p>
-          <h2 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            Human intelligence you can search, chat with, and learn from
-          </h2>
-          <p className="mt-3 text-base leading-relaxed text-[var(--muted-foreground)]">
-            Browse real Intelligence Hubs when they exist — plus featured
-            examples so this page is never empty.
-          </p>
+        <div className="grid gap-8 lg:grid-cols-[1fr_min(300px,34%)] lg:items-center">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold tracking-[0.14em] text-[var(--accent)] uppercase">
+              Explore the network
+            </p>
+            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">
+              Human intelligence you can search, chat with, and learn from
+            </h2>
+            <p className="mt-3 text-base leading-relaxed text-[var(--muted-foreground)]">
+              Browse real Intelligence Hubs when they exist — plus featured
+              examples so this page is never empty.
+            </p>
+          </div>
+          <MarketingVisual id="network" className="hidden sm:block" />
         </div>
 
         {showFeaturedNote ? (

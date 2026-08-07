@@ -39,11 +39,6 @@ export async function IntelligenceActivationHub({
     emailVerified,
   });
 
-  const [experts, topics] = await Promise.all([
-    container.search.trendingExperts(),
-    container.search.trendingTopics(),
-  ]);
-
   return (
     <div className="space-y-6">
       <GlassCard className="border-[var(--accent)]/25 bg-[var(--accent-soft)]/20 p-6 sm:p-8">
@@ -91,64 +86,6 @@ export async function IntelligenceActivationHub({
         </div>
       </GlassCard>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section>
-          <h3 className="font-display text-lg font-semibold">
-            Recommended experts
-          </h3>
-          <ul className="mt-3 space-y-2">
-            {experts.length === 0 ? (
-              <li className="rounded-xl border border-dashed border-[var(--border)] px-4 py-6 text-center text-sm text-[var(--muted-foreground)]">
-                No public Twins yet — yours can be first.{" "}
-                <Link
-                  href={ROUTES.hub.intelligence}
-                  className="font-semibold text-[var(--accent)] hover:underline"
-                >
-                  {TRAIN_TWIN_LABEL}
-                </Link>
-              </li>
-            ) : (
-              experts.slice(0, 5).map((expert) => (
-                <li key={expert.username}>
-                  <Link
-                    href={ROUTES.publicProfile(expert.username)}
-                    className="flex items-center justify-between rounded-xl border border-[var(--border)] px-4 py-3 text-sm hover:border-[var(--accent)]"
-                  >
-                    <span>
-                      {expert.displayName}{" "}
-                      <span className="text-[var(--muted)]">
-                        @{expert.username}
-                      </span>
-                    </span>
-                    <ArrowRight className="h-4 w-4 text-[var(--accent)]" />
-                  </Link>
-                </li>
-              ))
-            )}
-          </ul>
-        </section>
-        <section>
-          <h3 className="font-display text-lg font-semibold">
-            Trending knowledge topics
-          </h3>
-          <ul className="mt-3 space-y-2">
-            {topics.slice(0, 6).map((topic) => (
-              <li key={topic.topic}>
-                <Link
-                  href={`${ROUTES.search}?q=${encodeURIComponent(topic.topic)}`}
-                  className="block rounded-xl border border-[var(--border)] px-4 py-3 text-sm hover:border-[var(--accent)]"
-                >
-                  {topic.topic}
-                  <span className="ml-2 text-xs text-[var(--muted)]">
-                    {topic.sourceCount} sources
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
-
       <GlassCard className="p-5">
         <p className="text-sm font-semibold">Next achievements</p>
         <ul className="mt-3 space-y-2 text-sm text-[var(--muted-foreground)]">
@@ -183,6 +120,73 @@ export async function IntelligenceActivationHub({
           })}
         </ul>
       </GlassCard>
+    </div>
+  );
+}
+
+export async function DashboardDiscoverySections() {
+  const [experts, topics] = await Promise.all([
+    container.search.trendingExperts(),
+    container.search.trendingTopics(),
+  ]);
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-2">
+      <section>
+        <h3 className="font-display text-lg font-semibold">
+          Recommended experts
+        </h3>
+        <ul className="mt-3 space-y-2">
+          {experts.length === 0 ? (
+            <li className="rounded-xl border border-dashed border-[var(--border)] px-4 py-6 text-center text-sm text-[var(--muted-foreground)]">
+              No public Twins yet — yours can be first.{" "}
+              <Link
+                href={ROUTES.hub.intelligence}
+                className="font-semibold text-[var(--accent)] hover:underline"
+              >
+                {TRAIN_TWIN_LABEL}
+              </Link>
+            </li>
+          ) : (
+            experts.slice(0, 5).map((expert) => (
+              <li key={expert.username}>
+                <Link
+                  href={ROUTES.publicProfile(expert.username)}
+                  className="flex items-center justify-between rounded-xl border border-[var(--border)] px-4 py-3 text-sm hover:border-[var(--accent)]"
+                >
+                  <span>
+                    {expert.displayName}{" "}
+                    <span className="text-[var(--muted)]">
+                      @{expert.username}
+                    </span>
+                  </span>
+                  <ArrowRight className="h-4 w-4 text-[var(--accent)]" />
+                </Link>
+              </li>
+            ))
+          )}
+        </ul>
+      </section>
+      <section>
+        <h3 className="font-display text-lg font-semibold">
+          Trending knowledge topics
+        </h3>
+        <ul className="mt-3 space-y-2">
+          {topics.slice(0, 6).map((topic) => (
+            <li key={topic.topic}>
+              <Link
+                href={`${ROUTES.search}?q=${encodeURIComponent(topic.topic)}`}
+                className="block rounded-xl border border-[var(--border)] px-4 py-3 text-sm hover:border-[var(--accent)]"
+              >
+                {topic.topic}
+                <span className="ml-2 text-xs text-[var(--muted)]">
+                  {topic.sourceCount} sources
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }

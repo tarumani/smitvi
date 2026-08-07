@@ -10,6 +10,56 @@ const AVATAR_BUCKET =
 
 const LOCAL_AVATAR_ROOT = path.join(process.cwd(), ".data", "avatars");
 
+let avatarBucketReady: Promise<string> | null = null;
+
+async function ensureAvatarBucket(): Promise<string> {
+  const bucket = AVATAR_BUCKET;
+  if (getStorageDriver() === "local") {
+    return bucket;
+  }
+
+  if (!avatarBucketReady) {
+    avatarBucketReady = (async () => {
+      const supabase = getSupabaseAdmin();
+      const { data: existing, error: listError } =
+        await supabase.storage.listBuckets();
+
+      if (listError) {
+        throw new ValidationError(
+          `Avatar storage is not ready (${listError.message}). Check Supabase service role key and Storage settings.`,
+        );
+      }
+
+      const found = existing?.some((item) => item.name === bucket);
+      if (!found) {
+        const { error: createError } = await supabase.storage.createBucket(
+          bucket,
+          {
+            public: false,
+            fileSizeLimit: AVATAR_MAX_BYTES,
+          },
+        );
+
+        if (
+          createError &&
+          !/already exists|duplicate/i.test(createError.message)
+        ) {
+          throw new ValidationError(
+            `Could not create avatar bucket "${bucket}". In Supabase → Storage, create a private bucket named "${bucket}", then try again. (${createError.message})`,
+          );
+        }
+      }
+
+      return bucket;
+    })().catch((error) => {
+      avatarBucketReady = null;
+      throw error;
+    });
+  }
+
+  return avatarBucketReady;
+}
+
 const ALLOWED_MIME = new Set([
   "image/jpeg",
   "image/png",
@@ -26,6 +76,11 @@ export function validateAvatarFile(file: File, bytes: Buffer): void {
   }
   const mime = file.type?.toLowerCase() || "";
   if (mime && !ALLOWED_MIME.has(mime)) {
+    if (mime === "image/heic" || mime === "image/heif") {
+      throw new ValidationError(
+        "HEIC photos are not supported yet — export as JPEG or PNG and try again",
+      );
+    }
     throw new ValidationError("Use JPEG, PNG, WebP, or GIF");
   }
 }
@@ -68,6 +123,7 @@ export async function saveAvatarForUser(
   }
 
   const supabase = getSupabaseAdmin();
+  await ensureAvatarBucket();
   const key = `${userId}/avatar.${ext}`;
   const { error } = await supabase.storage.from(AVATAR_BUCKET).upload(key, bytes, {
     contentType: mime,
@@ -113,6 +169,7 @@ export async function readAvatarBytes(userId: string): Promise<{
   }
 
   const supabase = getSupabaseAdmin();
+  await ensureAvatarBucket();
   for (const ext of ["jpg", "png", "webp", "gif"]) {
     const key = `${userId}/avatar.${ext}`;
     const { data, error } = await supabase.storage.from(AVATAR_BUCKET).download(key);

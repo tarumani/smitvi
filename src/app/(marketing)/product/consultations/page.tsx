@@ -14,6 +14,7 @@ export default function ConsultationsProductPage() {
       eyebrow="Product"
       title="Consultations"
       description="Let your Twin handle repeat questions; book humans for decisions that need judgment."
+      visual="consultations"
       primaryCta={{ href: ROUTES.signup, label: "Enable consults" }}
       secondaryCta={{
         href: ROUTES.consultationSettings,

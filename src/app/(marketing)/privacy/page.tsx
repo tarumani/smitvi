@@ -13,6 +13,7 @@ export default function PrivacyPage() {
       eyebrow="Legal"
       title="Privacy Policy"
       description={`This policy explains what we collect when you use ${APP_NAME}, why we collect it, and the choices you have.`}
+      visual="legal"
       primaryCta={{ href: ROUTES.contact, label: "Contact us" }}
     >
       <h2>Information we collect</h2>

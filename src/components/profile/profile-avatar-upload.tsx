@@ -7,6 +7,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { readApiDataField, readApiErrorMessage } from "@/lib/api-response";
 
 type Props = {
   displayName: string;
@@ -47,25 +48,12 @@ export function ProfileAvatarUpload({
         });
         const json: unknown = await response.json();
         if (!response.ok) {
-          const message =
-            typeof json === "object" &&
-            json !== null &&
-            "error" in json &&
-            typeof (json as { error?: { message?: string } }).error?.message ===
-              "string"
-              ? (json as { error: { message: string } }).error.message
-              : "Upload failed";
-          throw new Error(message);
+          throw new Error(readApiErrorMessage(json, "Upload failed"));
         }
-        const url =
-          typeof json === "object" &&
-          json !== null &&
-          "avatarUrl" in json &&
-          typeof (json as { avatarUrl?: string }).avatarUrl === "string"
-            ? (json as { avatarUrl: string }).avatarUrl
-            : null;
+        const url = readApiDataField(json, "avatarUrl");
         if (!url) throw new Error("Upload failed");
-        setPreview(url);
+        const cacheBusted = `${url}?v=${Date.now()}`;
+        setPreview(cacheBusted);
         onUploaded(url);
         toast.success("Profile photo updated");
       } catch (error) {

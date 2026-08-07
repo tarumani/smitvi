@@ -14,6 +14,7 @@ export default function MarketplaceProductPage() {
       eyebrow="Product"
       title="Marketplace"
       description="Package expertise into offers visitors can buy — alongside your public Intelligence Hub."
+      visual="marketplace"
       primaryCta={{ href: ROUTES.marketplace, label: "Browse live offers" }}
       secondaryCta={{ href: ROUTES.marketplaceSell, label: "Sell on Smitvi" }}
     >

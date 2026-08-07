@@ -13,6 +13,7 @@ export default function DisclaimerPage() {
       eyebrow="Legal"
       title="Disclaimer"
       description={`${APP_NAME} hosts expert-owned content and AI Twins. This page explains limits of liability and how to interpret automated answers.`}
+      visual="legal"
       primaryCta={{ href: ROUTES.contact, label: "Contact support" }}
     >
       <h2>Not professional advice</h2>

@@ -13,6 +13,7 @@ export default function ContactPage() {
       eyebrow="Support"
       title="Contact"
       description="Questions about your account, billing, or publishing your Intelligence Hub? We are here to help."
+      visual="contact"
       primaryCta={{ href: ROUTES.signup, label: "Create your hub" }}
     >
       <h2>Email</h2>

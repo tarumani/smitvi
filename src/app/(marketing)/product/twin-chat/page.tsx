@@ -14,6 +14,7 @@ export default function TwinChatProductPage() {
       eyebrow="Product"
       title="Twin Chat"
       description="Ask an expert’s Twin questions grounded in their uploaded sources — with citations when available."
+      visual="chat"
       primaryCta={{ href: ROUTES.discover, label: "Find a hub" }}
       secondaryCta={{ href: ROUTES.signup, label: "Publish your Twin" }}
     >

@@ -18,6 +18,7 @@ export default function AboutPage() {
       eyebrow="Company"
       title={`About ${APP_NAME}`}
       description={APP_VISION}
+      visual="about"
       primaryCta={{ href: ROUTES.signup, label: "Join the network" }}
       secondaryCta={{ href: ROUTES.howItHelps, label: "How it helps" }}
     >

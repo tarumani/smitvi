@@ -5,6 +5,8 @@ import { PLAN_CATALOG } from "@/config/billing";
 import { getCurrentSession } from "@/application/auth/get-current-session";
 import { UpgradeButtons } from "@/components/billing/upgrade-buttons";
 import { PageHero } from "@/components/layout/page-hero";
+import { MarketingPageAtmosphere } from "@/components/marketing/marketing-page-atmosphere";
+import { MarketingVisual } from "@/components/marketing/marketing-illustrations";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ROUTES } from "@/config/constants";
@@ -20,14 +22,18 @@ export default async function PricingPage() {
   const plans = [PLAN_CATALOG.FREE, PLAN_CATALOG.PRO, PLAN_CATALOG.BUSINESS];
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-      <PageHero
-        eyebrow="Pricing"
-        title="Simple pricing for human intelligence"
-        description="Start free. Upgrade when your Twin needs unlimited conversations. Marketplace sales keep a 20% platform commission."
-        align="center"
-        className="mx-auto"
-      />
+    <div className="relative overflow-hidden">
+      <MarketingPageAtmosphere />
+      <div className="relative mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+        <div className="grid gap-10 lg:grid-cols-[1fr_min(340px,36%)] lg:items-center">
+          <PageHero
+            eyebrow="Pricing"
+            title="Simple pricing for human intelligence"
+            description="Start free. Upgrade when your Twin needs unlimited conversations. Marketplace sales keep a 20% platform commission."
+            align="left"
+          />
+          <MarketingVisual id="pricing" className="mx-auto w-full max-w-md lg:max-w-none" />
+        </div>
 
       <div className="mt-14 grid gap-5 lg:grid-cols-3">
         {plans.map((plan, index) => {
@@ -101,6 +107,7 @@ export default async function PricingPage() {
             </GlassCard>
           );
         })}
+      </div>
       </div>
     </div>
   );

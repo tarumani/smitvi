@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AiNetworkCanvas } from "@/components/landing/ai-network-canvas";
+import { HeroVisual } from "@/components/landing/hero-visual";
 import { HomeSearch } from "@/components/landing/home-search";
 import { TwinChatDemo } from "@/components/landing/twin-chat-demo";
 import {
@@ -13,9 +14,10 @@ import {
 export function Hero() {
   return (
     <section className="relative isolate overflow-hidden bg-[var(--background)]">
+      <HeroVisual />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-100 [background-image:var(--hero-glow)]"
+        className="pointer-events-none absolute inset-0 opacity-70 [background-image:var(--hero-glow)]"
       />
       <div className="relative z-10 mx-auto grid h-[calc(100svh-4rem)] max-h-[calc(100svh-4rem)] w-full max-w-6xl items-center gap-6 overflow-hidden px-4 py-5 sm:px-6 lg:grid-cols-[1.12fr_0.88fr] lg:gap-12 lg:py-6">
         <div className="max-w-lg">

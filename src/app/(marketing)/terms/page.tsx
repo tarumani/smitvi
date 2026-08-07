@@ -13,6 +13,7 @@ export default function TermsPage() {
       eyebrow="Legal"
       title="Terms of Service"
       description={`By using ${APP_NAME}, you agree to these terms. Please read them before publishing a public Intelligence Hub or selling on the marketplace.`}
+      visual="legal"
       primaryCta={{ href: ROUTES.signup, label: "Create account" }}
     >
       <h2>Your content</h2>

@@ -14,6 +14,7 @@ export default function TrainTwinProductPage() {
       eyebrow="Product"
       title={TRAIN_TWIN_LABEL}
       description="Turn documents, notes, and links into a Twin that answers with citations — or says it does not know."
+      visual="twin"
       primaryCta={{ href: ROUTES.signup, label: "Start free" }}
       secondaryCta={{ href: ROUTES.howItHelps, label: "How it helps" }}
     >

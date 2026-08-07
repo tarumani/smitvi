@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/config/constants";
+import { MarketingVisual } from "@/components/marketing/marketing-illustrations";
 
 export function ExpertsSection() {
   return (
@@ -24,7 +25,8 @@ export function ExpertsSection() {
             className="pointer-events-none absolute -bottom-16 left-20 h-48 w-48 rounded-full bg-sky-300/20"
           />
 
-          <div className="relative max-w-2xl">
+          <div className="relative grid gap-10 lg:grid-cols-[1fr_min(320px,42%)] lg:items-center">
+            <div className="relative max-w-2xl">
             <p className="text-sm font-semibold tracking-[0.18em] text-white/70 uppercase">
               For experts
             </p>
@@ -47,6 +49,13 @@ export function ExpertsSection() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
+            </div>
+            </div>
+            <div className="relative hidden sm:block">
+              <MarketingVisual
+                id="experts"
+                className="border-white/15 bg-white/5 shadow-none before:opacity-40"
+              />
             </div>
           </div>
         </div>
