@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { OnboardingStepNav } from "@/components/onboarding/onboarding-step-nav";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { ROUTES } from "@/config/constants";
@@ -171,11 +172,12 @@ export function BuildProgressAnimation() {
           : `${readyCount} of ${total} sources ready`}
       </p>
 
-      <Button type="button" onClick={continueToCelebrate} disabled={!canContinue}>
-        {phase === "processing" && total > 0 && readyCount === 0
-          ? "Building…"
-          : "Continue"}
-      </Button>
+      <OnboardingStepNav
+        step="build"
+        onNext={continueToCelebrate}
+        nextDisabled={!canContinue}
+        nextLabel={phase === "processing" && total > 0 && readyCount === 0 ? "Building…" : "Next"}
+      />
     </div>
   );
 }

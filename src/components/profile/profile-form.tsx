@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import type { ProfileEntity } from "@/domain/profile/entities";
 import { ProfileAvatarUpload } from "@/components/profile/profile-avatar-upload";
 import { TextareaWithAi } from "@/components/ai/textarea-with-ai";
+import { OnboardingStepNav } from "@/components/onboarding/onboarding-step-nav";
 import { BusyOverlay, Spinner } from "@/components/ui/spinner";
 import { ROUTES } from "@/config/constants";
 
@@ -182,7 +183,11 @@ export function ProfileForm({
   return (
     <>
       <BusyOverlay active={isPending} label="Saving your profile…" />
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form
+        id={onboardingMode ? "onboarding-profile-form" : undefined}
+        onSubmit={handleSubmit}
+        className="space-y-5"
+      >
       <ProfileAvatarUpload
         displayName={form.displayName || "You"}
         avatarUrl={form.avatarUrl.trim() || null}
@@ -317,18 +322,27 @@ export function ProfileForm({
         Enable public Twin chat on my profile
       </label>
 
-      <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
-        {isPending ? (
-          <span className="inline-flex items-center gap-2">
-            <Spinner className="h-4 w-4 border-[var(--accent-foreground)] border-t-transparent" />
-            Saving…
-          </span>
-        ) : mode === "create" ? (
-          "Create profile"
-        ) : (
-          "Save changes"
-        )}
-      </Button>
+      {onboardingMode ? (
+        <OnboardingStepNav
+          step="profile"
+          nextFormId="onboarding-profile-form"
+          nextPending={isPending}
+          nextLabel="Next"
+        />
+      ) : (
+        <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
+          {isPending ? (
+            <span className="inline-flex items-center gap-2">
+              <Spinner className="h-4 w-4 border-[var(--accent-foreground)] border-t-transparent" />
+              Saving…
+            </span>
+          ) : mode === "create" ? (
+            "Create profile"
+          ) : (
+            "Save changes"
+          )}
+        </Button>
+      )}
     </form>
     </>
   );

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
+import { OnboardingStepNav } from "@/components/onboarding/onboarding-step-nav";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/config/constants";
 
@@ -64,6 +65,12 @@ export function CelebratePanel({ username }: CelebratePanelProps) {
           <Link href={ROUTES.publicProfile(username)}>View public page</Link>
         </Button>
       </div>
+      <OnboardingStepNav
+        step="celebrate"
+        onNext={finish}
+        nextPending={isPending}
+        nextLabel="Next — enter hub"
+      />
     </div>
   );
 }

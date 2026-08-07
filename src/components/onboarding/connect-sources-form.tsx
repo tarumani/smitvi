@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { ConnectSourceGrid } from "@/components/knowledge/connect-source-grid";
+import { OnboardingStepNav } from "@/components/onboarding/onboarding-step-nav";
 import { ROUTES } from "@/config/constants";
 
 export function ConnectSourcesForm() {
@@ -56,6 +57,13 @@ export function ConnectSourcesForm() {
       <Button type="button" variant="ghost" onClick={skipToBuild} disabled={isPending}>
         Skip for now
       </Button>
+
+      <OnboardingStepNav
+        step="connect"
+        onNext={skipToBuild}
+        nextPending={isPending}
+        nextLabel="Next"
+      />
     </div>
   );
 }

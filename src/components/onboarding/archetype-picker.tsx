@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { HUB_ARCHETYPES } from "@/config/brand";
 import { ROUTES } from "@/config/constants";
+import { OnboardingStepNav } from "@/components/onboarding/onboarding-step-nav";
 import { BusyOverlay, Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 
@@ -52,6 +52,12 @@ export function ArchetypePicker() {
     <>
       <BusyOverlay active={isPending} label="Setting up your hub…" />
       <div className="space-y-4">
+        {isPending ? (
+          <p className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]">
+            <Spinner />
+            Creating your profile…
+          </p>
+        ) : null}
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-2.5">
           {HUB_ARCHETYPES.map((archetype) => {
             const active = selected === archetype.id;
@@ -79,26 +85,13 @@ export function ArchetypePicker() {
           })}
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-[var(--border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
-          {isPending ? (
-            <p className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]">
-              <Spinner />
-              Creating your profile…
-            </p>
-          ) : (
-            <p className="text-xs text-[var(--muted-foreground)]">
-              {selected ? "Tap Continue when ready." : "Select one archetype to continue."}
-            </p>
-          )}
-          <Button
-            type="button"
-            disabled={!selected || isPending}
-            onClick={continueFlow}
-            className="w-full sm:w-auto sm:shrink-0"
-          >
-            {isPending ? "Please wait…" : "Continue"}
-          </Button>
-        </div>
+        <OnboardingStepNav
+          step="archetype"
+          onNext={continueFlow}
+          nextDisabled={!selected}
+          nextPending={isPending}
+          nextLabel="Next"
+        />
       </div>
     </>
   );
