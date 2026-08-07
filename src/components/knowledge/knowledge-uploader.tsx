@@ -6,7 +6,7 @@ import { Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { TextareaWithAi } from "@/components/ai/textarea-with-ai";
 import { ACCEPTED_UPLOAD_EXTENSIONS } from "@/domain/knowledge/mime";
 import { TRAIN_TWIN_LABEL } from "@/config/constants";
 
@@ -103,12 +103,17 @@ export function KnowledgeUploader({
           disabled={isPending}
           className="mb-3"
         />
-        <Textarea
+        <TextareaWithAi
+          id="knowledge-paste"
+          label="Expertise text"
+          purpose="generic"
+          hint={title}
           value={text}
-          onChange={(event) => setText(event.target.value)}
+          onChange={setText}
           placeholder="Paste or write what you know…"
           disabled={isPending}
-          className="min-h-[160px] flex-1 resize-y"
+          rows={6}
+          generateLabel="Expand with AI"
         />
         <div className="mt-4 flex items-center justify-between gap-3">
           <p className="text-xs text-[var(--muted)]">

@@ -6,10 +6,11 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { ROUTES } from "@/config/constants";
 import type { ProfileEntity } from "@/domain/profile/entities";
 import { ProfileAvatarUpload } from "@/components/profile/profile-avatar-upload";
+import { TextareaWithAi } from "@/components/ai/textarea-with-ai";
+import { BusyOverlay, Spinner } from "@/components/ui/spinner";
+import { ROUTES } from "@/config/constants";
 
 type ProfileFormProps = {
   mode: "create" | "edit";
@@ -50,6 +51,7 @@ export function ProfileForm({
 }: ProfileFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [isAiProfilePending, startAiProfileTransition] = useTransition();
   const [form, setForm] = useState<FormState>({
     username:
       initialProfile?.username ??
@@ -76,19 +78,29 @@ export function ProfileForm({
         if (!username) {
           throw new Error("Username is required");
         }
+        if (!form.headline.trim()) {
+          throw new Error("Headline is required");
+        }
+        if (!form.bio.trim()) {
+          throw new Error("Bio is required");
+        }
+        const skillList = form.skills
+          .split(",")
+          .map((skill) => skill.trim())
+          .filter(Boolean);
+        if (skillList.length === 0) {
+          throw new Error("Add at least one skill");
+        }
 
         const payload = {
           username,
           displayName: form.displayName,
-          headline: form.headline || null,
-          bio: form.bio || null,
+          headline: form.headline.trim(),
+          bio: form.bio.trim(),
           websiteUrl: form.websiteUrl || null,
           location: form.location || null,
           avatarUrl: form.avatarUrl.trim() || null,
-          skills: form.skills
-            .split(",")
-            .map((skill) => skill.trim())
-            .filter(Boolean),
+          skills: skillList,
           visibility: "PUBLIC" as const,
           publicTwinEnabled: form.publicTwinEnabled,
           ...(onboardingMode
@@ -130,8 +142,47 @@ export function ProfileForm({
     });
   }
 
+  function suggestHeadlineAndSkills() {
+    startAiProfileTransition(async () => {
+      try {
+        const response = await fetch("/api/v1/ai/generate-text", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            purpose: "profile_headline_skills",
+            hint: [
+              form.displayName,
+              form.bio,
+              initialProfile?.hubArchetypeId,
+            ]
+              .filter(Boolean)
+              .join(" · "),
+          }),
+        });
+        const json = (await response.json()) as {
+          data?: { headline?: string; skills?: string };
+          error?: { message?: string };
+        };
+        if (!response.ok) {
+          throw new Error(json.error?.message ?? "Could not suggest");
+        }
+        if (json.data?.headline) {
+          updateField("headline", json.data.headline);
+        }
+        if (json.data?.skills) {
+          updateField("skills", json.data.skills);
+        }
+        toast.success("Headline and skills suggested");
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Could not suggest");
+      }
+    });
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <>
+      <BusyOverlay active={isPending} label="Saving your profile…" />
+      <form onSubmit={handleSubmit} className="space-y-5">
       <ProfileAvatarUpload
         displayName={form.displayName || "You"}
         avatarUrl={form.avatarUrl.trim() || null}
@@ -178,24 +229,45 @@ export function ProfileForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="headline">Headline</Label>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <Label htmlFor="headline">
+            Headline <span className="text-[var(--destructive)]">*</span>
+          </Label>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            disabled={isAiProfilePending || isPending}
+            onClick={suggestHeadlineAndSkills}
+            className="h-8"
+          >
+            {isAiProfilePending ? (
+              <Spinner className="h-3.5 w-3.5" />
+            ) : (
+              "Suggest headline & skills"
+            )}
+          </Button>
+        </div>
         <Input
           id="headline"
+          required
           value={form.headline}
           onChange={(event) => updateField("headline", event.target.value)}
           placeholder="AI systems architect · Knowledge engineer"
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="bio">Bio</Label>
-        <Textarea
-          id="bio"
-          value={form.bio}
-          onChange={(event) => updateField("bio", event.target.value)}
-          placeholder="What expertise should your Knowledge Twin represent?"
-        />
-      </div>
+      <TextareaWithAi
+        id="bio"
+        label="Bio"
+        required
+        purpose="profile_bio"
+        hint={`${form.displayName} ${form.headline}`.trim()}
+        value={form.bio}
+        onChange={(value) => updateField("bio", value)}
+        placeholder="What expertise should your Knowledge Twin represent?"
+        disabled={isPending}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
@@ -220,14 +292,17 @@ export function ProfileForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="skills">Skills</Label>
+        <Label htmlFor="skills">
+          Skills <span className="text-[var(--destructive)]">*</span>
+        </Label>
         <Input
           id="skills"
+          required
           value={form.skills}
           onChange={(event) => updateField("skills", event.target.value)}
           placeholder="TypeScript, Product Strategy, Machine Learning"
         />
-        <p className="text-xs text-[var(--muted)]">Comma-separated</p>
+        <p className="text-xs text-[var(--muted)]">Comma-separated · required</p>
       </div>
 
       <label className="flex items-center gap-3 text-sm">
@@ -243,12 +318,18 @@ export function ProfileForm({
       </label>
 
       <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
-        {isPending
-          ? "Saving…"
-          : mode === "create"
-            ? "Create profile"
-            : "Save changes"}
+        {isPending ? (
+          <span className="inline-flex items-center gap-2">
+            <Spinner className="h-4 w-4 border-[var(--accent-foreground)] border-t-transparent" />
+            Saving…
+          </span>
+        ) : mode === "create" ? (
+          "Create profile"
+        ) : (
+          "Save changes"
+        )}
       </Button>
     </form>
+    </>
   );
 }

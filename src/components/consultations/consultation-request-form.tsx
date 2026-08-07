@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { TextareaWithAi } from "@/components/ai/textarea-with-ai";
 
 type ConsultationRequestFormProps = {
   username: string;
@@ -100,17 +100,16 @@ export function ConsultationRequestForm({
           onChange={(event) => setPreferredAt(event.target.value)}
         />
       </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="c-message">What do you need help with?</Label>
-        <Textarea
-          id="c-message"
-          value={message}
-          disabled={isPending}
-          onChange={(event) => setMessage(event.target.value)}
-          placeholder="Share context for the session…"
-          className="min-h-[90px]"
-        />
-      </div>
+      <TextareaWithAi
+        id="c-message"
+        label="What do you need help with?"
+        purpose="generic"
+        value={message}
+        onChange={setMessage}
+        placeholder="Share context for the session…"
+        disabled={isPending}
+        rows={4}
+      />
       <Button type="submit" className="w-full" disabled={isPending}>
         {isPending ? "Sending…" : "Request consultation"}
       </Button>

@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { TextareaWithAi } from "@/components/ai/textarea-with-ai";
 import { ROUTES } from "@/config/constants";
 import {
   ImportErrorHint,
@@ -447,16 +447,20 @@ function InteractiveSourcePanel({
               value={pasteTitle}
               onChange={(event) => setPasteTitle(event.target.value)}
             />
-            <Textarea
+            <TextareaWithAi
+              id={`paste-${source.id}`}
+              label="Paste text"
+              purpose="generic"
+              hint={pasteTitle || source.label}
               placeholder={
                 source.id === "linkedin"
                   ? "Paste your LinkedIn About, headline, and experience…"
                   : "Paste the page content you want your Twin to learn…"
               }
-              className="min-h-[120px]"
-              disabled={busy}
               value={pasteText}
-              onChange={(event) => setPasteText(event.target.value)}
+              onChange={setPasteText}
+              disabled={busy}
+              rows={5}
             />
             <Button
               type="button"

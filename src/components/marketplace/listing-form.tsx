@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { TextareaWithAi } from "@/components/ai/textarea-with-ai";
 
 const LISTING_TYPES = [
   {
@@ -68,10 +68,10 @@ export function ListingForm({ initialListing, onCancelEdit }: ListingFormProps =
     description: initialListing?.description ?? "",
     price: initialListing
       ? String((initialListing.priceCents / 100).toFixed(0))
-      : "50",
+      : "",
     durationMinutes: initialListing?.durationMinutes
       ? String(initialListing.durationMinutes)
-      : "30",
+      : "",
   });
 
   const selectedType =
@@ -124,8 +124,8 @@ export function ListingForm({ initialListing, onCancelEdit }: ListingFormProps =
             type: "CONSULTATION",
             title: "",
             description: "",
-            price: "50",
-            durationMinutes: "30",
+            price: "",
+            durationMinutes: "",
           });
         }
       } catch (error) {
@@ -175,21 +175,21 @@ export function ListingForm({ initialListing, onCancelEdit }: ListingFormProps =
           so on.
         </p>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          required
-          placeholder="What buyers get, what’s included, and who it’s for."
-          value={form.description}
-          onChange={(event) =>
-            setForm((current) => ({
-              ...current,
-              description: event.target.value,
-            }))
-          }
-        />
-      </div>
+      <TextareaWithAi
+        id="description"
+        label="Description"
+        required
+        purpose="marketplace_listing"
+        title={form.title}
+        listingType={form.type}
+        hint={selectedType.hint}
+        value={form.description}
+        onChange={(description) =>
+          setForm((current) => ({ ...current, description }))
+        }
+        placeholder="What buyers get, what's included, and who it's for."
+        generateLabel="Generate SEO description"
+      />
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="price">Price (USD)</Label>
@@ -198,6 +198,7 @@ export function ListingForm({ initialListing, onCancelEdit }: ListingFormProps =
             type="number"
             min="1"
             step="1"
+            placeholder="50"
             required
             value={form.price}
             onChange={(event) =>
@@ -212,6 +213,7 @@ export function ListingForm({ initialListing, onCancelEdit }: ListingFormProps =
               id="duration"
               type="number"
               min="15"
+              placeholder="30"
               value={form.durationMinutes}
               onChange={(event) =>
                 setForm((current) => ({

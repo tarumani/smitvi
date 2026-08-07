@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { TextareaWithAi } from "@/components/ai/textarea-with-ai";
 import type { PortfolioItemEntity } from "@/domain/profile/entities";
 
 type ProjectDraft = {
@@ -192,19 +192,19 @@ export function ProjectsEditor({ initialProjects }: ProjectsEditorProps) {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor={`description-${project.key}`}>Description</Label>
-              <Textarea
-                id={`description-${project.key}`}
-                value={project.description}
-                disabled={isPending}
-                onChange={(event) =>
-                  updateProject(project.key, "description", event.target.value)
-                }
-                placeholder="What you built, your role, and the outcome…"
-                className="min-h-[100px]"
-              />
-            </div>
+            <TextareaWithAi
+              id={`description-${project.key}`}
+              label="Description"
+              purpose="generic"
+              hint={project.title}
+              value={project.description}
+              onChange={(value) =>
+                updateProject(project.key, "description", value)
+              }
+              placeholder="What you built, your role, and the outcome…"
+              disabled={isPending}
+              rows={4}
+            />
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">

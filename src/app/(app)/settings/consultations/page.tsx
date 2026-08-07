@@ -3,10 +3,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentSession } from "@/application/auth/get-current-session";
 import { container } from "@/application/container";
-import {
-  defaultConsultationPlan,
-  suggestConsultationOffer,
-} from "@/config/consultation-offer-templates";
 import { ConsultationInbox } from "@/components/consultations/consultation-inbox";
 import { ConsultationOfferForm } from "@/components/consultations/consultation-offer-form";
 import { LaunchWizardReturnBanner } from "@/components/dashboard/launch-wizard-return-banner";
@@ -51,13 +47,6 @@ export default async function ConsultationSettingsPage({ searchParams }: PagePro
 
   const showWizard = !offer;
 
-  const suggested = suggestConsultationOffer(defaultConsultationPlan(), {
-    displayName: profileRow?.displayName ?? session.profile.displayName,
-    profession: profileRow?.profession ?? null,
-    headline: profileRow?.headline ?? null,
-    bio: profileRow?.bio ?? null,
-  });
-
   const offerInitial = offer
     ? {
         enabled: offer.enabled,
@@ -69,12 +58,21 @@ export default async function ConsultationSettingsPage({ searchParams }: PagePro
       }
     : {
         enabled: true,
-        headline: suggested.headline,
-        description: suggested.description,
-        durationMinutes: suggested.durationMinutes,
-        priceCents: Math.round(Number(suggested.priceUsd) * 100),
-        currency: suggested.currency,
+        headline: "",
+        description: "",
+        durationMinutes: 0,
+        priceCents: 0,
+        currency: "USD",
       };
+
+  const profileHint = [
+    profileRow?.displayName,
+    profileRow?.headline,
+    profileRow?.profession,
+    profileRow?.bio,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -120,7 +118,10 @@ export default async function ConsultationSettingsPage({ searchParams }: PagePro
             : "Update headline, price, and duration — changes apply on your public hub immediately."}
         </p>
         <div className="mt-6">
-          <ConsultationOfferForm initial={offerInitial} />
+          <ConsultationOfferForm
+            initial={offerInitial}
+            profileHint={profileHint}
+          />
         </div>
       </GlassCard>
 

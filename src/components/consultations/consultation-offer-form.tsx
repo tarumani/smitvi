@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { TextareaWithAi } from "@/components/ai/textarea-with-ai";
 
 export type ConsultationOfferFormValues = {
   enabled: boolean;
@@ -19,14 +19,18 @@ export type ConsultationOfferFormValues = {
 
 type ConsultationOfferFormProps = {
   initial: ConsultationOfferFormValues;
+  profileHint?: string;
 };
 
-export function ConsultationOfferForm({ initial }: ConsultationOfferFormProps) {
+export function ConsultationOfferForm({
+  initial,
+  profileHint = "",
+}: ConsultationOfferFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState(initial);
-  const [priceAmount, setPriceAmount] = useState(
-    () => (initial.priceCents / 100).toFixed(2),
+  const [priceAmount, setPriceAmount] = useState(() =>
+    initial.priceCents > 0 ? (initial.priceCents / 100).toFixed(2) : "",
   );
 
   function handleSubmit(event: React.FormEvent) {
@@ -44,7 +48,7 @@ export function ConsultationOfferForm({ initial }: ConsultationOfferFormProps) {
             enabled: form.enabled,
             headline: form.headline || null,
             description: form.description || null,
-            durationMinutes: form.durationMinutes,
+            durationMinutes: form.durationMinutes || 30,
             priceCents,
             currency: form.currency,
           }),
@@ -94,18 +98,17 @@ export function ConsultationOfferForm({ initial }: ConsultationOfferFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea
+        <TextareaWithAi
           id="description"
+          label="Description"
+          purpose="consultation_offer"
+          hint={profileHint || form.headline}
           value={form.description}
-          disabled={isPending}
-          onChange={(event) =>
-            setForm((current) => ({
-              ...current,
-              description: event.target.value,
-            }))
+          onChange={(description) =>
+            setForm((current) => ({ ...current, description }))
           }
-          placeholder="What you’ll cover, who it’s for, and how you’ll follow up…"
+          placeholder="What you'll cover, who it's for, and how you'll follow up…"
+          disabled={isPending}
         />
       </div>
 
@@ -118,7 +121,8 @@ export function ConsultationOfferForm({ initial }: ConsultationOfferFormProps) {
             min={15}
             max={240}
             step={15}
-            value={form.durationMinutes}
+            value={form.durationMinutes || ""}
+            placeholder="30"
             disabled={isPending}
             onChange={(event) =>
               setForm((current) => ({
@@ -137,6 +141,7 @@ export function ConsultationOfferForm({ initial }: ConsultationOfferFormProps) {
             step={1}
             value={priceAmount}
             disabled={isPending}
+            placeholder="49.00"
             onChange={(event) => setPriceAmount(event.target.value)}
           />
           <p className="text-xs text-[var(--muted)]">

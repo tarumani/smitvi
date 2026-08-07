@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { TextareaWithAi } from "@/components/ai/textarea-with-ai";
 
 type ReviewFormProps = {
   username: string;
@@ -71,11 +71,15 @@ export function ReviewForm({ username, isAuthenticated }: ReviewFormProps) {
           ))}
         </select>
       </div>
-      <Textarea
+      <TextareaWithAi
+        id="review-comment"
+        label="Comment"
+        purpose="generic"
         value={comment}
-        onChange={(event) => setComment(event.target.value)}
-        placeholder="What was valuable about this expert’s knowledge?"
-        className="min-h-[96px]"
+        onChange={setComment}
+        placeholder="What was valuable about this expert's knowledge?"
+        rows={3}
+        generateLabel="Draft review"
       />
       <Button type="submit" disabled={isPending}>
         {isPending ? "Saving…" : "Submit review"}
