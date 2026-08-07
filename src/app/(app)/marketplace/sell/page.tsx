@@ -4,6 +4,7 @@ import { getCurrentSession } from "@/application/auth/get-current-session";
 import { container } from "@/application/container";
 import { FirstListingWizard } from "@/components/marketplace/first-listing-wizard";
 import { ListingForm } from "@/components/marketplace/listing-form";
+import { SellerListingsPanel } from "@/components/marketplace/seller-listings-panel";
 import { MarketplacePayoutExplainer } from "@/components/marketplace/marketplace-payout-explainer";
 import { GlassCard } from "@/components/ui/glass-card";
 import { defaultFirstListingTemplate } from "@/config/marketplace-listing-templates";
@@ -86,21 +87,18 @@ export default async function MarketplaceSellPage({ searchParams }: PageProps) {
       {!showWizard || listings.length > 0 ? (
         <section className="space-y-3">
           <h2 className="font-display text-xl font-semibold">Your listings</h2>
-          {listings.length === 0 ? (
-            <GlassCard className="p-5 text-sm text-[var(--muted-foreground)]">
-              No listings yet.
-            </GlassCard>
-          ) : (
-            listings.map((listing) => (
-              <GlassCard key={listing.id} className="p-4">
-                <p className="font-semibold">{listing.title}</p>
-                <p className="mt-1 text-sm text-[var(--muted)]">
-                  {listing.status} · ${(listing.priceCents / 100).toFixed(0)}{" "}
-                  {listing.currency}
-                </p>
-              </GlassCard>
-            ))
-          )}
+          <SellerListingsPanel
+            listings={listings.map((listing) => ({
+              id: listing.id,
+              type: listing.type,
+              title: listing.title,
+              description: listing.description,
+              status: listing.status,
+              priceCents: listing.priceCents,
+              currency: listing.currency,
+              durationMinutes: listing.durationMinutes,
+            }))}
+          />
         </section>
       ) : null}
     </div>

@@ -15,7 +15,7 @@ import {
   DashboardDiscoverySections,
   IntelligenceActivationHub,
 } from "@/components/dashboard/intelligence-activation-hub";
-import { TwinLaunchChecklist } from "@/components/dashboard/twin-launch-checklist";
+import { TwinLaunchWizard } from "@/components/dashboard/twin-launch-wizard";
 import { HubSharePromo } from "@/components/dashboard/hub-share-promo";
 import { ReferralInviteCard } from "@/components/dashboard/referral-invite-card";
 import { formatInrFromMinorUnits } from "@/lib/format-money";
@@ -159,7 +159,7 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <TwinLaunchChecklist
+      <TwinLaunchWizard
         username={session.profile.username}
         knowledgeCount={sources.length}
         twinReady={twinReady}

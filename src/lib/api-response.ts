@@ -31,3 +31,19 @@ export function readApiErrorMessage(json: unknown, fallback: string): string {
   }
   return fallback;
 }
+
+export function readImportJobFromResponse(json: unknown): {
+  status: string;
+  errorMessage: string | null;
+} | null {
+  if (typeof json !== "object" || json === null) return null;
+  const data = (json as { data?: { job?: { status?: string; errorMessage?: string | null } } })
+    .data;
+  const job = data?.job;
+  if (!job || typeof job.status !== "string") return null;
+  return {
+    status: job.status,
+    errorMessage:
+      typeof job.errorMessage === "string" ? job.errorMessage : null,
+  };
+}

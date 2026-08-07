@@ -97,6 +97,11 @@ export function FirstConsultationWizard({
             <Link href={`${publicProfilePath}#hub-tab-book`}>Preview Book tab</Link>
           </Button>
           <Button asChild variant="secondary">
+            <Link href={`${ROUTES.consultationSettings}#consultation-offer-form`}>
+              Edit offer
+            </Link>
+          </Button>
+          <Button asChild variant="secondary">
             <Link href={ROUTES.hub.leads}>View leads</Link>
           </Button>
         </div>

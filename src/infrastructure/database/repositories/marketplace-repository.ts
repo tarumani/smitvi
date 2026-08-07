@@ -143,6 +143,50 @@ export class PrismaMarketplaceRepository {
     });
   }
 
+  async updateListing(
+    id: string,
+    sellerId: string,
+    input: {
+      type?: MarketplaceListingType;
+      title?: string;
+      description?: string;
+      currency?: string;
+      priceCents?: number;
+      durationMinutes?: number | null;
+    },
+  ) {
+    const listing = await prisma.marketplaceListing.findFirst({
+      where: { id, sellerId },
+    });
+    if (!listing) throw new NotFoundError("Listing not found");
+
+    if (input.priceCents !== undefined && input.priceCents < 100) {
+      throw new ValidationError("Minimum price is 1.00 in listing currency");
+    }
+
+    return prisma.marketplaceListing.update({
+      where: { id },
+      data: {
+        ...(input.type !== undefined ? { type: input.type } : {}),
+        ...(input.title !== undefined
+          ? { title: input.title.trim() }
+          : {}),
+        ...(input.description !== undefined
+          ? { description: input.description.trim() }
+          : {}),
+        ...(input.currency !== undefined
+          ? { currency: input.currency.toUpperCase() }
+          : {}),
+        ...(input.priceCents !== undefined
+          ? { priceCents: input.priceCents }
+          : {}),
+        ...(input.durationMinutes !== undefined
+          ? { durationMinutes: input.durationMinutes }
+          : {}),
+      },
+    });
+  }
+
   async createOrder(input: {
     listingId: string;
     buyerId: string;

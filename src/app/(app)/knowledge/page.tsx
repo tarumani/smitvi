@@ -4,7 +4,9 @@ import { redirect } from "next/navigation";
 import { getCurrentSession } from "@/application/auth/get-current-session";
 import { container } from "@/application/container";
 import { ConnectSourceGrid } from "@/components/knowledge/connect-source-grid";
+import { KnowledgeNextSteps } from "@/components/knowledge/knowledge-next-steps";
 import { KnowledgeUploader } from "@/components/knowledge/knowledge-uploader";
+import { KnowledgeSourceActions } from "@/components/knowledge/knowledge-source-actions";
 import { VisibilityToggle } from "@/components/knowledge/visibility-toggle";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -25,6 +27,10 @@ export default async function KnowledgePage() {
   if (!session.profile?.isOnboarded) redirect(ROUTES.onboarding);
 
   const sources = await container.knowledge.listByUser(session.user.id);
+  const readyCount = sources.filter((s) => s.status === "READY").length;
+  const processingCount = sources.filter(
+    (s) => s.status !== "READY" && s.status !== "FAILED",
+  ).length;
 
   return (
     <div className="space-y-8">
@@ -55,7 +61,7 @@ export default async function KnowledgePage() {
         </div>
       </div>
 
-      <GlassCard className="p-5 sm:p-6">
+      <GlassCard id="knowledge-connect" className="scroll-mt-24 p-5 sm:p-6">
         <h2 className="font-display text-lg font-semibold">
           Connect sources
         </h2>
@@ -66,17 +72,27 @@ export default async function KnowledgePage() {
         <ConnectSourceGrid mode="interactive" className="mt-4" />
       </GlassCard>
 
+      {sources.length > 0 ? (
+        <KnowledgeNextSteps
+          username={session.profile.username}
+          readyCount={readyCount}
+          processingCount={processingCount}
+        />
+      ) : null}
+
       <div id="knowledge-upload">
         <KnowledgeUploader />
       </div>
 
       {sources.length === 0 ? (
-        <EmptyState
-          title="Your Twin is waiting for expertise"
-          description="Paste or upload what you’re known for. The more you train, the more valuable your public profile and income potential become."
-        />
+        <div id="training-sources" className="scroll-mt-24">
+          <EmptyState
+            title="Your Twin is waiting for expertise"
+            description="Paste or upload what you’re known for. After import, you’ll see next steps and training status here."
+          />
+        </div>
       ) : (
-        <div className="space-y-3">
+        <div id="training-sources-list" className="scroll-mt-24 space-y-3">
           <h2 className="font-display text-lg font-semibold">
             Training sources
           </h2>
@@ -84,7 +100,7 @@ export default async function KnowledgePage() {
             {sources.map((source) => (
               <GlassCard key={source.id} className="p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="font-semibold">{source.title}</p>
                     <p className="mt-1 text-sm text-[var(--muted-foreground)]">
                       {source.type} · {source.status}
@@ -106,12 +122,18 @@ export default async function KnowledgePage() {
                       </p>
                     ) : null}
                   </div>
-                  {source.status === "READY" ? (
-                    <VisibilityToggle
+                  <div className="flex flex-col items-stretch gap-2 sm:items-end">
+                    <KnowledgeSourceActions
                       sourceId={source.id}
-                      isPublic={source.isPublic}
+                      title={source.title}
                     />
-                  ) : null}
+                    {source.status === "READY" ? (
+                      <VisibilityToggle
+                        sourceId={source.id}
+                        isPublic={source.isPublic}
+                      />
+                    ) : null}
+                  </div>
                 </div>
               </GlassCard>
             ))}

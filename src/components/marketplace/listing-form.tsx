@@ -43,15 +43,35 @@ const LISTING_TYPES = [
 
 type ListingTypeValue = (typeof LISTING_TYPES)[number]["value"];
 
-export function ListingForm() {
+export type ListingFormInitial = {
+  id: string;
+  type: ListingTypeValue;
+  title: string;
+  description: string;
+  priceCents: number;
+  durationMinutes: number | null;
+  currency: string;
+};
+
+type ListingFormProps = {
+  initialListing?: ListingFormInitial | null;
+  onCancelEdit?: () => void;
+};
+
+export function ListingForm({ initialListing, onCancelEdit }: ListingFormProps = {}) {
   const router = useRouter();
+  const isEdit = Boolean(initialListing?.id);
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState({
-    type: "CONSULTATION" as ListingTypeValue,
-    title: "",
-    description: "",
-    price: "50",
-    durationMinutes: "30",
+    type: (initialListing?.type ?? "CONSULTATION") as ListingTypeValue,
+    title: initialListing?.title ?? "",
+    description: initialListing?.description ?? "",
+    price: initialListing
+      ? String((initialListing.priceCents / 100).toFixed(0))
+      : "50",
+    durationMinutes: initialListing?.durationMinutes
+      ? String(initialListing.durationMinutes)
+      : "30",
   });
 
   const selectedType =
@@ -62,21 +82,27 @@ export function ListingForm() {
     startTransition(async () => {
       try {
         const priceCents = Math.round(Number(form.price) * 100);
-        const response = await fetch("/api/v1/marketplace/listings", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            type: form.type,
-            title: form.title,
-            description: form.description,
-            currency: "USD",
-            priceCents,
-            durationMinutes:
-              form.type === "CONSULTATION"
-                ? Number(form.durationMinutes)
-                : null,
-          }),
-        });
+        const payload = {
+          type: form.type,
+          title: form.title,
+          description: form.description,
+          currency: initialListing?.currency ?? "USD",
+          priceCents,
+          durationMinutes:
+            form.type === "CONSULTATION"
+              ? Number(form.durationMinutes)
+              : null,
+        };
+        const response = await fetch(
+          isEdit
+            ? `/api/v1/marketplace/listings/${initialListing!.id}`
+            : "/api/v1/marketplace/listings",
+          {
+            method: isEdit ? "PATCH" : "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          },
+        );
         const json: unknown = await response.json();
         if (!response.ok) {
           const message =
@@ -89,15 +115,19 @@ export function ListingForm() {
               : "Could not create listing";
           throw new Error(message);
         }
-        toast.success("Listing published");
+        toast.success(isEdit ? "Listing updated" : "Listing published");
         router.refresh();
-        setForm({
-          type: "CONSULTATION",
-          title: "",
-          description: "",
-          price: "50",
-          durationMinutes: "30",
-        });
+        if (isEdit) {
+          onCancelEdit?.();
+        } else {
+          setForm({
+            type: "CONSULTATION",
+            title: "",
+            description: "",
+            price: "50",
+            durationMinutes: "30",
+          });
+        }
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : "Could not create listing",
@@ -193,9 +223,22 @@ export function ListingForm() {
           </div>
         ) : null}
       </div>
-      <Button type="submit" disabled={isPending}>
-        {isPending ? "Publishing…" : "Publish listing"}
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button type="submit" disabled={isPending}>
+          {isPending
+            ? isEdit
+              ? "Saving…"
+              : "Publishing…"
+            : isEdit
+              ? "Save changes"
+              : "Publish listing"}
+        </Button>
+        {isEdit && onCancelEdit ? (
+          <Button type="button" variant="secondary" onClick={onCancelEdit}>
+            Cancel
+          </Button>
+        ) : null}
+      </div>
     </form>
   );
 }

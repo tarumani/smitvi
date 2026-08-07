@@ -161,7 +161,11 @@ export function ConsultationOfferForm({ initial }: ConsultationOfferFormProps) {
       </div>
 
       <Button type="submit" disabled={isPending}>
-        {isPending ? "Saving…" : "Save consultation offer"}
+        {isPending
+          ? "Saving…"
+          : initial.enabled
+            ? "Save changes"
+            : "Save consultation offer"}
       </Button>
     </form>
   );

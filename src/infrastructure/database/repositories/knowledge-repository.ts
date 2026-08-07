@@ -340,6 +340,24 @@ export class PrismaKnowledgeRepository {
     return toSourceEntity(row);
   }
 
+  async updateTitleForUser(
+    id: string,
+    userId: string,
+    title: string,
+  ): Promise<KnowledgeSourceEntity | null> {
+    const trimmed = title.trim();
+    if (trimmed.length < 2) return null;
+    const existing = await prisma.knowledgeSource.findFirst({
+      where: { id, userId, organizationId: null },
+    });
+    if (!existing) return null;
+    const row = await prisma.knowledgeSource.update({
+      where: { id },
+      data: { title: trimmed.slice(0, 160) },
+    });
+    return toSourceEntity(row);
+  }
+
   async searchSimilar(input: {
     ownerUserId: string;
     queryEmbedding: number[];

@@ -19,14 +19,11 @@ type PageProps = {
   searchParams: Promise<{ setup?: string }>;
 };
 
-export default async function ConsultationSettingsPage({
-  searchParams,
-}: PageProps) {
+export default async function ConsultationSettingsPage(_props: PageProps) {
   const session = await getCurrentSession();
   if (!session) redirect(ROUTES.login);
   if (!session.profile?.isOnboarded) redirect(ROUTES.onboarding);
 
-  const { setup } = await searchParams;
   const userId = session.user.id;
 
   const [offer, requests, profileRow] = await Promise.all([
@@ -44,7 +41,8 @@ export default async function ConsultationSettingsPage({
     }),
   ]);
 
-  const showWizard = setup === "1" || !offer?.enabled;
+  const showWizard = !offer;
+
   const publicProfilePath = profileRow?.username
     ? ROUTES.publicProfile(profileRow.username)
     : ROUTES.dashboard;
@@ -72,6 +70,11 @@ export default async function ConsultationSettingsPage({
               : "Offer booking on your public profile and manage incoming requests."}
           </p>
         </div>
+        {offer ? (
+          <Button asChild variant="secondary">
+            <Link href="#consultation-offer-form">Edit offer</Link>
+          </Button>
+        ) : null}
         {session.profile?.username ? (
           <Button asChild variant="secondary">
             <Link href={`${ROUTES.publicProfile(session.profile.username)}#hub-tab-book`}>
@@ -81,30 +84,25 @@ export default async function ConsultationSettingsPage({
         ) : null}
       </div>
 
-      <GlassCard className="p-6 sm:p-8">
+      <GlassCard id="consultation-offer-form" className="scroll-mt-24 p-6 sm:p-8">
         {showWizard ? (
           <FirstConsultationWizard
             profile={wizardProfile}
             publicProfilePath={publicProfilePath}
           />
-        ) : null}
-        {!showWizard ? (
-          <ConsultationOfferForm
-            initial={{
-              enabled: offer?.enabled ?? false,
-              headline: offer?.headline ?? "",
-              description: offer?.description ?? "",
-              durationMinutes: offer?.durationMinutes ?? 30,
-              priceCents: offer?.priceCents ?? 0,
-              currency: offer?.currency ?? "USD",
-            }}
-          />
         ) : (
-          <details className="mt-2 text-sm">
-            <summary className="cursor-pointer font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
-              Advanced manual setup
-            </summary>
-            <div className="mt-4 border-t border-[var(--border)] pt-4">
+          <>
+            <p className="text-xs font-semibold tracking-wide text-[var(--accent)] uppercase">
+              Your Book tab offer
+            </p>
+            <h2 className="mt-1 font-display text-lg font-bold tracking-tight">
+              Edit consultation offer
+            </h2>
+            <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+              Update headline, price, and duration — changes apply on your public
+              hub immediately.
+            </p>
+            <div className="mt-6">
               <ConsultationOfferForm
                 initial={{
                   enabled: offer?.enabled ?? false,
@@ -116,7 +114,7 @@ export default async function ConsultationSettingsPage({
                 }}
               />
             </div>
-          </details>
+          </>
         )}
       </GlassCard>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -18,6 +18,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ROUTES } from "@/config/constants";
+import {
+  ImportErrorHint,
+  ImportLoadingOverlay,
+  ImportSuccessPanel,
+  scrollToElement,
+  scrollToTrainingSources,
+} from "@/components/knowledge/import-source-feedback";
+import {
+  readApiErrorMessage,
+  readImportJobFromResponse,
+} from "@/lib/api-response";
 import { cn } from "@/lib/utils";
 
 type SourceId =
@@ -248,6 +259,28 @@ function InteractiveSourcePanel({
   const [pasteText, setPasteText] = useState("");
   const [isPending, startTransition] = useTransition();
   const [isPastePending, startPasteTransition] = useTransition();
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importSuccess, setImportSuccess] = useState<string | null>(null);
+  const busy = isPending || isPastePending;
+
+  useEffect(() => {
+    setImportError(null);
+    setImportSuccess(null);
+  }, [source.id]);
+
+  function clearFeedback() {
+    setImportError(null);
+    setImportSuccess(null);
+  }
+
+  function handleImportSuccess(label: string) {
+    setImportSuccess(label);
+    setImportError(null);
+    toast.success(`${label} added — training your Twin`);
+    onImported?.();
+    router.refresh();
+    scrollToTrainingSources();
+  }
 
   async function importPastedText(defaultTitle: string) {
     const content = pasteText.trim();
@@ -274,21 +307,11 @@ function InteractiveSourcePanel({
     });
     const json: unknown = await response.json();
     if (!response.ok) {
-      throw new Error(
-        typeof json === "object" &&
-          json !== null &&
-          "error" in json &&
-          typeof (json as { error?: { message?: string } }).error?.message ===
-            "string"
-          ? (json as { error: { message: string } }).error.message
-          : "Import failed",
-      );
+      throw new Error(readApiErrorMessage(json, "Import failed"));
     }
-    toast.success(`${source.label} text imported — training your Twin`);
+    handleImportSuccess(source.label);
     setPasteText("");
     setPasteTitle("");
-    onImported?.();
-    router.refresh();
   }
 
   if (!source.available) {
@@ -310,10 +333,32 @@ function InteractiveSourcePanel({
   }
 
   if (source.urlImport) {
+    const pasteSectionId = `paste-fallback-${source.id}`;
+    const linkedInBlocked =
+      importError?.toLowerCase().includes("linkedin") ?? false;
+
     return (
+      <div className="space-y-4">
+        {importSuccess ? (
+          <ImportSuccessPanel
+            sourceLabel={importSuccess}
+            onDismiss={() => setImportSuccess(null)}
+          />
+        ) : null}
+        {importError ? (
+          <ImportErrorHint
+            message={importError}
+            showPasteFallback={
+              source.id === "linkedin" ||
+              source.id === "notion" ||
+              source.id === "google-docs"
+            }
+          />
+        ) : null}
       <form
         onSubmit={(event) => {
           event.preventDefault();
+          clearFeedback();
           startTransition(async () => {
             try {
               const response = await fetch("/api/v1/import-jobs", {
@@ -326,29 +371,34 @@ function InteractiveSourcePanel({
               });
               const json: unknown = await response.json();
               if (!response.ok) {
-                throw new Error(
-                  typeof json === "object" &&
-                    json !== null &&
-                    "error" in json &&
-                    typeof (json as { error?: { message?: string } }).error
-                      ?.message === "string"
-                    ? (json as { error: { message: string } }).error.message
-                    : "Import failed",
-                );
+                throw new Error(readApiErrorMessage(json, "Import failed"));
               }
-              toast.success(`${source.label} import started`);
+              const job = readImportJobFromResponse(json);
+              if (job?.status === "FAILED") {
+                throw new Error(job.errorMessage ?? "Import failed");
+              }
               setUrl("");
-              onImported?.();
-              router.refresh();
+              handleImportSuccess(source.label);
             } catch (error) {
-              toast.error(
-                error instanceof Error ? error.message : "Import failed",
-              );
+              const message =
+                error instanceof Error ? error.message : "Import failed";
+              setImportError(message);
+              toast.error(message);
+              if (
+                source.id === "linkedin" ||
+                source.id === "notion" ||
+                source.id === "google-docs"
+              ) {
+                scrollToElement(pasteSectionId);
+              }
             }
           });
         }}
-        className="space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)]/50 p-4"
+        className="relative space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)]/50 p-4"
       >
+        {busy ? (
+          <ImportLoadingOverlay label={`Importing from ${source.label}…`} />
+        ) : null}
         <div className="space-y-2">
           <Label htmlFor={`import-url-${source.id}`}>
             {source.label} public link
@@ -357,9 +407,13 @@ function InteractiveSourcePanel({
             id={`import-url-${source.id}`}
             type="url"
             required
+            disabled={busy}
             placeholder={source.placeholder}
             value={url}
-            onChange={(event) => setUrl(event.target.value)}
+            onChange={(event) => {
+              setUrl(event.target.value);
+              if (importError) setImportError(null);
+            }}
           />
           <p className="text-xs text-[var(--muted-foreground)]">
             {source.urlHint ??
@@ -370,18 +424,26 @@ function InteractiveSourcePanel({
                   : "We import readable public page text to train your Twin.")}
           </p>
         </div>
-        <Button type="submit" disabled={isPending}>
-          Import from {source.label}
+        <Button type="submit" disabled={busy}>
+          {busy ? "Importing…" : `Import from ${source.label}`}
         </Button>
         {source.id === "linkedin" ||
         source.id === "notion" ||
         source.id === "google-docs" ? (
-          <div className="space-y-3 border-t border-[var(--border)] pt-4">
+          <div
+            id={pasteSectionId}
+            className={cn(
+              "scroll-mt-24 space-y-3 border-t border-[var(--border)] pt-4",
+              linkedInBlocked &&
+                "rounded-xl border-[var(--accent)]/40 bg-[var(--accent-soft)]/20 p-3 ring-1 ring-[var(--accent)]/30",
+            )}
+          >
             <p className="text-sm font-medium">
               Or paste text {source.id === "linkedin" ? "(recommended for LinkedIn)" : ""}
             </p>
             <Input
               placeholder="Title (optional)"
+              disabled={busy}
               value={pasteTitle}
               onChange={(event) => setPasteTitle(event.target.value)}
             />
@@ -392,30 +454,34 @@ function InteractiveSourcePanel({
                   : "Paste the page content you want your Twin to learn…"
               }
               className="min-h-[120px]"
+              disabled={busy}
               value={pasteText}
               onChange={(event) => setPasteText(event.target.value)}
             />
             <Button
               type="button"
               variant="secondary"
-              disabled={isPastePending}
+              disabled={busy}
               onClick={() => {
+                clearFeedback();
                 startPasteTransition(async () => {
                   try {
                     await importPastedText(`${source.label} import`);
                   } catch (error) {
-                    toast.error(
-                      error instanceof Error ? error.message : "Import failed",
-                    );
+                    const message =
+                      error instanceof Error ? error.message : "Import failed";
+                    setImportError(message);
+                    toast.error(message);
                   }
                 });
               }}
             >
-              Import pasted text
+              {isPastePending ? "Importing…" : "Import pasted text"}
             </Button>
           </div>
         ) : null}
       </form>
+      </div>
     );
   }
 
