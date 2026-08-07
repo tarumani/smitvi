@@ -16,6 +16,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { ROUTES } from "@/config/constants";
 import { cn } from "@/lib/utils";
 import { hubProfileHref, hubTwinChatHref } from "@/lib/hub-links";
+import { TopEarnersPanel } from "@/components/marketplace/top-earners-panel";
 
 type NetworkHomeExploreProps = NetworkHomeViewModel;
 
@@ -341,40 +342,11 @@ function EarnPanel(props: NetworkHomeExploreProps) {
       </div>
 
       <div className="space-y-8">
-        <div>
-          <h3 className="mb-4 font-display text-lg font-semibold">
-            Top earners on the marketplace
-          </h3>
-          <ul className="space-y-2">
-            {props.topEarners.slice(0, 5).map((earner, index) => (
-              <li key={earner.username}>
-                <Link href={hubProfileHref(earner.username, props.hasLiveEarners)}>
-                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--glass)] px-4 py-3 transition-colors hover:bg-[var(--surface-elevated)]">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <span className="text-sm font-bold tabular-nums text-[var(--muted)]">
-                        {index + 1}.
-                      </span>
-                      <div className="min-w-0">
-                        <p className="truncate font-semibold">
-                          {earner.displayName}
-                        </p>
-                        <p className="truncate text-xs text-[var(--muted-foreground)]">
-                          {earner.headline}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="shrink-0 text-sm font-semibold text-[var(--accent)]">
-                      {earner.earningsLabel}
-                    </p>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <Button asChild variant="secondary" className="mt-4 w-full">
-            <Link href={ROUTES.marketplace}>Browse marketplace</Link>
-          </Button>
-        </div>
+        <TopEarnersPanel
+          earners={props.topEarners}
+          hasLiveEarners={props.hasLiveEarners}
+          sellHref={ROUTES.signup}
+        />
 
         {story ? (
           <GlassCard className="border-[var(--accent)]/20 bg-[var(--accent-soft)]/20 p-5">

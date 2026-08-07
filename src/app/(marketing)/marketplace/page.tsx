@@ -8,12 +8,14 @@ import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { BuyButton } from "@/components/marketplace/buy-button";
 import { DEMO_MARKETPLACE_LISTINGS } from "@/config/demo-content";
+import { DEMO_TOP_EARNERS } from "@/config/network-home-demo";
 import {
   MARKETPLACE_COMMISSION_RATE,
   MARKETPLACE_LISTING_TYPE_LABELS,
   ROUTES,
 } from "@/config/constants";
-import { hubProfileHref } from "@/lib/hub-links";
+import { TopEarnersPanel } from "@/components/marketplace/top-earners-panel";
+import { formatInrFromMinorUnits } from "@/lib/format-money";
 
 export const metadata: Metadata = {
   title: "Marketplace",
@@ -21,11 +23,26 @@ export const metadata: Metadata = {
 };
 
 export default async function MarketplacePage() {
-  const [liveListings, session] = await Promise.all([
+  const [liveListings, liveEarners, session] = await Promise.all([
     container.marketplace.listActive(),
+    container.marketplace.topEarners(5),
     getCurrentSession(),
   ]);
   const usingDemo = liveListings.length === 0;
+  const hasLiveEarners = liveEarners.length > 0;
+  const topEarners = hasLiveEarners
+    ? liveEarners.map((e) => ({
+        username: e.username,
+        displayName: e.displayName,
+        headline: e.headline,
+        earningsLabel: formatInrFromMinorUnits(e.netEarningsCents),
+      }))
+    : DEMO_TOP_EARNERS.map((e) => ({
+        username: e.username,
+        displayName: e.displayName,
+        headline: e.headline,
+        earningsLabel: e.earningsLabel,
+      }));
   const sellHref = session
     ? ROUTES.marketplaceSell
     : `${ROUTES.login}?next=${encodeURIComponent(ROUTES.marketplaceSell)}`;
@@ -55,7 +72,8 @@ export default async function MarketplacePage() {
         </p>
       ) : null}
 
-      <div className="mt-10 grid gap-5 md:grid-cols-2">
+      <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_min(100%,20rem)] lg:items-start">
+        <div className="grid gap-5 md:grid-cols-2">
         {usingDemo
           ? DEMO_MARKETPLACE_LISTINGS.map((listing, index) => (
               <GlassCard
@@ -70,12 +88,7 @@ export default async function MarketplacePage() {
                     />
                     <div>
                       <p className="font-semibold">
-                        <Link
-                          href={hubProfileHref(listing.seller.username, false)}
-                          className="hover:text-[var(--accent)]"
-                        >
-                          {listing.seller.displayName}
-                        </Link>
+                        {listing.seller.displayName}
                       </p>
                       <p className="text-sm text-[var(--muted)]">
                         @{listing.seller.username}
@@ -192,6 +205,14 @@ export default async function MarketplacePage() {
                 </GlassCard>
               );
             })}
+        </div>
+
+        <TopEarnersPanel
+          earners={topEarners}
+          hasLiveEarners={hasLiveEarners}
+          sellHref={sellHref}
+          className="lg:sticky lg:top-24"
+        />
       </div>
     </div>
   );
