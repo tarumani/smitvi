@@ -37,20 +37,26 @@ export function OnboardingStepNav({
   const nextHref = NEXT_HREF[step];
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-4">
+    <div
+      className={
+        prevHref
+          ? "flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-4"
+          : "flex flex-wrap items-center justify-end gap-3 border-t border-[var(--border)] pt-4"
+      }
+    >
       {prevHref ? (
         <Button asChild variant="ghost" className="order-2 sm:order-1">
           <Link href={prevHref}>Previous</Link>
         </Button>
-      ) : step === "archetype" ? (
-        <Button asChild variant="ghost" className="order-2 sm:order-1">
-          <Link href={ROUTES.home}>Previous</Link>
-        </Button>
-      ) : (
-        <span className="order-2 sm:order-1" aria-hidden />
-      )}
+      ) : null}
 
-      <div className="order-1 flex w-full gap-2 sm:order-2 sm:ml-auto sm:w-auto">
+      <div
+        className={
+          prevHref
+            ? "order-1 flex w-full gap-2 sm:order-2 sm:ml-auto sm:w-auto"
+            : "flex w-full gap-2 sm:w-auto"
+        }
+      >
         {onNext ? (
           <Button
             type="button"
