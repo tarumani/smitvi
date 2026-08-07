@@ -34,6 +34,32 @@ export function referralInviteMessage(
   return `${referrerDisplayName} invited you to Smitvi — train your AI Twin and sell what you know.\n${link}`;
 }
 
+export type ExpertInviteTemplateId = "professional" | "creator" | "short";
+
+export function expertInviteTemplate(
+  templateId: ExpertInviteTemplateId,
+  displayName: string,
+  link: string,
+): string {
+  switch (templateId) {
+    case "short":
+      return `I'm on Smitvi with an AI Twin for my expertise. Join me: ${link}`;
+    case "creator":
+      return `Hey — ${displayName} here. I'm training an AI Twin on Smitvi so my knowledge scales (chat, marketplace, consults). If your knowledge is your product too, claim your @username: ${link}`;
+    case "professional":
+    default:
+      return `Hi,\n\nI'm building my Intelligence Hub on Smitvi — an AI Twin trained on my work, with a public profile and marketplace.\n\nI'd like you on the network: create your hub (free) and we can cross-discover on Discover.\n\n${link}\n\n— ${displayName}`;
+  }
+}
+
+export function whatsAppShareUrl(text: string): string {
+  return `https://wa.me/?text=${encodeURIComponent(text)}`;
+}
+
+export function mailtoInviteUrl(subject: string, body: string): string {
+  return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 /** Client-side cookie setter (call from signup landing). */
 export function writeReferralCookie(username: string): void {
   const ref = normalizeReferrerUsername(username);

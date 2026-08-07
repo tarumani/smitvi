@@ -9,6 +9,7 @@ const ALLOWED_TYPES: ImportJobType[] = [
   "LINKEDIN",
   "GITHUB",
   "YOUTUBE",
+  "NOTION",
 ];
 
 function validateUrlForType(type: ImportJobType, sourceUrl: string): void {
@@ -37,6 +38,17 @@ function validateUrlForType(type: ImportJobType, sourceUrl: string): void {
     case "LINKEDIN":
       if (host !== "linkedin.com") {
         throw new ValidationError("Enter a linkedin.com profile or company URL");
+      }
+      break;
+    case "NOTION":
+      if (
+        !host.endsWith("notion.so") &&
+        !host.endsWith("notion.site") &&
+        host !== "notion.so"
+      ) {
+        throw new ValidationError(
+          "Enter a public notion.so or notion.site page URL",
+        );
       }
       break;
     case "WEBSITE":
@@ -71,7 +83,7 @@ export class CreateImportJob {
       !ALLOWED_TYPES.includes(typeRaw as ImportJobType)
     ) {
       throw new ValidationError(
-        "type must be WEBSITE, LINKEDIN, GITHUB, or YOUTUBE",
+        "type must be WEBSITE, LINKEDIN, GITHUB, YOUTUBE, or NOTION",
       );
     }
     const type = typeRaw as ImportJobType;

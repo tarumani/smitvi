@@ -36,7 +36,7 @@ type SourceDef = {
   icon: LucideIcon;
   available: boolean;
   urlImport?: boolean;
-  importType?: "WEBSITE" | "LINKEDIN" | "GITHUB" | "YOUTUBE";
+  importType?: "WEBSITE" | "LINKEDIN" | "GITHUB" | "YOUTUBE" | "NOTION";
   placeholder?: string;
   urlHint?: string;
 };
@@ -61,8 +61,10 @@ const SOURCES: SourceDef[] = [
     icon: StickyNote,
     available: true,
     urlImport: true,
-    importType: "WEBSITE",
+    importType: "NOTION",
     placeholder: "https://www.notion.so/your-public-page",
+    urlHint:
+      "In Notion: Share → Publish to web, then paste the public link here.",
   },
   {
     id: "google-docs",
@@ -154,7 +156,11 @@ export function ConnectSourceGrid({
               <span className="min-w-0">
                 <span className="block text-xs font-semibold">{source.label}</span>
                 <span className="block truncate text-[10px] text-[var(--muted)]">
-                  {source.available ? source.hint : "Coming soon"}
+                  {source.available
+                    ? source.urlImport
+                      ? "URL import"
+                      : source.hint
+                    : "Coming soon"}
                 </span>
               </span>
             </li>

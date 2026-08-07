@@ -1,5 +1,6 @@
 import { SiteFooter } from "@/components/landing/site-footer";
 import { SiteHeader } from "@/components/landing/site-header";
+import { MarketingPageFooterAd } from "@/components/marketing/marketing-page-footer-ad";
 
 export default function MarketingLayout({
   children,
@@ -10,6 +11,7 @@ export default function MarketingLayout({
     <div className="relative flex min-h-full flex-col">
       <SiteHeader />
       <main className="relative flex-1">{children}</main>
+      <MarketingPageFooterAd />
       <SiteFooter />
     </div>
   );

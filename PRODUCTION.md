@@ -103,7 +103,13 @@ Leave GoDaddy **email MX** records alone if you use GoDaddy email.
 7. Storage → create a **private** bucket named exactly `knowledge`
    (required for PDF/knowledge uploads; without it uploads fail with “Bucket not found”).
    The app will also try to auto-create this bucket on first upload if the service role key allows it.
-8. GitHub Actions build needs these repo secrets (inlined at build time):
+8. Storage → create or auto-create a **private** bucket named `avatars` (profile photos).
+   Set `SUPABASE_AVATARS_BUCKET=avatars` on Fly (already in `fly.toml` `[env]`).
+9. **Cron & growth emails** — set the same secret on Fly and GitHub:
+   - `fly secrets set CRON_SECRET=your-long-random-string --app smitvi`
+   - GitHub repo secret `CRON_SECRET` (for activation nudge, listing nudge, hub digest workflows)
+10. **Optional:** `JINA_READER_API_KEY` for reliable Notion/website imports; `NEXT_PUBLIC_ADSENSE_DISPLAY_SLOT` for a footer ad unit after cookie consent.
+11. GitHub Actions build needs these repo secrets (inlined at build time):
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `FLY_API_TOKEN`

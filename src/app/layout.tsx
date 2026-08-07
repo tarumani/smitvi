@@ -1,18 +1,17 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
-import Script from "next/script";
-import { cookies } from "next/headers";
 import { Hanken_Grotesk } from "next/font/google";
+import { cookies } from "next/headers";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { THEME_STORAGE_KEY } from "@/components/providers/theme-script";
 import { RegisterServiceWorker } from "@/components/pwa/register-sw";
+import { AdSenseScriptLoader } from "@/components/marketing/adsense-script-loader";
+import { CookieConsentBanner } from "@/components/marketing/cookie-consent-banner";
 import { APP_VISION } from "@/config/brand";
 import { APP_NAME, APP_TAGLINE, TRAIN_TWIN_LABEL } from "@/config/constants";
+import { ADSENSE_CLIENT, ADSENSE_ENABLED } from "@/config/adsense";
 import { Toaster } from "sonner";
 import "./globals.css";
-
-/** Free for commercial use (SIL OFL 1.1) via Google Fonts. */
-const ADSENSE_CLIENT = "ca-pub-2821950237713771";
 
 const hankenGrotesk = Hanken_Grotesk({
   subsets: ["latin"],
@@ -43,9 +42,9 @@ export const metadata: Metadata = {
     description: APP_TAGLINE,
     type: "website",
   },
-  other: {
-    "google-adsense-account": ADSENSE_CLIENT,
-  },
+  other: ADSENSE_ENABLED
+    ? { "google-adsense-account": ADSENSE_CLIENT }
+    : undefined,
 };
 
 export const viewport = {
@@ -87,16 +86,11 @@ export default async function RootLayout({
       <body
         className={`${hankenGrotesk.variable} app-atmosphere min-h-full font-sans antialiased`}
       >
-        <Script
-          id="google-adsense"
-          async
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
         <ThemeProvider initialTheme={theme} disableTransitionOnChange>
           {children}
           <RegisterServiceWorker />
+          <CookieConsentBanner />
+          <AdSenseScriptLoader />
           <Toaster richColors position="top-right" />
         </ThemeProvider>
       </body>

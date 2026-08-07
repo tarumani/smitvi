@@ -1,14 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
-import { Copy, UserPlus } from "lucide-react";
+import { Copy, Mail, MessageCircle, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import {
+  mailtoInviteUrl,
   referralInviteMessage,
   referralSignupUrl,
+  whatsAppShareUrl,
 } from "@/lib/referral";
+import { ROUTES } from "@/config/constants";
 
 type Props = {
   username: string;
@@ -99,6 +103,30 @@ export function ReferralInviteCard({
       >
         <Copy className="h-4 w-4" />
         {copied ? "Invite copied" : "Copy invite message"}
+      </Button>
+
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        <Button type="button" variant="secondary" size="sm" asChild>
+          <a href={whatsAppShareUrl(message)} target="_blank" rel="noopener noreferrer">
+            <MessageCircle className="h-4 w-4" />
+            WhatsApp
+          </a>
+        </Button>
+        <Button type="button" variant="secondary" size="sm" asChild>
+          <a
+            href={mailtoInviteUrl(
+              `${displayName} invited you to Smitvi`,
+              message,
+            )}
+          >
+            <Mail className="h-4 w-4" />
+            Email
+          </a>
+        </Button>
+      </div>
+
+      <Button asChild variant="ghost" size="sm" className="mt-2 w-full">
+        <Link href={ROUTES.hub.invite}>More templates & outreach tips</Link>
       </Button>
 
       <p className="mt-3 text-center text-[10px] leading-snug text-[var(--muted)]">

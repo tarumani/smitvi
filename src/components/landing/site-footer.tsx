@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SmitviLogo } from "@/components/brand/smitvi-logo";
+import { CookieSettingsLink } from "@/components/marketing/cookie-settings-link";
 import { APP_NAME, APP_TAGLINE, ROUTES } from "@/config/constants";
 
 const PRODUCT_LINKS = [
@@ -103,6 +104,7 @@ export function SiteFooter() {
             <Link href={ROUTES.terms} className="hover:text-[var(--foreground)]">
               Terms
             </Link>
+            <CookieSettingsLink className="hover:text-[var(--foreground)]" />
             <span>Human intelligence, indexed.</span>
           </p>
         </div>

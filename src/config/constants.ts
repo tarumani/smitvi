@@ -58,6 +58,7 @@ export const ROUTES = {
     analytics: "/hub/analytics",
     settings: "/hub/settings",
     leads: "/hub/leads",
+    invite: "/hub/invite",
   },
   twinChat: "/chat",
   inbox: "/inbox",

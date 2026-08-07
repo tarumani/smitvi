@@ -15,6 +15,7 @@ const URL_IMPORT_TYPES: ImportJobType[] = [
   "LINKEDIN",
   "GITHUB",
   "YOUTUBE",
+  "NOTION",
 ];
 
 export class ProcessImportJob {
@@ -88,6 +89,11 @@ async function extractForJobType(
       const result = await fetchLinkedInImportText(sourceUrl);
       return { ...result, knowledgeType: "WEBSITE" };
     }
+    case "NOTION": {
+      const text = await fetchWebsiteText(sourceUrl, { preferReader: true });
+      const title = notionTitleFromUrl(sourceUrl);
+      return { title, text, knowledgeType: "WEBSITE" };
+    }
     case "WEBSITE":
     default: {
       const text = await fetchWebsiteText(sourceUrl, {
@@ -98,5 +104,22 @@ async function extractForJobType(
       const title = new URL(sourceUrl).hostname.replace(/^www\./, "");
       return { title, text, knowledgeType: "WEBSITE" };
     }
+  }
+}
+
+function notionTitleFromUrl(sourceUrl: string): string {
+  try {
+    const path = new URL(sourceUrl).pathname;
+    const slug = path.split("/").filter(Boolean).pop();
+    if (!slug) return "Notion page";
+    return (
+      decodeURIComponent(slug)
+        .replace(/-/g, " ")
+        .replace(/[a-f0-9]{32}$/i, "")
+        .trim()
+        .slice(0, 80) || "Notion page"
+    );
+  } catch {
+    return "Notion page";
   }
 }

@@ -166,6 +166,7 @@ enum ImportJobType {
   LINKEDIN
   GITHUB
   YOUTUBE
+  NOTION
 }
 
 enum ImportJobStatus {

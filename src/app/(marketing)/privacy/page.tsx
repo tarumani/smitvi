@@ -27,8 +27,10 @@ export default function PrivacyPage() {
       <p>
         We use essential cookies for sign-in and preferences. With your consent
         where required, we and partners such as Google may use cookies to measure
-        traffic and show ads (including Google AdSense). You can control cookies
-        in your browser settings and via Google&apos;s ad settings.
+        traffic and show ads (including Google AdSense). Use{" "}
+        <strong>Cookie settings</strong> in the site footer to change your choice
+        at any time, or control cookies in your browser and via Google&apos;s ad
+        settings.
       </p>
       <h2>How we use it</h2>
       <p>
