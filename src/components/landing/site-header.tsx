@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { getCurrentSession } from "@/application/auth/get-current-session";
 import { Button } from "@/components/ui/button";
 import { SmitviLogo } from "@/components/brand/smitvi-logo";
@@ -9,6 +10,12 @@ import { ROUTES } from "@/config/constants";
 
 export async function SiteHeader() {
   const session = await getCurrentSession();
+  const headerStore = await headers();
+  const pathname = headerStore.get("x-pathname") ?? "";
+  const isPublicHubProfile =
+    pathname.startsWith("/@") ||
+    pathname.startsWith("/u/") ||
+    /^\/@[^/]+$/.test(pathname);
   const accountUser = session
     ? {
         displayName:
@@ -27,7 +34,7 @@ export async function SiteHeader() {
         <SmitviLogo className="shrink-0" size="md" />
 
         <div className="hidden flex-1 justify-center md:flex">
-          <SiteNav variant="desktop" />
+          {!isPublicHubProfile ? <SiteNav variant="desktop" /> : null}
         </div>
 
         <div className="ml-auto flex items-center gap-2">

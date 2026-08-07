@@ -164,19 +164,21 @@ export default async function DashboardPage() {
         listingCount={sellerListings.length}
       />
 
-      <HubSharePromo
-        username={session.profile.username}
-        displayName={session.profile.displayName}
-        headline={session.profile.headline ?? null}
-        avatarUrl={session.profile.avatarUrl ?? null}
-        twinReady={twinReady}
-      />
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
+        <HubSharePromo
+          username={session.profile.username}
+          displayName={session.profile.displayName}
+          headline={session.profile.headline ?? null}
+          avatarUrl={session.profile.avatarUrl ?? null}
+          twinReady={twinReady}
+        />
 
-      <ReferralInviteCard
-        username={session.profile.username}
-        displayName={session.profile.displayName}
-        referralCount={referralCount}
-      />
+        <ReferralInviteCard
+          username={session.profile.username}
+          displayName={session.profile.displayName}
+          referralCount={referralCount}
+        />
+      </div>
 
       <IntelligenceActivationHub
         userId={userId}

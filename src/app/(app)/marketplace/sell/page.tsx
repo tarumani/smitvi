@@ -48,7 +48,7 @@ export default async function MarketplaceSellPage({ searchParams }: PageProps) {
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <div className="mx-auto max-w-6xl space-y-8">
       <div>
         <h1 className="font-display text-3xl font-bold tracking-tight">
           {showWizard ? "Publish your first offer" : "Sell your expertise"}
@@ -60,18 +60,20 @@ export default async function MarketplaceSellPage({ searchParams }: PageProps) {
         </p>
       </div>
 
-      <MarketplacePayoutExplainer />
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+        <MarketplacePayoutExplainer />
 
-      <GlassCard className="p-6 sm:p-8">
-        {showWizard ? (
-          <FirstListingWizard
-            profile={wizardProfile}
-            initialTemplateId={defaultFirstListingTemplate(wizardProfile)}
-          />
-        ) : (
-          <ListingForm />
-        )}
-      </GlassCard>
+        <GlassCard className="p-6 sm:p-8">
+          {showWizard ? (
+            <FirstListingWizard
+              profile={wizardProfile}
+              initialTemplateId={defaultFirstListingTemplate(wizardProfile)}
+            />
+          ) : (
+            <ListingForm />
+          )}
+        </GlassCard>
+      </div>
 
       {!showWizard || listings.length > 0 ? (
         <section className="space-y-3">

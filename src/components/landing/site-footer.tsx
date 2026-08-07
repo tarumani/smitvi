@@ -21,6 +21,7 @@ const COMPANY_LINKS = [
 const LEGAL_LINKS = [
   { href: ROUTES.privacy, label: "Privacy" },
   { href: ROUTES.terms, label: "Terms" },
+  { href: ROUTES.disclaimer, label: "Disclaimer" },
 ] as const;
 
 export function SiteFooter() {

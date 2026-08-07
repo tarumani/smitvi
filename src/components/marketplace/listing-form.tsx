@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { MarketplacePayoutExplainer } from "@/components/marketplace/marketplace-payout-explainer";
 
 const LISTING_TYPES = [
   {
@@ -194,9 +193,6 @@ export function ListingForm() {
           </div>
         ) : null}
       </div>
-      <MarketplacePayoutExplainer
-        examplePriceUsd={Math.max(1, Number(form.price) || 50)}
-      />
       <Button type="submit" disabled={isPending}>
         {isPending ? "Publishing…" : "Publish listing"}
       </Button>

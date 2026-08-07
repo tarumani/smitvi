@@ -35,6 +35,13 @@ export default function AboutPage() {
         marketplace, and consultations in one place. Visitors discover real hubs
         on Discover, search by topic, and book humans when judgment matters.
       </p>
+      <h2>Contact &amp; company</h2>
+      <p>
+        {APP_NAME} is operated from India and serves experts and visitors
+        worldwide. Product questions, abuse reports, and partnership inquiries:
+        <a href="mailto:support@smitvi.com"> support@smitvi.com</a> or{" "}
+        <a href={ROUTES.contact}>contact form</a>.
+      </p>
     </InfoPageShell>
   );
 }

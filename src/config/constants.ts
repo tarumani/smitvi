@@ -70,6 +70,7 @@ export const ROUTES = {
   contact: "/contact",
   privacy: "/privacy",
   terms: "/terms",
+  disclaimer: "/disclaimer",
   exampleHub: (slug: string) => `/examples/hubs/${slug}` as const,
   exampleListing: (id: string) => `/examples/listings/${id}` as const,
   productTrainTwin: "/product/train-your-twin",

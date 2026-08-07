@@ -3,6 +3,7 @@ import { DomainError, UnauthorizedError } from "@/domain/shared/errors";
 import type { UserEntity } from "@/domain/user/entities";
 import type { ProfileSummary } from "@/domain/profile/entities";
 import { container } from "@/application/container";
+import { resolveEffectiveUserPlan } from "@/domain/billing/effective-plan";
 import { createSupabaseServerClient } from "@/infrastructure/auth/supabase/server";
 
 export type CurrentSession = {
@@ -69,10 +70,14 @@ export async function getCurrentSession(): Promise<CurrentSession | null> {
 
   const profile = await container.profiles.findSummaryByUserId(user.id);
 
+  const effectivePlan = resolveEffectiveUserPlan(user.plan, authUser.email);
+  const userWithPlan =
+    effectivePlan === user.plan ? user : { ...user, plan: effectivePlan };
+
   return {
     authUserId: authUser.id,
     email: authUser.email,
-    user,
+    user: userWithPlan,
     profile,
   };
 }

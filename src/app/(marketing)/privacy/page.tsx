@@ -20,7 +20,15 @@ export default function PrivacyPage() {
         <li>Account details you provide (email, display name, profile fields).</li>
         <li>Knowledge sources you upload to train your Intelligence Hub.</li>
         <li>Usage data such as chat sessions, marketplace activity, and security logs.</li>
+        <li>Device and browser data (IP address, cookies, approximate location) for security and analytics.</li>
       </ul>
+      <h2>Cookies &amp; advertising</h2>
+      <p>
+        We use essential cookies for sign-in and preferences. With your consent
+        where required, we and partners such as Google may use cookies to measure
+        traffic and show ads (including Google AdSense). You can control cookies
+        in your browser settings and via Google&apos;s ad settings.
+      </p>
       <h2>How we use it</h2>
       <p>
         We use your data to operate the platform — authentication, hosting your
@@ -32,6 +40,17 @@ export default function PrivacyPage() {
         You can update profile settings, delete uploads, and request account
         deletion by contacting support. Public hubs and marketplace listings are
         visible according to the visibility you choose.
+      </p>
+      <h2>Data retention &amp; deletion</h2>
+      <p>
+        We retain account data while your account is active. You may request
+        deletion by emailing support; we will remove or anonymize personal data
+        except where law requires retention (e.g. payment records).
+      </p>
+      <h2>Contact</h2>
+      <p>
+        Data controller: {APP_NAME}. For privacy requests, use the{" "}
+        <a href={ROUTES.contact}>contact page</a> or email support@smitvi.com.
       </p>
       <p className="text-sm">
         Last updated: August 2026. For questions, use the{" "}

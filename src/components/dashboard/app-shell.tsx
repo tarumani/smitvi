@@ -6,7 +6,6 @@ import { useEffect } from "react";
 import {
   BookOpen,
   Building2,
-  Compass,
   CalendarDays,
   CircleDollarSign,
   CreditCard,
@@ -14,10 +13,8 @@ import {
   KeyRound,
   LayoutDashboard,
   MessageSquare,
-  Search,
   Settings,
   Shield,
-  Store,
   Users,
 } from "lucide-react";
 import { AccountMenu } from "@/components/landing/account-menu";
@@ -38,21 +35,13 @@ type AppShellProps = {
 const baseNavItems = [
   { href: ROUTES.hub.dashboard, label: "Dashboard", icon: LayoutDashboard },
   { href: ROUTES.hub.intelligence, label: TRAIN_TWIN_LABEL, icon: BookOpen },
-  {
-    href: ROUTES.marketplaceSell,
-    label: "Sell your expertise",
-    icon: CircleDollarSign,
-    highlight: true,
-  },
+  { href: ROUTES.marketplaceSell, label: "Sell your expertise", icon: CircleDollarSign },
   { href: ROUTES.hub.leads, label: "Leads", icon: Users },
   { href: ROUTES.twinChat, label: "Twin Chat", icon: MessageSquare },
   { href: ROUTES.inbox, label: "Twin Inbox", icon: Inbox },
   { href: ROUTES.organizations, label: "Workspaces", icon: Building2 },
-  { href: ROUTES.marketplace, label: "Marketplace", icon: Store },
-  { href: ROUTES.search, label: "Search", icon: Search },
-  { href: ROUTES.discover, label: "Discover", icon: Compass },
   { href: ROUTES.consultationSettings, label: "Consultations", icon: CalendarDays },
-  { href: ROUTES.apiKeysSettings, label: "API Keys", icon: KeyRound },
+  { href: ROUTES.apiKeysSettings, label: "API keys", icon: KeyRound },
   { href: ROUTES.billingSettings, label: "Billing", icon: CreditCard },
   { href: ROUTES.profileSettings, label: "Profile", icon: Settings },
 ] as const;
@@ -106,23 +95,16 @@ export function AppShell({
             const Icon = item.icon;
             const active =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
-            const highlighted = "highlight" in item && item.highlight;
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                  highlighted &&
-                    !active &&
-                    "border border-[var(--accent)]/40 bg-[var(--accent-soft)]/80 font-semibold text-[var(--accent)] shadow-sm",
-                  highlighted &&
-                    active &&
-                    "border border-[var(--accent)] bg-[var(--accent)] font-semibold text-[var(--accent-foreground)] shadow-md",
-                  !highlighted &&
-                    (active
-                      ? "bg-[var(--accent-soft)] text-[var(--accent)]"
-                      : "text-[var(--muted-foreground)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]"),
+                  active
+                    ? "bg-[var(--accent-soft)] text-[var(--accent)]"
+                    : "text-[var(--muted-foreground)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]",
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" />
@@ -135,13 +117,14 @@ export function AppShell({
         <div className="shrink-0 border-t border-[var(--border)] p-4">
           <Link
             href={ROUTES.marketplaceSell}
-            className="flex flex-col rounded-2xl border-2 border-[var(--accent)] bg-[var(--accent)] px-3 py-3 text-[var(--accent-foreground)] shadow-md transition-transform hover:scale-[1.02] active:scale-[0.99]"
+            prefetch
+            className="flex flex-col rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-3 py-3 text-[var(--foreground)] transition-colors hover:border-[var(--accent)] hover:bg-[var(--accent-soft)]/40"
           >
-            <span className="flex items-center gap-2 text-sm font-bold">
+            <span className="flex items-center gap-2 text-sm font-semibold text-[var(--accent)]">
               <CircleDollarSign className="h-4 w-4" />
               Sell your expertise
             </span>
-            <span className="mt-1 text-[11px] font-medium leading-snug opacity-90">
+            <span className="mt-1 text-[11px] font-medium leading-snug text-[var(--muted-foreground)]">
               List consults, packs, and offers on the marketplace.
             </span>
           </Link>

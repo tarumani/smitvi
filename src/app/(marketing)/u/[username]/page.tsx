@@ -10,7 +10,7 @@ import { ConsultationRequestForm } from "@/components/consultations/consultation
 import { FollowButton } from "@/components/profile/follow-button";
 import { ShareProfileButton } from "@/components/profile/share-profile-button";
 import { ReviewForm } from "@/components/profile/review-form";
-import { IntelligenceHubTabs, HubEngagementBar } from "@/components/profile/intelligence-hub-tabs";
+import { IntelligenceHubTabs } from "@/components/profile/intelligence-hub-tabs";
 import type { HubActivityItem } from "@/components/profile/hub-activity-feed";
 import { HubUpdatesBanner } from "@/components/profile/hub-updates-banner";
 import type { KnowledgeSourceType } from "@/domain/knowledge/entities";
@@ -480,22 +480,6 @@ export default async function PublicProfilePage({ params }: PageProps) {
             ) : null}
           </div>
         </div>
-
-        <HubEngagementBar
-          username={profile.username}
-          publicTwinEnabled={profile.publicTwinEnabled}
-          hasConsultation={Boolean(consultationOffer)}
-          offerCount={offerListings.length}
-          isOwner={isOwner}
-          showFollow={!isOwner}
-          followSlot={
-            <FollowButton
-              username={profile.username}
-              initialFollowing={isFollowing}
-              isAuthenticated={Boolean(session)}
-            />
-          }
-        />
 
         <IntelligenceHubTabs
           username={profile.username}

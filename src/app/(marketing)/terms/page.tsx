@@ -27,11 +27,23 @@ export default function TermsPage() {
         Do not upload unlawful content, impersonate others, or attempt to bypass
         security. We may suspend accounts that harm the network or other users.
       </p>
+      <h2>AI Twin outputs</h2>
+      <p>
+        Twin responses are generated automatically from expert-uploaded sources.
+        {APP_NAME} does not guarantee accuracy. See our{" "}
+        <a href={ROUTES.disclaimer}>Disclaimer</a> for limits of liability.
+      </p>
       <h2>Marketplace &amp; payments</h2>
       <p>
         Sellers set their own offers; platform fees apply as shown on pricing.
         Payouts and refunds follow the flows described in product documentation
         and checkout.
+      </p>
+      <h2>Governing law</h2>
+      <p>
+        These terms are governed by applicable law in India unless otherwise
+        required by consumer protection rules in your jurisdiction. Disputes
+        should first be raised via <a href={ROUTES.contact}>contact</a>.
       </p>
       <p className="text-sm">
         Last updated: August 2026. Questions:{" "}
