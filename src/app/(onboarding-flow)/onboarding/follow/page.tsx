@@ -1,14 +1,10 @@
-import { container } from "@/application/container";
-import { OnboardingFollowClient } from "@/components/onboarding/onboarding-follow-client";
+import { redirect } from "next/navigation";
+import { getCurrentSession } from "@/application/auth/get-current-session";
+import { resolveOnboardingRoute } from "@/application/onboarding/resolve-onboarding-route";
+import { ROUTES } from "@/config/constants";
 
-export default async function OnboardingFollowPage() {
-  const experts = await container.search.trendingExperts();
-  const list = experts.slice(0, 10).map((e) => ({
-    username: e.username,
-    displayName: e.displayName,
-    headline: e.headline,
-    avatarUrl: e.avatarUrl,
-  }));
-
-  return <OnboardingFollowClient experts={list} />;
+export default async function OnboardingFollowRedirect() {
+  const session = await getCurrentSession();
+  if (!session) redirect(ROUTES.login);
+  redirect(resolveOnboardingRoute(session.profile));
 }
