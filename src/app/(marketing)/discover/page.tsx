@@ -12,6 +12,10 @@ import {
 import { getCurrentSession } from "@/application/auth/get-current-session";
 import { container } from "@/application/container";
 import { DiscoverFollowingFeed } from "@/components/discover/discover-following-feed";
+import {
+  ExpertProfileLink,
+  SampleContentBadge,
+} from "@/components/discover/featured-content-links";
 import { PageHero } from "@/components/layout/page-hero";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -23,7 +27,6 @@ import {
   DEMO_TRENDING_TOPICS,
 } from "@/config/demo-content";
 import { ROUTES } from "@/config/constants";
-import { hubProfileHref } from "@/lib/hub-links";
 
 export const metadata: Metadata = {
   title: "Discover",
@@ -207,8 +210,9 @@ export default async function DiscoverPage() {
               Experts people are asking
             </h2>
             <p className="mt-3 max-w-xl text-sm text-[var(--muted-foreground)]">
-              High-signal Twins rising across the network — open a profile or
-              start chat when live.
+              {usingDemoExperts
+                ? "Sample profiles for layout — real public Twins appear here as creators go live."
+                : "High-signal Twins rising across the network — open a profile or start chat."}
             </p>
           </div>
           <Button asChild variant="secondary" size="sm">
@@ -217,46 +221,50 @@ export default async function DiscoverPage() {
         </div>
 
         <ol className="mt-8 divide-y divide-[var(--border)] border-y border-[var(--border)]">
-          {trendingExperts.map((expert, index) => {
-            const href = hubProfileHref(expert.username, !usingDemoExperts);
-            return (
-              <li key={expert.username}>
-                <Link
-                  href={href}
-                  className="group flex items-center gap-4 py-5 transition-colors hover:bg-[var(--surface)]/50 sm:gap-6"
-                >
-                  <span className="w-8 shrink-0 font-display text-lg font-bold text-[var(--accent)]/40">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <Avatar
-                    src={expert.avatarUrl}
-                    name={expert.displayName}
-                    className="h-12 w-12"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="truncate font-semibold group-hover:text-[var(--accent)]">
-                        {expert.displayName}
-                      </p>
-                      {usingDemoExperts ? (
-                        <span className="text-[10px] font-semibold tracking-wide text-[var(--muted)] uppercase">
-                          Example
-                        </span>
-                      ) : null}
-                    </div>
-                    <p className="mt-0.5 truncate text-sm text-[var(--muted-foreground)]">
-                      @{expert.username}
-                      {expert.headline ? ` · ${expert.headline}` : ""}
+          {trendingExperts.map((expert, index) => (
+            <li key={expert.username}>
+              <ExpertProfileLink
+                username={expert.username}
+                isLive={!usingDemoExperts}
+                className="group flex items-center gap-4 py-5 transition-colors hover:bg-[var(--surface)]/50 sm:gap-6"
+              >
+                <span className="w-8 shrink-0 font-display text-lg font-bold text-[var(--accent)]/40">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <Avatar
+                  src={expert.avatarUrl}
+                  name={expert.displayName}
+                  className="h-12 w-12"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p
+                      className={`truncate font-semibold ${!usingDemoExperts ? "group-hover:text-[var(--accent)]" : ""}`}
+                    >
+                      {expert.displayName}
                     </p>
+                    {usingDemoExperts ? <SampleContentBadge /> : null}
                   </div>
+                  <p className="mt-0.5 truncate text-sm text-[var(--muted-foreground)]">
+                    {usingDemoExperts ? (
+                      expert.headline
+                    ) : (
+                      <>
+                        @{expert.username}
+                        {expert.headline ? ` · ${expert.headline}` : ""}
+                      </>
+                    )}
+                  </p>
+                </div>
+                {!usingDemoExperts ? (
                   <span className="hidden shrink-0 items-center gap-1 text-sm font-medium text-[var(--accent)] sm:inline-flex">
-                    {usingDemoExperts ? "View example" : "View Twin"}
+                    View Twin
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                   </span>
-                </Link>
-              </li>
-            );
-          })}
+                ) : null}
+              </ExpertProfileLink>
+            </li>
+          ))}
         </ol>
       </section>
 
@@ -278,8 +286,9 @@ export default async function DiscoverPage() {
           What the network is talking about
         </h2>
         <p className="mt-3 max-w-xl text-sm text-white/60">
-          Topics ranked by source activity. Click any topic to search experts
-          and knowledge related to it.
+          {usingDemoTopics
+            ? "Sample topic activity until public sources publish — tap to search the network."
+            : "Topics ranked by source activity. Click any topic to search experts and knowledge related to it."}
         </p>
 
         <ul className="mt-8 space-y-4">
@@ -332,8 +341,9 @@ export default async function DiscoverPage() {
               New Knowledge Twins
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)]">
-              Fresh experts who recently published a Twin. Meet them early —
-              before they trend.
+              {usingDemoNew
+                ? "Sample creators shown for layout — your Twin can appear here after you publish."
+                : "Fresh experts who recently published a Twin. Meet them early — before they trend."}
             </p>
             <Button asChild className="mt-6" variant="secondary">
               <Link href={ROUTES.signup}>
@@ -344,45 +354,46 @@ export default async function DiscoverPage() {
           </div>
 
           <ol className="relative space-y-0 border-l border-[var(--accent)]/30 pl-8">
-            {newExperts.map((expert) => {
-              const href = hubProfileHref(expert.username, !usingDemoNew);
-              return (
-                <li key={expert.username} className="relative pb-10 last:pb-0">
-                  <span
-                    aria-hidden
-                    className="absolute top-1.5 -left-[2.05rem] h-3.5 w-3.5 rounded-full border-2 border-[var(--accent)] bg-[var(--background)]"
-                  />
-                  <Link href={href} className="group block">
-                    <div className="flex items-center gap-3">
-                      <Avatar
-                        src={expert.avatarUrl}
-                        name={expert.displayName}
-                      />
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-semibold group-hover:text-[var(--accent)]">
-                            {expert.displayName}
-                          </p>
-                          {usingDemoNew ? (
-                            <span className="text-[10px] font-semibold tracking-wide text-[var(--muted)] uppercase">
-                              Example
-                            </span>
-                          ) : null}
-                        </div>
+            {newExperts.map((expert) => (
+              <li key={expert.username} className="relative pb-10 last:pb-0">
+                <span
+                  aria-hidden
+                  className="absolute top-1.5 -left-[2.05rem] h-3.5 w-3.5 rounded-full border-2 border-[var(--accent)] bg-[var(--background)]"
+                />
+                <ExpertProfileLink
+                  username={expert.username}
+                  isLive={!usingDemoNew}
+                  className="group block"
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar
+                      src={expert.avatarUrl}
+                      name={expert.displayName}
+                    />
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p
+                          className={`font-semibold ${!usingDemoNew ? "group-hover:text-[var(--accent)]" : ""}`}
+                        >
+                          {expert.displayName}
+                        </p>
+                        {usingDemoNew ? <SampleContentBadge /> : null}
+                      </div>
+                      {!usingDemoNew ? (
                         <p className="text-sm text-[var(--muted)]">
                           @{expert.username}
                         </p>
-                      </div>
+                      ) : null}
                     </div>
-                    {"headline" in expert && expert.headline ? (
-                      <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)]">
-                        {expert.headline}
-                      </p>
-                    ) : null}
-                  </Link>
-                </li>
-              );
-            })}
+                  </div>
+                  {expert.headline ? (
+                    <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)]">
+                      {expert.headline}
+                    </p>
+                  ) : null}
+                </ExpertProfileLink>
+              </li>
+            ))}
           </ol>
         </div>
       </section>

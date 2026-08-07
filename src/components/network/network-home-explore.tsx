@@ -15,7 +15,11 @@ import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ROUTES } from "@/config/constants";
 import { cn } from "@/lib/utils";
-import { hubProfileHref, hubTwinChatHref } from "@/lib/hub-links";
+import {
+  ExpertProfileLink,
+  SampleContentBadge,
+  TwinChatLink,
+} from "@/components/discover/featured-content-links";
 import { TopEarnersPanel } from "@/components/marketplace/top-earners-panel";
 
 type NetworkHomeExploreProps = NetworkHomeViewModel;
@@ -178,18 +182,28 @@ function ExpertsPanel(props: NetworkHomeExploreProps) {
         <ul className="grid gap-3 sm:grid-cols-2">
           {props.trendingExperts.slice(0, 4).map((expert) => (
             <li key={expert.username}>
-              <Link href={hubProfileHref(expert.username, props.hasLiveExperts)}>
-                <GlassCard className="flex gap-4 p-4 transition-colors hover:bg-[var(--surface-elevated)]">
+              <ExpertProfileLink
+                username={expert.username}
+                isLive={props.hasLiveExperts}
+              >
+                <GlassCard
+                  className={`flex gap-4 p-4 transition-colors ${props.hasLiveExperts ? "hover:bg-[var(--surface-elevated)]" : ""}`}
+                >
                   <Avatar
                     src={expert.avatarUrl}
                     name={expert.displayName}
                     className="h-14 w-14 shrink-0"
                   />
                   <div className="min-w-0">
-                    <p className="font-semibold">{expert.displayName}</p>
-                    <p className="mt-0.5 text-sm text-[var(--muted-foreground)]">
-                      @{expert.username}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-semibold">{expert.displayName}</p>
+                      {!props.hasLiveExperts ? <SampleContentBadge /> : null}
+                    </div>
+                    {props.hasLiveExperts ? (
+                      <p className="mt-0.5 text-sm text-[var(--muted-foreground)]">
+                        @{expert.username}
+                      </p>
+                    ) : null}
                     <p className="mt-2 line-clamp-2 text-sm leading-snug">
                       {expert.headline ?? expert.displayName}
                     </p>
@@ -200,7 +214,7 @@ function ExpertsPanel(props: NetworkHomeExploreProps) {
                     ) : null}
                   </div>
                 </GlassCard>
-              </Link>
+              </ExpertProfileLink>
             </li>
           ))}
         </ul>
@@ -211,9 +225,10 @@ function ExpertsPanel(props: NetworkHomeExploreProps) {
         <ul className="divide-y divide-[var(--border)] rounded-xl border border-[var(--border)] bg-[var(--glass)]">
           {props.topCreators.slice(0, 5).map((creator) => (
             <li key={creator.username}>
-              <Link
-                href={hubProfileHref(creator.username, props.hasLiveCreators)}
-                className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-[var(--surface-elevated)]"
+              <ExpertProfileLink
+                username={creator.username}
+                isLive={props.hasLiveCreators}
+                className={`flex items-center gap-3 px-4 py-3 transition-colors ${props.hasLiveCreators ? "hover:bg-[var(--surface-elevated)]" : ""}`}
               >
                 <Avatar
                   src={creator.avatarUrl}
@@ -221,17 +236,28 @@ function ExpertsPanel(props: NetworkHomeExploreProps) {
                   className="h-9 w-9"
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">
-                    {creator.displayName}
-                  </p>
-                  <p className="truncate text-xs text-[var(--muted)]">
-                    @{creator.username}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="truncate text-sm font-semibold">
+                      {creator.displayName}
+                    </p>
+                    {!props.hasLiveCreators ? <SampleContentBadge /> : null}
+                  </div>
+                  {props.hasLiveCreators ? (
+                    <p className="truncate text-xs text-[var(--muted)]">
+                      @{creator.username}
+                    </p>
+                  ) : (
+                    <p className="truncate text-xs text-[var(--muted-foreground)]">
+                      {creator.headline}
+                    </p>
+                  )}
                 </div>
-                <span className="text-xs font-medium text-[var(--accent)]">
-                  View hub
-                </span>
-              </Link>
+                {props.hasLiveCreators ? (
+                  <span className="text-xs font-medium text-[var(--accent)]">
+                    View hub
+                  </span>
+                ) : null}
+              </ExpertProfileLink>
             </li>
           ))}
         </ul>
@@ -251,9 +277,12 @@ function KnowledgePanel(props: NetworkHomeExploreProps) {
           {props.latestIntelligence.slice(0, 4).map((item) => (
             <li key={item.id}>
               <GlassCard className="p-5">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--accent)]">
-                  @{item.ownerDisplayName}
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--accent)]">
+                    {item.ownerDisplayName}
+                  </p>
+                  {!props.hasLiveKnowledge ? <SampleContentBadge /> : null}
+                </div>
                 <p className="mt-2 text-lg font-semibold leading-snug">
                   {item.title}
                 </p>
@@ -262,13 +291,16 @@ function KnowledgePanel(props: NetworkHomeExploreProps) {
                     {item.summary}
                   </p>
                 ) : null}
-                <Link
-                  href={hubProfileHref(item.ownerUsername, props.hasLiveKnowledge)}
-                  className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[var(--accent)] hover:underline"
-                >
-                  Open hub
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
+                {props.hasLiveKnowledge ? (
+                  <ExpertProfileLink
+                    username={item.ownerUsername}
+                    isLive
+                    className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[var(--accent)] hover:underline"
+                  >
+                    Open hub
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </ExpertProfileLink>
+                ) : null}
               </GlassCard>
             </li>
           ))}
@@ -323,18 +355,24 @@ function EarnPanel(props: NetworkHomeExploreProps) {
           {props.openQuestions.slice(0, 4).map((q, index) => (
             <li key={`${q.ownerUsername}-${index}`}>
               <GlassCard className="p-4">
-                <p className="text-sm font-medium leading-relaxed">
-                  {q.question}
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-sm font-medium leading-relaxed">
+                    {q.question}
+                  </p>
+                  {!props.hasLiveQuestions ? <SampleContentBadge /> : null}
+                </div>
                 <p className="mt-2 text-xs text-[var(--muted-foreground)]">
                   Topic: {q.topic}
                 </p>
-                <Link
-                  href={hubTwinChatHref(q.ownerUsername, props.hasLiveQuestions)}
+                <TwinChatLink
+                  username={q.ownerUsername}
+                  isLive={props.hasLiveQuestions}
                   className="mt-2 inline-block text-xs font-semibold text-[var(--accent)] hover:underline"
                 >
-                  Ask @{q.ownerUsername}&apos;s Twin
-                </Link>
+                  {props.hasLiveQuestions
+                    ? `Ask @${q.ownerUsername}'s Twin`
+                    : "See how Twin chat works"}
+                </TwinChatLink>
               </GlassCard>
             </li>
           ))}
