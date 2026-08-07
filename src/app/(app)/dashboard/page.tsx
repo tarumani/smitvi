@@ -164,22 +164,6 @@ export default async function DashboardPage() {
         listingCount={sellerListings.length}
       />
 
-      <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
-        <HubSharePromo
-          username={session.profile.username}
-          displayName={session.profile.displayName}
-          headline={session.profile.headline ?? null}
-          avatarUrl={session.profile.avatarUrl ?? null}
-          twinReady={twinReady}
-        />
-
-        <ReferralInviteCard
-          username={session.profile.username}
-          displayName={session.profile.displayName}
-          referralCount={referralCount}
-        />
-      </div>
-
       <IntelligenceActivationHub
         userId={userId}
         emailVerified={session.user.emailVerified}
@@ -253,6 +237,22 @@ export default async function DashboardPage() {
             </GlassCard>
           ))}
         </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
+        <HubSharePromo
+          username={session.profile.username}
+          displayName={session.profile.displayName}
+          headline={session.profile.headline ?? null}
+          avatarUrl={session.profile.avatarUrl ?? null}
+          twinReady={twinReady}
+        />
+
+        <ReferralInviteCard
+          username={session.profile.username}
+          displayName={session.profile.displayName}
+          referralCount={referralCount}
+        />
       </div>
     </div>
   );

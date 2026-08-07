@@ -60,9 +60,7 @@ export default async function MarketplaceSellPage({ searchParams }: PageProps) {
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
-        <MarketplacePayoutExplainer />
-
+      <div className="grid gap-6 lg:grid-cols-[7fr_3fr] lg:items-stretch">
         <GlassCard className="flex h-full flex-col p-6 sm:p-8">
           <p className="text-xs font-semibold tracking-wide text-[var(--accent)] uppercase">
             Your listing
@@ -81,6 +79,8 @@ export default async function MarketplaceSellPage({ searchParams }: PageProps) {
             )}
           </div>
         </GlassCard>
+
+        <MarketplacePayoutExplainer />
       </div>
 
       {!showWizard || listings.length > 0 ? (
