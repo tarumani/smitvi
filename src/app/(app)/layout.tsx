@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirectIfOnboardingIncomplete } from "@/application/auth/require-onboarded";
 import { getAdminSession } from "@/application/auth/require-admin";
 import { AppShell } from "@/components/dashboard/app-shell";
 import { canAccessAdmin } from "@/domain/user/entities";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function AppLayout({
   children,

@@ -20,6 +20,7 @@ import {
   appOrigin,
   publicHubUrl,
 } from "@/lib/public-hub-url";
+import { isFullyIndexablePublicHub } from "@/application/seo/indexable-public-hubs";
 import { getExampleHubByUsername } from "@/config/example-hubs";
 
 const KNOWLEDGE_SOURCE_LABELS: Record<KnowledgeSourceType, string> = {
@@ -59,11 +60,21 @@ export async function generateMetadata({
     "Knowledge Twin and Intelligence Hub on Smitvi.";
   const url = publicHubUrl(profile.username);
   const image = absoluteMediaUrl(profile.avatarUrl);
+  const indexable = await isFullyIndexablePublicHub({
+    userId: profile.userId,
+    visibility: profile.visibility,
+    isOnboarded: profile.isOnboarded,
+    bio: profile.bio,
+    headline: profile.headline,
+  });
 
   return {
     title,
     description,
     alternates: { canonical: ROUTES.publicProfile(profile.username) },
+    robots: indexable
+      ? { index: true, follow: true }
+      : { index: false, follow: false },
     openGraph: {
       title: `${profile.displayName} on Smitvi`,
       description,

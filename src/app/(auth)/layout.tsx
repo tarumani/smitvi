@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import { SmitviLogo } from "@/components/brand/smitvi-logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default function AuthLayout({
   children,
