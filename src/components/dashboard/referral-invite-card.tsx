@@ -41,51 +41,68 @@ export function ReferralInviteCard({
   }
 
   return (
-    <GlassCard className="p-6 sm:p-8">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-[var(--accent)]">Grow Smitvi</p>
-          <h2 className="mt-1 font-display text-xl font-bold tracking-tight">
-            Invite another expert
-          </h2>
-          <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-            Share your signup link. When they create a Twin and publish, Smitvi
-            gets more real content for Discover and search.
-          </p>
-          <p className="mt-3 break-all rounded-lg bg-[var(--surface)]/80 px-3 py-2 font-mono text-xs text-[var(--muted-foreground)]">
-            {link}
-          </p>
-          {referralCount > 0 ? (
-            <p className="mt-3 text-sm text-[var(--muted-foreground)]">
-              <span className="font-semibold text-[var(--foreground)] tabular-nums">
-                {referralCount}
-              </span>{" "}
-              {referralCount === 1 ? "creator signed up" : "creators signed up"}{" "}
-              with your link.
-            </p>
-          ) : null}
-        </div>
-
-        <Button
-          type="button"
-          disabled={isPending}
-          onClick={copyInvite}
-          className="w-full shrink-0 sm:w-48"
-        >
-          {copied ? (
-            "Copied"
-          ) : (
-            <>
-              <Copy className="h-4 w-4" />
-              Copy invite
-            </>
-          )}
-        </Button>
+    <GlassCard className="flex h-full flex-col p-5 sm:p-6">
+      <div>
+        <p className="text-xs font-semibold tracking-wide text-[var(--accent)] uppercase">
+          Grow Smitvi
+        </p>
+        <h2 className="mt-1 font-display text-lg font-bold tracking-tight sm:text-xl">
+          Invite another expert
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-[var(--muted-foreground)]">
+          Your link attributes signups to you and helps fill Discover with real
+          hubs.
+        </p>
       </div>
-      <p className="mt-4 flex items-center gap-2 text-xs text-[var(--muted)]">
-        <UserPlus className="h-3.5 w-3.5 shrink-0" aria-hidden />
-        Attribution is stored when they finish signup — no rewards program yet,
-        just tracking who you brought in.
+
+      <div className="mt-4 flex-1 overflow-hidden rounded-xl border border-[var(--border)] bg-gradient-to-br from-[var(--accent-soft)]/50 to-[var(--surface)] p-4">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)]/15 text-[var(--accent)]">
+            <UserPlus className="h-5 w-5" aria-hidden />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold">Join on Smitvi</p>
+            <p className="mt-1 text-xs leading-snug text-[var(--muted-foreground)]">
+              {displayName} invited you to train your AI Twin and sell what you
+              know.
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 rounded-lg border border-[var(--border)]/80 bg-[var(--background)]/70 px-3 py-2">
+          <p className="truncate font-mono text-[11px] text-[var(--foreground)] sm:text-xs">
+            signup?ref={username}
+          </p>
+        </div>
+      </div>
+
+      {referralCount > 0 ? (
+        <p className="mt-3 text-center text-sm text-[var(--muted-foreground)]">
+          <span className="font-display text-2xl font-bold tabular-nums text-[var(--accent)]">
+            {referralCount}
+          </span>
+          <span className="ml-2">
+            {referralCount === 1 ? "creator joined" : "creators joined"}
+          </span>
+        </p>
+      ) : (
+        <p className="mt-3 text-center text-xs text-[var(--muted)]">
+          No attributed signups yet — share your invite link below.
+        </p>
+      )}
+
+      <Button
+        type="button"
+        disabled={isPending}
+        onClick={copyInvite}
+        className="mt-4 w-full"
+        size="sm"
+      >
+        <Copy className="h-4 w-4" />
+        {copied ? "Invite copied" : "Copy invite message"}
+      </Button>
+
+      <p className="mt-3 text-center text-[10px] leading-snug text-[var(--muted)]">
+        Tracking only — no rewards program yet.
       </p>
     </GlassCard>
   );

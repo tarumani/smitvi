@@ -60,18 +60,26 @@ export default async function MarketplaceSellPage({ searchParams }: PageProps) {
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
         <MarketplacePayoutExplainer />
 
-        <GlassCard className="p-6 sm:p-8">
-          {showWizard ? (
-            <FirstListingWizard
-              profile={wizardProfile}
-              initialTemplateId={defaultFirstListingTemplate(wizardProfile)}
-            />
-          ) : (
-            <ListingForm />
-          )}
+        <GlassCard className="flex h-full flex-col p-6 sm:p-8">
+          <p className="text-xs font-semibold tracking-wide text-[var(--accent)] uppercase">
+            Your listing
+          </p>
+          <h2 className="mt-1 font-display text-lg font-bold tracking-tight">
+            {showWizard ? "Publish your offer" : "Add or edit"}
+          </h2>
+          <div className="mt-5 flex-1">
+            {showWizard ? (
+              <FirstListingWizard
+                profile={wizardProfile}
+                initialTemplateId={defaultFirstListingTemplate(wizardProfile)}
+              />
+            ) : (
+              <ListingForm />
+            )}
+          </div>
         </GlassCard>
       </div>
 

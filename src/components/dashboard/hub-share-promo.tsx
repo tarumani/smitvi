@@ -73,69 +73,69 @@ export function HubSharePromo({
   }
 
   return (
-    <GlassCard className="p-6 sm:p-8">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-[var(--accent)]">Grow visits</p>
-          <h2 className="mt-1 font-display text-xl font-bold tracking-tight">
-            Share your public hub
-          </h2>
-          <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-            {twinReady
-              ? "Send your @ link — when people visit, they can read your profile and chat with your Twin."
-              : "Share your hub now; train your Twin so visitors get answers from your knowledge."}
-          </p>
+    <GlassCard className="flex h-full flex-col p-5 sm:p-6">
+      <div>
+        <p className="text-xs font-semibold tracking-wide text-[var(--accent)] uppercase">
+          Grow visits
+        </p>
+        <h2 className="mt-1 font-display text-lg font-bold tracking-tight sm:text-xl">
+          Share your public hub
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-[var(--muted-foreground)]">
+          {twinReady
+            ? "Visitors can read your profile and chat with your Twin."
+            : "Share now; train your Twin so visitors get real answers."}
+        </p>
+      </div>
 
-          <div className="mt-5 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)]">
-            <div className="border-b border-[var(--border)] bg-[var(--accent-soft)]/30 px-4 py-2 text-[10px] font-semibold tracking-wide text-[var(--muted)] uppercase">
-              Link preview (Open Graph)
-            </div>
-            <div className="flex gap-4 p-4">
-              <Avatar
-                src={avatarUrl}
-                name={displayName}
-                className="h-14 w-14 shrink-0"
-              />
-              <div className="min-w-0">
-                <p className="truncate font-semibold text-[var(--foreground)]">
-                  {displayName} (@{username})
-                </p>
-                <p className="mt-1 line-clamp-2 text-sm text-[var(--muted-foreground)]">
-                  {previewDescription}
-                </p>
-                <p className="mt-2 truncate text-xs text-[var(--muted)]">
-                  smitvi.com/@{username}
-                </p>
-              </div>
-            </div>
+      <div className="mt-4 flex-1 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)]/80">
+        <div className="border-b border-[var(--border)] px-3 py-1.5 text-[10px] font-semibold tracking-wide text-[var(--muted)] uppercase">
+          Link preview
+        </div>
+        <div className="flex gap-3 p-3">
+          <Avatar
+            src={avatarUrl}
+            name={displayName}
+            className="h-12 w-12 shrink-0"
+          />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold">{displayName}</p>
+            <p className="text-xs text-[var(--muted)]">@{username}</p>
+            <p className="mt-1.5 line-clamp-2 text-xs leading-snug text-[var(--muted-foreground)]">
+              {previewDescription}
+            </p>
           </div>
-
-          <p className="mt-3 break-all rounded-lg bg-[var(--surface)]/80 px-3 py-2 font-mono text-xs text-[var(--muted-foreground)]">
-            {hubUrl}
-          </p>
         </div>
+      </div>
 
-        <div className="flex w-full shrink-0 flex-col gap-2 sm:w-48">
-          <Button
-            type="button"
-            disabled={isPending}
-            onClick={copyLink}
-            className="w-full"
-          >
-            <Link2 className="h-4 w-4" />
-            {copied ? "Copied" : "Copy share text"}
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={isPending}
-            onClick={nativeShare}
-            className="w-full"
-          >
-            <Share2 className="h-4 w-4" />
-            Share…
-          </Button>
-        </div>
+      <div className="mt-3 rounded-lg border border-[var(--border)] bg-[var(--background)]/60 px-3 py-2">
+        <p className="truncate font-mono text-[11px] text-[var(--muted-foreground)] sm:text-xs">
+          {hubUrl}
+        </p>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <Button
+          type="button"
+          disabled={isPending}
+          onClick={copyLink}
+          className="w-full"
+          size="sm"
+        >
+          <Link2 className="h-4 w-4" />
+          {copied ? "Copied" : "Copy"}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={isPending}
+          onClick={nativeShare}
+          className="w-full"
+          size="sm"
+        >
+          <Share2 className="h-4 w-4" />
+          Share
+        </Button>
       </div>
     </GlassCard>
   );
