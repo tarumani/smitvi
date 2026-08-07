@@ -53,8 +53,8 @@ export function CelebratePanel({ username }: CelebratePanelProps) {
       <div>
         <h2 className="font-display text-2xl font-bold">You&apos;re live</h2>
         <p className="mt-2 text-[var(--muted-foreground)]">
-          smitvi.com/@{username} is ready for chat, consults, and marketplace
-          offers.
+          smitvi.com/@{username} is ready. Import content and train your
+          Knowledge Twin anytime from your hub dashboard — no extra steps now.
         </p>
       </div>
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">

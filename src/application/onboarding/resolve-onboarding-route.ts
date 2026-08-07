@@ -6,29 +6,36 @@ type ProfileLike = Pick<
   "isOnboarded" | "hubArchetypeId" | "username" | "onboardingStep"
 > | null;
 
-/** Map v2 funnel step ids onto the classic 5-step flow. */
+/** Fast onboarding: archetype → profile → launch (train Twin later from dashboard). */
 function normalizeClassicOnboardingStep(
   step: string | null | undefined,
-): "archetype" | "profile" | "connect" | "build" | "celebrate" {
+): "archetype" | "profile" | "celebrate" {
   if (!step) return "archetype";
-  if (
-    step === "archetype" ||
-    step === "profile" ||
-    step === "connect" ||
-    step === "build" ||
-    step === "celebrate"
-  ) {
+  if (step === "archetype" || step === "profile" || step === "celebrate") {
     return step;
   }
-  if (step === "welcome" || step === "profession") return "archetype";
-  if (step === "interests" || step === "photo" || step === "bio") return "profile";
-  if (step === "knowledge") return "connect";
-  if (step === "follow") return "build";
-  if (step === "score") return "celebrate";
-  return "connect";
+  if (
+    step === "welcome" ||
+    step === "profession" ||
+    step === "interests" ||
+    step === "photo" ||
+    step === "bio"
+  ) {
+    return "profile";
+  }
+  if (
+    step === "connect" ||
+    step === "build" ||
+    step === "knowledge" ||
+    step === "follow" ||
+    step === "score"
+  ) {
+    return "celebrate";
+  }
+  return "profile";
 }
 
-/** Next onboarding step for authenticated users who have not finished celebrate. */
+/** Next onboarding route for users who have not finished launch. */
 export function resolveOnboardingRoute(profile: ProfileLike): string {
   if (!profile) {
     return ROUTES.onboardingArchetype;
@@ -44,9 +51,12 @@ export function resolveOnboardingRoute(profile: ProfileLike): string {
   }
 
   const step = normalizeClassicOnboardingStep(profile.onboardingStep);
-  if (step === "celebrate") return ROUTES.onboardingCelebrate;
-  if (step === "build") return ROUTES.onboardingBuild;
-  if (step === "connect") return ROUTES.onboardingConnect;
+  if (step === "celebrate") {
+    return ROUTES.onboardingCelebrate;
+  }
+  if (step === "profile") {
+    return ROUTES.onboardingProfile;
+  }
 
-  return ROUTES.onboardingConnect;
+  return ROUTES.onboardingCelebrate;
 }

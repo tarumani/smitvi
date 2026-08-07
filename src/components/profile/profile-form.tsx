@@ -18,7 +18,7 @@ type ProfileFormProps = {
   initialProfile?: ProfileEntity | null;
   defaultDisplayName?: string;
   defaultUsername?: string;
-  /** Multi-step onboarding — routes to connect after save. */
+  /** Fast onboarding — celebrate (launch) after save; train Twin from dashboard later. */
   onboardingMode?: boolean;
 };
 
@@ -85,10 +85,20 @@ export function ProfileForm({
         if (!form.bio.trim()) {
           throw new Error("Bio is required");
         }
-        const skillList = form.skills
+        let skillList = form.skills
           .split(",")
           .map((skill) => skill.trim())
           .filter(Boolean);
+        if (skillList.length === 0 && onboardingMode) {
+          skillList = form.headline
+            .split(/[·|,]/)
+            .map((part) => part.trim())
+            .filter(Boolean)
+            .slice(0, 5);
+        }
+        if (skillList.length === 0 && onboardingMode) {
+          skillList = ["Expertise"];
+        }
         if (skillList.length === 0) {
           throw new Error("Add at least one skill");
         }
@@ -98,14 +108,14 @@ export function ProfileForm({
           displayName: form.displayName,
           headline: form.headline.trim(),
           bio: form.bio.trim(),
-          websiteUrl: form.websiteUrl || null,
-          location: form.location || null,
+          websiteUrl: onboardingMode ? null : form.websiteUrl || null,
+          location: onboardingMode ? null : form.location || null,
           avatarUrl: form.avatarUrl.trim() || null,
           skills: skillList,
           visibility: "PUBLIC" as const,
           publicTwinEnabled: form.publicTwinEnabled,
           ...(onboardingMode
-            ? { onboardingStep: "connect" as const }
+            ? { onboardingStep: "celebrate" as const }
             : {}),
         };
 
@@ -130,7 +140,7 @@ export function ProfileForm({
 
         toast.success(mode === "create" ? "Profile created" : "Profile updated");
         if (onboardingMode) {
-          router.replace(ROUTES.onboardingConnect);
+          router.replace(ROUTES.onboardingCelebrate);
         } else {
           router.replace(ROUTES.hub.dashboard);
         }
@@ -188,14 +198,16 @@ export function ProfileForm({
         onSubmit={handleSubmit}
         className="space-y-5"
       >
-      <ProfileAvatarUpload
-        displayName={form.displayName || "You"}
-        avatarUrl={form.avatarUrl.trim() || null}
-        onUploaded={(url) => {
-          updateField("avatarUrl", url);
-          router.refresh();
-        }}
-      />
+      {!onboardingMode ? (
+        <ProfileAvatarUpload
+          displayName={form.displayName || "You"}
+          avatarUrl={form.avatarUrl.trim() || null}
+          onUploaded={(url) => {
+            updateField("avatarUrl", url);
+            router.refresh();
+          }}
+        />
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
@@ -248,6 +260,8 @@ export function ProfileForm({
           >
             {isAiProfilePending ? (
               <Spinner className="h-3.5 w-3.5" />
+            ) : onboardingMode ? (
+              "Suggest headline"
             ) : (
               "Suggest headline & skills"
             )}
@@ -274,60 +288,68 @@ export function ProfileForm({
         disabled={isPending}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="websiteUrl">Website</Label>
-          <Input
-            id="websiteUrl"
-            type="url"
-            value={form.websiteUrl}
-            onChange={(event) => updateField("websiteUrl", event.target.value)}
-            placeholder="https://"
-          />
+      {!onboardingMode ? (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="websiteUrl">Website</Label>
+            <Input
+              id="websiteUrl"
+              type="url"
+              value={form.websiteUrl}
+              onChange={(event) =>
+                updateField("websiteUrl", event.target.value)
+              }
+              placeholder="https://"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="location">Location</Label>
+            <Input
+              id="location"
+              value={form.location}
+              onChange={(event) => updateField("location", event.target.value)}
+              placeholder="Remote · London · NYC"
+            />
+          </div>
         </div>
+      ) : null}
+
+      {!onboardingMode ? (
         <div className="space-y-2">
-          <Label htmlFor="location">Location</Label>
+          <Label htmlFor="skills">
+            Skills <span className="text-[var(--destructive)]">*</span>
+          </Label>
           <Input
-            id="location"
-            value={form.location}
-            onChange={(event) => updateField("location", event.target.value)}
-            placeholder="Remote · London · NYC"
+            id="skills"
+            required
+            value={form.skills}
+            onChange={(event) => updateField("skills", event.target.value)}
+            placeholder="TypeScript, Product Strategy, Machine Learning"
           />
+          <p className="text-xs text-[var(--muted)]">Comma-separated · required</p>
         </div>
-      </div>
+      ) : null}
 
-      <div className="space-y-2">
-        <Label htmlFor="skills">
-          Skills <span className="text-[var(--destructive)]">*</span>
-        </Label>
-        <Input
-          id="skills"
-          required
-          value={form.skills}
-          onChange={(event) => updateField("skills", event.target.value)}
-          placeholder="TypeScript, Product Strategy, Machine Learning"
-        />
-        <p className="text-xs text-[var(--muted)]">Comma-separated · required</p>
-      </div>
-
-      <label className="flex items-center gap-3 text-sm">
-        <input
-          type="checkbox"
-          checked={form.publicTwinEnabled}
-          onChange={(event) =>
-            updateField("publicTwinEnabled", event.target.checked)
-          }
-          className="h-4 w-4 rounded border-[var(--border)]"
-        />
-        Enable public Twin chat on my profile
-      </label>
+      {!onboardingMode ? (
+        <label className="flex items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            checked={form.publicTwinEnabled}
+            onChange={(event) =>
+              updateField("publicTwinEnabled", event.target.checked)
+            }
+            className="h-4 w-4 rounded border-[var(--border)]"
+          />
+          Enable public Twin chat on my profile
+        </label>
+      ) : null}
 
       {onboardingMode ? (
         <OnboardingStepNav
           step="profile"
           nextFormId="onboarding-profile-form"
           nextPending={isPending}
-          nextLabel="Next"
+          nextLabel="Continue to launch"
         />
       ) : (
         <Button type="submit" disabled={isPending} className="w-full sm:w-auto">

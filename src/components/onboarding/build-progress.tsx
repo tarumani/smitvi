@@ -173,7 +173,7 @@ export function BuildProgressAnimation() {
       </p>
 
       <OnboardingStepNav
-        step="build"
+        step="celebrate"
         onNext={continueToCelebrate}
         nextDisabled={!canContinue}
         nextLabel={phase === "processing" && total > 0 && readyCount === 0 ? "Building…" : "Next"}

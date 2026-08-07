@@ -11,25 +11,24 @@ export function ConnectSourcesForm() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  function skipToBuild() {
+  function skipToLaunch() {
     startTransition(async () => {
       try {
         await fetch("/api/v1/profiles/me", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ onboardingStep: "build" }),
+          body: JSON.stringify({ onboardingStep: "celebrate" }),
         });
-        router.push(ROUTES.onboardingBuild);
+        router.push(ROUTES.onboardingCelebrate);
         router.refresh();
       } catch {
-        router.push(ROUTES.onboardingBuild);
+        router.push(ROUTES.onboardingCelebrate);
       }
     });
   }
 
   function afterImport() {
-    router.push(ROUTES.onboardingBuild);
-    router.refresh();
+    skipToLaunch();
   }
 
   return (
@@ -54,15 +53,15 @@ export function ConnectSourcesForm() {
         </Button>
       </div>
 
-      <Button type="button" variant="ghost" onClick={skipToBuild} disabled={isPending}>
+      <Button type="button" variant="ghost" onClick={skipToLaunch} disabled={isPending}>
         Skip for now
       </Button>
 
       <OnboardingStepNav
-        step="connect"
-        onNext={skipToBuild}
+        step="profile"
+        onNext={skipToLaunch}
         nextPending={isPending}
-        nextLabel="Next"
+        nextLabel="Continue without imports"
       />
     </div>
   );

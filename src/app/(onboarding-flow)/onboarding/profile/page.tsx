@@ -27,10 +27,11 @@ export default async function OnboardingProfilePage() {
       <div className="space-y-6">
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tight">
-            Claim your @username
+            Your public profile
           </h1>
           <p className="mt-2 text-[var(--muted-foreground)]">
-            This is your public Intelligence Hub storefront.
+            Username, headline, and bio are all you need to go live. Add a photo,
+            website, and train your Twin from the dashboard anytime.
           </p>
         </div>
         <GlassCard className="p-6 sm:p-8">

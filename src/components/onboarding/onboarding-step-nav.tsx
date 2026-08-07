@@ -6,13 +6,7 @@ import { ROUTES } from "@/config/constants";
 
 const PREVIOUS_HREF: Partial<Record<ClassicOnboardingStepId, string>> = {
   profile: ROUTES.onboardingArchetype,
-  connect: ROUTES.onboardingProfile,
-  build: ROUTES.onboardingConnect,
-  celebrate: ROUTES.onboardingBuild,
-};
-
-const NEXT_HREF: Partial<Record<ClassicOnboardingStepId, string>> = {
-  connect: ROUTES.onboardingBuild,
+  celebrate: ROUTES.onboardingProfile,
 };
 
 type Props = {
@@ -34,7 +28,6 @@ export function OnboardingStepNav({
   nextFormId,
 }: Props) {
   const prevHref = PREVIOUS_HREF[step];
-  const nextHref = NEXT_HREF[step];
 
   return (
     <div
@@ -81,10 +74,6 @@ export function OnboardingStepNav({
             disabled={nextPending}
           >
             {nextPending ? "Saving…" : nextLabel}
-          </Button>
-        ) : nextHref ? (
-          <Button asChild className="flex-1 sm:flex-none">
-            <Link href={nextHref}>{nextLabel}</Link>
           </Button>
         ) : null}
       </div>

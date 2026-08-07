@@ -6,8 +6,6 @@ import { cn } from "@/lib/utils";
 const STEPS = [
   { id: "archetype", label: "Archetype" },
   { id: "profile", label: "Profile" },
-  { id: "connect", label: "Connect" },
-  { id: "build", label: "Build" },
   { id: "celebrate", label: "Launch" },
 ] as const;
 
@@ -48,7 +46,8 @@ export function OnboardingClassicLayout({ active, children }: Props) {
                       done || current
                         ? "bg-[var(--accent)]"
                         : "bg-[var(--border)]",
-                      current && "ring-2 ring-[var(--accent)]/30 ring-offset-2 ring-offset-[var(--background)]",
+                      current &&
+                        "ring-2 ring-[var(--accent)]/30 ring-offset-2 ring-offset-[var(--background)]",
                     )}
                     title={step.label}
                   />
