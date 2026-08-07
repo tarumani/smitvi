@@ -19,24 +19,34 @@ const STATIC_PATHS = [
   ROUTES.developers,
 ] as const;
 
+/** Hub URLs need Postgres — must not run during Docker `next build`. */
+export const dynamic = "force-dynamic";
+
+function staticSitemapEntries(origin: string, now: Date): MetadataRoute.Sitemap {
+  return STATIC_PATHS.map((path) => ({
+    url: `${origin}${path}`,
+    lastModified: now,
+    changeFrequency:
+      path === ROUTES.discover || path === ROUTES.marketplace ? "daily" : "weekly",
+    priority: path === ROUTES.home ? 1 : path === ROUTES.discover ? 0.9 : 0.7,
+  }));
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const origin = appOrigin();
   const now = new Date();
+  const staticEntries = staticSitemapEntries(origin, now);
 
-  const staticEntries: MetadataRoute.Sitemap = STATIC_PATHS.map((path) => ({
-    url: `${origin}${path}`,
-    lastModified: now,
-    changeFrequency: path === ROUTES.discover || path === ROUTES.marketplace ? "daily" : "weekly",
-    priority: path === ROUTES.home ? 1 : path === ROUTES.discover ? 0.9 : 0.7,
-  }));
-
-  const hubs = await listIndexablePublicHubs();
-  const hubEntries: MetadataRoute.Sitemap = hubs.map((hub) => ({
-    url: `${origin}${ROUTES.publicProfile(hub.username)}`,
-    lastModified: hub.updatedAt,
-    changeFrequency: "weekly",
-    priority: 0.8,
-  }));
-
-  return [...staticEntries, ...hubEntries];
+  try {
+    const hubs = await listIndexablePublicHubs();
+    const hubEntries: MetadataRoute.Sitemap = hubs.map((hub) => ({
+      url: `${origin}${ROUTES.publicProfile(hub.username)}`,
+      lastModified: hub.updatedAt,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    }));
+    return [...staticEntries, ...hubEntries];
+  } catch {
+    return staticEntries;
+  }
 }
