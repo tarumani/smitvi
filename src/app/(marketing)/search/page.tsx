@@ -22,17 +22,29 @@ type PageProps = {
 export default async function SearchPage({ searchParams }: PageProps) {
   const { q = "" } = await searchParams;
   const query = q.trim();
-  const results =
-    query.length >= 2
-      ? await container.search.search(query)
-      : {
-          people: [],
-          skills: [],
-          topics: [],
-          knowledge: [],
-          questions: [],
-          semanticMatches: [],
-        };
+  let results: Awaited<ReturnType<typeof container.search.search>>;
+  try {
+    results =
+      query.length >= 2
+        ? await container.search.search(query)
+        : {
+            people: [],
+            skills: [],
+            topics: [],
+            knowledge: [],
+            questions: [],
+            semanticMatches: [],
+          };
+  } catch {
+    results = {
+      people: [],
+      skills: [],
+      topics: [],
+      knowledge: [],
+      questions: [],
+      semanticMatches: [],
+    };
+  }
 
   const hasResults =
     results.people.length +

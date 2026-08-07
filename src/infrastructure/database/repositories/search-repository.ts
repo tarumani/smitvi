@@ -150,7 +150,7 @@ export class PrismaSearchRepository {
         ORDER BY source_count DESC
         LIMIT ${limit}
       `,
-      this.searchSemanticPublic(q, limit),
+      this.searchSemanticPublic(q, limit).catch(() => [] as SemanticSearchMatch[]),
     ]);
 
     const questions = knowledgeRows
@@ -223,9 +223,20 @@ export class PrismaSearchRepository {
     const q = query.trim();
     if (q.length < 2) return [];
 
-    const [queryEmbedding] = await embedTexts([q]);
-    if (!queryEmbedding?.length) return [];
+    try {
+      const [queryEmbedding] = await embedTexts([q]);
+      if (!queryEmbedding?.length) return [];
 
+      return await this.loadSemanticMatches(queryEmbedding, limit);
+    } catch {
+      return [];
+    }
+  }
+
+  private async loadSemanticMatches(
+    queryEmbedding: number[],
+    limit: number,
+  ): Promise<SemanticSearchMatch[]> {
     const chunks = await prisma.knowledgeChunk.findMany({
       where: {
         source: {
@@ -242,7 +253,6 @@ export class PrismaSearchRepository {
       },
       include: {
         source: {
-          select: { title: true },
           include: {
             user: {
               include: {
