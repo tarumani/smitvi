@@ -15,6 +15,11 @@ import type { HubActivityItem } from "@/components/profile/hub-activity-feed";
 import { HubUpdatesBanner } from "@/components/profile/hub-updates-banner";
 import type { KnowledgeSourceType } from "@/domain/knowledge/entities";
 import { ROUTES } from "@/config/constants";
+import {
+  absoluteMediaUrl,
+  appOrigin,
+  publicHubUrl,
+} from "@/lib/public-hub-url";
 import { getExampleHubByUsername } from "@/config/example-hubs";
 
 const KNOWLEDGE_SOURCE_LABELS: Record<KnowledgeSourceType, string> = {
@@ -46,9 +51,34 @@ export async function generateMetadata({
   if (!profile || profile.visibility === "PRIVATE") {
     return { title: "Profile not found" };
   }
+
+  const title = `${profile.displayName} (@${profile.username})`;
+  const description =
+    profile.headline?.trim() ||
+    profile.bio?.trim()?.slice(0, 160) ||
+    "Knowledge Twin and Intelligence Hub on Smitvi.";
+  const url = publicHubUrl(profile.username);
+  const image = absoluteMediaUrl(profile.avatarUrl);
+
   return {
-    title: `${profile.displayName} (@${profile.username})`,
-    description: profile.headline ?? profile.bio ?? "Smitvi Knowledge Twin",
+    title,
+    description,
+    alternates: { canonical: ROUTES.publicProfile(profile.username) },
+    openGraph: {
+      title: `${profile.displayName} on Smitvi`,
+      description,
+      url,
+      siteName: "Smitvi",
+      type: "profile",
+      ...(image ? { images: [{ url: image, alt: profile.displayName }] } : {}),
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title: `${profile.displayName} on Smitvi`,
+      description,
+      ...(image ? { images: [image] } : {}),
+    },
+    metadataBase: new URL(appOrigin()),
   };
 }
 

@@ -13,6 +13,7 @@ import {
 } from "@/config/constants";
 import { IntelligenceActivationHub } from "@/components/dashboard/intelligence-activation-hub";
 import { TwinLaunchChecklist } from "@/components/dashboard/twin-launch-checklist";
+import { HubSharePromo } from "@/components/dashboard/hub-share-promo";
 import { formatInrFromMinorUnits } from "@/lib/format-money";
 
 export const metadata: Metadata = {
@@ -156,6 +157,14 @@ export default async function DashboardPage() {
         twinReady={twinReady}
         consultationsEnabled={Boolean(consultationOffer)}
         listingCount={sellerListings.length}
+      />
+
+      <HubSharePromo
+        username={session.profile.username}
+        displayName={session.profile.displayName}
+        headline={session.profile.headline ?? null}
+        avatarUrl={session.profile.avatarUrl ?? null}
+        twinReady={twinReady}
       />
 
       <IntelligenceActivationHub
