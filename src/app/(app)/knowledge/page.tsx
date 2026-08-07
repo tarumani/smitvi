@@ -11,6 +11,7 @@ import { VisibilityToggle } from "@/components/knowledge/visibility-toggle";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { GlassCard } from "@/components/ui/glass-card";
+import { LaunchWizardReturnBanner } from "@/components/dashboard/launch-wizard-return-banner";
 import {
   APP_OUTCOME,
   ROUTES,
@@ -21,7 +22,12 @@ export const metadata: Metadata = {
   title: TRAIN_TWIN_LABEL,
 };
 
-export default async function KnowledgePage() {
+export default async function KnowledgePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string }>;
+}) {
+  const { from } = await searchParams;
   const session = await getCurrentSession();
   if (!session) redirect(ROUTES.login);
   if (!session.profile?.isOnboarded) redirect(ROUTES.onboarding);
@@ -34,6 +40,9 @@ export default async function KnowledgePage() {
 
   return (
     <div className="space-y-8">
+      {from === "launch" ? (
+        <LaunchWizardReturnBanner step="knowledge" />
+      ) : null}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-medium text-[var(--accent)]">

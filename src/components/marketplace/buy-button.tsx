@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/config/constants";
@@ -10,7 +10,6 @@ type BuyButtonProps = {
 };
 
 export function BuyButton({ listingId }: BuyButtonProps) {
-  const [provider, setProvider] = useState<"STRIPE" | "RAZORPAY">("STRIPE");
   const [isPending, startTransition] = useTransition();
 
   function buy() {
@@ -20,7 +19,7 @@ export function BuyButton({ listingId }: BuyButtonProps) {
           method: "POST",
           credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ listingId, provider }),
+          body: JSON.stringify({ listingId, provider: "RAZORPAY" }),
         });
         const json: unknown = await response.json();
         if (response.status === 401) {
@@ -91,26 +90,8 @@ export function BuyButton({ listingId }: BuyButtonProps) {
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex gap-2">
-        <Button
-          size="sm"
-          variant={provider === "STRIPE" ? "default" : "outline"}
-          onClick={() => setProvider("STRIPE")}
-        >
-          Stripe
-        </Button>
-        <Button
-          size="sm"
-          variant={provider === "RAZORPAY" ? "default" : "outline"}
-          onClick={() => setProvider("RAZORPAY")}
-        >
-          Razorpay
-        </Button>
-      </div>
-      <Button onClick={buy} disabled={isPending} className="w-full">
-        {isPending ? "Starting checkout…" : "Buy now"}
-      </Button>
-    </div>
+    <Button onClick={buy} disabled={isPending} className="w-full">
+      {isPending ? "Starting checkout…" : "Buy now with Razorpay"}
+    </Button>
   );
 }

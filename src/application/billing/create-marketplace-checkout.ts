@@ -5,8 +5,9 @@ import type { PrismaMarketplaceRepository } from "@/infrastructure/database/repo
 import { getStripe, isStripeConfigured } from "@/infrastructure/billing/stripe-client";
 import {
   getRazorpay,
-  isRazorpayConfigured,
+  isRazorpayKeysConfigured,
 } from "@/infrastructure/billing/razorpay-client";
+import { isStripeCheckoutEnabled } from "@/config/billing";
 import { getPublicEnv } from "@/config/env";
 
 export class CreateMarketplaceCheckout {
@@ -31,6 +32,9 @@ export class CreateMarketplaceCheckout {
     const { appUrl } = getPublicEnv();
 
     if (input.provider === "STRIPE") {
+      if (!isStripeCheckoutEnabled()) {
+        throw new ValidationError("Stripe checkout is disabled; use Razorpay.");
+      }
       if (!isStripeConfigured()) {
         throw new ValidationError("Stripe is not configured");
       }
@@ -83,7 +87,7 @@ export class CreateMarketplaceCheckout {
       };
     }
 
-    if (!isRazorpayConfigured()) {
+    if (!isRazorpayKeysConfigured()) {
       throw new ValidationError("Razorpay is not configured");
     }
 

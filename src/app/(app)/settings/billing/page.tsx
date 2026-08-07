@@ -58,6 +58,17 @@ export default async function BillingSettingsPage() {
             <Link href={ROUTES.pricing}>Change plan</Link>
           </Button>
           {subscription?.provider === "STRIPE" ? <ManageBillingButton /> : null}
+          {subscription?.provider === "RAZORPAY" ? (
+            <Button variant="secondary" asChild>
+              <a
+                href="https://dashboard.razorpay.com/app/subscriptions"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Manage in Razorpay
+              </a>
+            </Button>
+          ) : null}
         </div>
       </GlassCard>
 

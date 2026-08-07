@@ -3,9 +3,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentSession } from "@/application/auth/get-current-session";
 import { container } from "@/application/container";
+import {
+  defaultConsultationPlan,
+  suggestConsultationOffer,
+} from "@/config/consultation-offer-templates";
 import { ConsultationInbox } from "@/components/consultations/consultation-inbox";
 import { ConsultationOfferForm } from "@/components/consultations/consultation-offer-form";
-import { FirstConsultationWizard } from "@/components/consultations/first-consultation-wizard";
+import { LaunchWizardReturnBanner } from "@/components/dashboard/launch-wizard-return-banner";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ROUTES } from "@/config/constants";
@@ -16,10 +20,14 @@ export const metadata: Metadata = {
 };
 
 type PageProps = {
-  searchParams: Promise<{ setup?: string }>;
+  searchParams: Promise<{ setup?: string; from?: string }>;
 };
 
-export default async function ConsultationSettingsPage(_props: PageProps) {
+export default async function ConsultationSettingsPage({ searchParams }: PageProps) {
+  const { from, setup } = await searchParams;
+  if (setup === "1") {
+    redirect(ROUTES.consultationSetup);
+  }
   const session = await getCurrentSession();
   if (!session) redirect(ROUTES.login);
   if (!session.profile?.isOnboarded) redirect(ROUTES.onboarding);
@@ -43,19 +51,34 @@ export default async function ConsultationSettingsPage(_props: PageProps) {
 
   const showWizard = !offer;
 
-  const publicProfilePath = profileRow?.username
-    ? ROUTES.publicProfile(profileRow.username)
-    : ROUTES.dashboard;
-
-  const wizardProfile = {
+  const suggested = suggestConsultationOffer(defaultConsultationPlan(), {
     displayName: profileRow?.displayName ?? session.profile.displayName,
     profession: profileRow?.profession ?? null,
     headline: profileRow?.headline ?? null,
     bio: profileRow?.bio ?? null,
-  };
+  });
+
+  const offerInitial = offer
+    ? {
+        enabled: offer.enabled,
+        headline: offer.headline ?? "",
+        description: offer.description ?? "",
+        durationMinutes: offer.durationMinutes,
+        priceCents: offer.priceCents,
+        currency: offer.currency,
+      }
+    : {
+        enabled: true,
+        headline: suggested.headline,
+        description: suggested.description,
+        durationMinutes: suggested.durationMinutes,
+        priceCents: Math.round(Number(suggested.priceUsd) * 100),
+        currency: suggested.currency,
+      };
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      {from === "launch" ? <LaunchWizardReturnBanner step="book" /> : null}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-semibold tracking-[0.14em] text-[var(--accent)] uppercase">
@@ -85,37 +108,20 @@ export default async function ConsultationSettingsPage(_props: PageProps) {
       </div>
 
       <GlassCard id="consultation-offer-form" className="scroll-mt-24 p-6 sm:p-8">
-        {showWizard ? (
-          <FirstConsultationWizard
-            profile={wizardProfile}
-            publicProfilePath={publicProfilePath}
-          />
-        ) : (
-          <>
-            <p className="text-xs font-semibold tracking-wide text-[var(--accent)] uppercase">
-              Your Book tab offer
-            </p>
-            <h2 className="mt-1 font-display text-lg font-bold tracking-tight">
-              Edit consultation offer
-            </h2>
-            <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-              Update headline, price, and duration — changes apply on your public
-              hub immediately.
-            </p>
-            <div className="mt-6">
-              <ConsultationOfferForm
-                initial={{
-                  enabled: offer?.enabled ?? false,
-                  headline: offer?.headline ?? "",
-                  description: offer?.description ?? "",
-                  durationMinutes: offer?.durationMinutes ?? 30,
-                  priceCents: offer?.priceCents ?? 0,
-                  currency: offer?.currency ?? "USD",
-                }}
-              />
-            </div>
-          </>
-        )}
+        <p className="text-xs font-semibold tracking-wide text-[var(--accent)] uppercase">
+          {showWizard ? "Enable booking" : "Your Book tab offer"}
+        </p>
+        <h2 className="mt-1 font-display text-lg font-bold tracking-tight">
+          {showWizard ? "Set up your consultation offer" : "Edit consultation offer"}
+        </h2>
+        <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+          {showWizard
+            ? "Turn on the Book tab on your public hub — adjust headline, price, and duration below."
+            : "Update headline, price, and duration — changes apply on your public hub immediately."}
+        </p>
+        <div className="mt-6">
+          <ConsultationOfferForm initial={offerInitial} />
+        </div>
       </GlassCard>
 
       <div className="space-y-3">

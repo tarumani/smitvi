@@ -1,13 +1,14 @@
 import { z } from "zod";
 import { requireSession } from "@/application/auth/get-current-session";
 import { container } from "@/application/container";
+import { getDefaultBillingProvider } from "@/config/billing";
 import { ValidationError } from "@/domain/shared/errors";
 import { jsonCreated, jsonError } from "@/infrastructure/http/respond";
 import { getRateLimiter } from "@/infrastructure/http/rate-limit";
 
 const bodySchema = z.object({
   listingId: z.string().uuid(),
-  provider: z.enum(["STRIPE", "RAZORPAY"]).default("STRIPE"),
+  provider: z.enum(["STRIPE", "RAZORPAY"]).optional(),
 });
 
 export async function POST(request: Request) {
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
     const checkout = await container.createMarketplaceCheckout.execute({
       buyerId: session.user.id,
       listingId: parsed.data.listingId,
-      provider: parsed.data.provider,
+      provider: parsed.data.provider ?? getDefaultBillingProvider(),
     });
 
     return jsonCreated({ checkout });

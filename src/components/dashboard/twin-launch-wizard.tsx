@@ -1,12 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowRight, CheckCircle2, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
-import { ROUTES, TRAIN_TWIN_LABEL } from "@/config/constants";
+import { ROUTES } from "@/config/constants";
 import { cn } from "@/lib/utils";
+import {
+  buildLaunchSteps,
+  isLaunchWizardComplete,
+  type LaunchStepId,
+} from "@/components/dashboard/launch-wizard-steps";
 
 type Props = {
   username: string;
@@ -14,17 +19,27 @@ type Props = {
   twinReady: boolean;
   consultationsEnabled: boolean;
   listingCount: number;
+  initialStepId?: string | null;
 };
 
-type LaunchStep = {
-  id: string;
-  shortLabel: string;
-  title: string;
-  description: string;
-  done: boolean;
-  href: string;
-  action: string;
-};
+const LAUNCH_STEP_IDS: LaunchStepId[] = [
+  "profile",
+  "knowledge",
+  "twin",
+  "book",
+  "monetize",
+];
+
+function resolveStepIndex(
+  steps: ReturnType<typeof buildLaunchSteps>,
+  initialStepId: string | null | undefined,
+): number {
+  if (initialStepId && LAUNCH_STEP_IDS.includes(initialStepId as LaunchStepId)) {
+    return steps.findIndex((s) => s.id === initialStepId);
+  }
+  const firstOpen = steps.findIndex((s) => !s.done);
+  return firstOpen === -1 ? steps.length - 1 : firstOpen;
+}
 
 export function TwinLaunchWizard({
   username,
@@ -32,63 +47,17 @@ export function TwinLaunchWizard({
   twinReady,
   consultationsEnabled,
   listingCount,
+  initialStepId,
 }: Props) {
-  const steps: LaunchStep[] = useMemo(
-    () => [
-      {
-        id: "profile",
-        shortLabel: "Hub",
-        title: "Your Intelligence Hub is live",
-        description:
-          "Your @username and public profile are set. Visitors can find you — next, give your Twin something to say.",
-        done: true,
-        href: ROUTES.publicProfile(username),
-        action: "View public hub",
-      },
-      {
-        id: "knowledge",
-        shortLabel: "Train",
-        title: "Upload your first knowledge source",
-        description:
-          "LinkedIn, Notion, PDFs, or pasted text — your Twin learns from what you already know.",
-        done: knowledgeCount > 0,
-        href: ROUTES.hub.intelligence,
-        action: TRAIN_TWIN_LABEL,
-      },
-      {
-        id: "twin",
-        shortLabel: "Twin",
-        title: "Get your Twin to Ready",
-        description:
-          "We process each source into answers with citations. When status shows READY, test chat on your hub.",
-        done: twinReady,
-        href: ROUTES.hub.intelligence,
-        action: twinReady ? "Add more knowledge" : "Finish training",
-      },
-      {
-        id: "book",
-        shortLabel: "Book",
-        title: "Enable the Book tab",
-        description:
-          "Let visitors request paid or free consultations from your public hub — alongside Twin chat.",
-        done: consultationsEnabled,
-        href: consultationsEnabled
-          ? ROUTES.consultationSettings
-          : ROUTES.consultationSetup,
-        action: consultationsEnabled ? "Edit booking offer" : "Enable booking",
-      },
-      {
-        id: "monetize",
-        shortLabel: "Sell",
-        title: "Publish a marketplace offer",
-        description:
-          "Package your expertise as a listing buyers can purchase — consultations, packs, or services.",
-        done: listingCount > 0,
-        href:
-          listingCount > 0 ? ROUTES.hub.marketplace : ROUTES.marketplaceSellFirst,
-        action: listingCount > 0 ? "Manage listings" : "Create listing",
-      },
-    ],
+  const steps = useMemo(
+    () =>
+      buildLaunchSteps({
+        username,
+        knowledgeCount,
+        twinReady,
+        consultationsEnabled,
+        listingCount,
+      }),
     [
       username,
       knowledgeCount,
@@ -99,24 +68,19 @@ export function TwinLaunchWizard({
   );
 
   const completed = steps.filter((s) => s.done).length;
-  const firstOpenIndex = steps.findIndex((s) => !s.done);
-  const allCoreDone =
-    steps[0].done &&
-    steps[1].done &&
-    steps[2].done &&
-    steps[3].done &&
-    listingCount > 0;
 
   const [activeIndex, setActiveIndex] = useState(() =>
-    firstOpenIndex === -1 ? steps.length - 1 : firstOpenIndex,
+    resolveStepIndex(steps, initialStepId),
   );
 
-  useEffect(() => {
-    if (firstOpenIndex === -1) return;
-    setActiveIndex(firstOpenIndex);
-  }, [firstOpenIndex]);
-
-  if (allCoreDone) {
+  if (
+    isLaunchWizardComplete({
+      knowledgeCount,
+      twinReady,
+      consultationsEnabled,
+      listingCount,
+    })
+  ) {
     return null;
   }
 
@@ -124,7 +88,10 @@ export function TwinLaunchWizard({
   const progressPct = Math.round((completed / steps.length) * 100);
 
   return (
-    <GlassCard className="border-[var(--accent)]/30 p-6 sm:p-8">
+    <GlassCard
+      id="launch-wizard"
+      className="scroll-mt-24 border-[var(--accent)]/30 p-6 sm:p-8"
+    >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-sm font-medium text-[var(--accent)]">
@@ -251,6 +218,61 @@ export function TwinLaunchWizard({
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-6 border-t border-[var(--border)] pt-6">
+        <p className="text-sm font-semibold text-[var(--foreground)]">
+          All steps
+        </p>
+        <p className="mt-1 text-xs text-[var(--muted-foreground)]">
+          Tap a row to focus it in the wizard above — work happens on linked
+          pages; return here to track progress.
+        </p>
+        <ol className="mt-4 space-y-2">
+          {steps.map((step, index) => {
+            const isActive = index === activeIndex;
+            return (
+              <li key={step.id}>
+                <button
+                  type="button"
+                  onClick={() => setActiveIndex(index)}
+                  className={cn(
+                    "flex w-full flex-col gap-2 rounded-xl border px-4 py-3 text-left transition-colors sm:flex-row sm:items-center sm:justify-between",
+                    isActive
+                      ? "border-[var(--accent)]/50 bg-[var(--accent-soft)]/25"
+                      : "border-[var(--border)] hover:border-[var(--accent)]/25",
+                  )}
+                >
+                  <div className="flex items-start gap-3">
+                    {step.done ? (
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[var(--accent)]" />
+                    ) : (
+                      <Circle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--muted)]" />
+                    )}
+                    <p
+                      className={
+                        step.done
+                          ? "text-sm font-medium text-[var(--foreground)]"
+                          : "text-sm text-[var(--muted-foreground)]"
+                      }
+                    >
+                      {step.listLabel}
+                    </p>
+                  </div>
+                  {!step.done || step.id === "monetize" ? (
+                    <Link
+                      href={step.href}
+                      onClick={(event) => event.stopPropagation()}
+                      className="text-sm font-semibold text-[var(--accent)] hover:underline sm:shrink-0"
+                    >
+                      {step.action}
+                    </Link>
+                  ) : null}
+                </button>
+              </li>
+            );
+          })}
+        </ol>
       </div>
     </GlassCard>
   );

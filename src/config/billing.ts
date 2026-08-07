@@ -93,7 +93,34 @@ export function getStripePriceId(plan: Exclude<UserPlan, "FREE">): string | null
 
 export function getRazorpayPlanId(plan: Exclude<UserPlan, "FREE">): string | null {
   if (plan === "PRO") {
-    return process.env.RAZORPAY_PLAN_PRO ?? null;
+    return (
+      process.env.RAZORPAY_PLAN_PRO ??
+      process.env.RAZORPAY_PLAN_PRO_MONTHLY ??
+      null
+    );
   }
-  return process.env.RAZORPAY_PLAN_BUSINESS ?? null;
+  return (
+    process.env.RAZORPAY_PLAN_BUSINESS ??
+    process.env.RAZORPAY_PLAN_PRO_YEARLY ??
+    null
+  );
+}
+
+/** When set to `RAZORPAY`, checkout defaults to Razorpay and Stripe checkout is disabled. */
+export function getDefaultBillingProvider(): BillingProviderName {
+  const forced = process.env.BILLING_PROVIDER?.trim().toUpperCase();
+  if (forced === "RAZORPAY" || forced === "STRIPE") {
+    return forced;
+  }
+
+  const razorpayReady =
+    Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) &&
+    Boolean(getRazorpayPlanId("PRO") && getRazorpayPlanId("BUSINESS"));
+
+  return razorpayReady ? "RAZORPAY" : "STRIPE";
+}
+
+export function isStripeCheckoutEnabled(): boolean {
+  const forced = process.env.BILLING_PROVIDER?.trim().toUpperCase();
+  return forced !== "RAZORPAY";
 }

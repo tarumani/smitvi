@@ -2,6 +2,7 @@ import {
   getPlanDefinition,
   getRazorpayPlanId,
   getStripePriceId,
+  isStripeCheckoutEnabled,
   type BillingProviderName,
 } from "@/config/billing";
 import { UnauthorizedError, ValidationError } from "@/domain/shared/errors";
@@ -29,6 +30,11 @@ export class CreateSubscriptionCheckout {
     const { appUrl } = getPublicEnv();
 
     if (input.provider === "STRIPE") {
+      if (!isStripeCheckoutEnabled()) {
+        throw new ValidationError(
+          "Stripe checkout is disabled. Use Razorpay for subscriptions.",
+        );
+      }
       if (!isStripeConfigured()) {
         throw new ValidationError(
           "Stripe is not configured. Set STRIPE_SECRET_KEY and price IDs.",

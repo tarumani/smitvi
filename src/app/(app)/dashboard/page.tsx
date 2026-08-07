@@ -55,7 +55,12 @@ function resolveTwinStatus(
   };
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ launch?: string }>;
+}) {
+  const { launch } = await searchParams;
   const session = await getCurrentSession();
   if (!session) {
     redirect(ROUTES.login);
@@ -165,6 +170,7 @@ export default async function DashboardPage() {
         twinReady={twinReady}
         consultationsEnabled={Boolean(consultationOffer)}
         listingCount={sellerListings.length}
+        initialStepId={launch ?? null}
       />
 
       <IntelligenceActivationHub

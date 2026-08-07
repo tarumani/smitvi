@@ -38,6 +38,12 @@ export function KnowledgeNextSteps({
             : "Add at least one source, then test chat when status is Ready."}
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
+        <Button asChild variant="outline" size="sm">
+          <Link href={ROUTES.launchDashboard("knowledge")}>
+            Launch wizard
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </Button>
         <Button asChild size="sm">
           <Link href={ROUTES.twinChat}>
             <MessageSquare className="h-4 w-4" />
@@ -58,7 +64,7 @@ export function KnowledgeNextSteps({
         </Button>
         {twinLive ? (
           <Button asChild variant="ghost" size="sm">
-            <Link href={ROUTES.marketplaceSell}>
+            <Link href={`${ROUTES.marketplaceSell}?from=launch`}>
               Sell your expertise
               <ArrowRight className="h-4 w-4" />
             </Link>

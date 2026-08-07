@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/config/constants";
@@ -10,7 +10,6 @@ type UpgradeButtonsProps = {
 };
 
 export function UpgradeButtons({ plan }: UpgradeButtonsProps) {
-  const [provider, setProvider] = useState<"STRIPE" | "RAZORPAY">("STRIPE");
   const [isPending, startTransition] = useTransition();
 
   function checkout() {
@@ -20,7 +19,7 @@ export function UpgradeButtons({ plan }: UpgradeButtonsProps) {
           method: "POST",
           credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ plan, provider }),
+          body: JSON.stringify({ plan, provider: "RAZORPAY" }),
         });
         const json: unknown = await response.json();
         if (response.status === 401) {
@@ -61,7 +60,6 @@ export function UpgradeButtons({ plan }: UpgradeButtonsProps) {
           return;
         }
 
-        // Razorpay Checkout.js
         const script = document.createElement("script");
         script.src = "https://checkout.razorpay.com/v1/checkout.js";
         script.onload = () => {
@@ -89,28 +87,8 @@ export function UpgradeButtons({ plan }: UpgradeButtonsProps) {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex gap-2">
-        <Button
-          type="button"
-          size="sm"
-          variant={provider === "STRIPE" ? "default" : "outline"}
-          onClick={() => setProvider("STRIPE")}
-        >
-          Stripe
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant={provider === "RAZORPAY" ? "default" : "outline"}
-          onClick={() => setProvider("RAZORPAY")}
-        >
-          Razorpay
-        </Button>
-      </div>
-      <Button className="w-full" onClick={checkout} disabled={isPending}>
-        {isPending ? "Redirecting…" : `Upgrade to ${plan}`}
-      </Button>
-    </div>
+    <Button className="w-full" onClick={checkout} disabled={isPending}>
+      {isPending ? "Opening Razorpay…" : `Upgrade to ${plan}`}
+    </Button>
   );
 }

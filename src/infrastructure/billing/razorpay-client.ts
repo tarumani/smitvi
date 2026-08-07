@@ -1,5 +1,6 @@
 import Razorpay from "razorpay";
 import { createHmac } from "node:crypto";
+import { getRazorpayPlanId } from "@/config/billing";
 
 let client: Razorpay | null = null;
 
@@ -15,13 +16,14 @@ export function getRazorpay(): Razorpay {
   return client;
 }
 
+export function isRazorpayKeysConfigured(): boolean {
+  return Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+}
+
+/** Subscription checkout (requires Pro + Business plan IDs in env). */
 export function isRazorpayConfigured(): boolean {
-  return Boolean(
-    process.env.RAZORPAY_KEY_ID &&
-      process.env.RAZORPAY_KEY_SECRET &&
-      process.env.RAZORPAY_PLAN_PRO &&
-      process.env.RAZORPAY_PLAN_BUSINESS,
-  );
+  if (!isRazorpayKeysConfigured()) return false;
+  return Boolean(getRazorpayPlanId("PRO") && getRazorpayPlanId("BUSINESS"));
 }
 
 export function verifyRazorpayPaymentSignature(input: {

@@ -80,14 +80,21 @@ export const ROUTES = {
   productMarketplace: "/product/marketplace",
   marketplace: "/marketplace",
   marketplaceSell: "/marketplace/sell",
-  marketplaceSellFirst: "/marketplace/sell?first=1",
   marketplaceOrders: "/marketplace/orders",
   billingSettings: "/settings/billing",
   profileSettings: "/settings/profile",
   passwordSettings: "/settings/password",
   apiKeysSettings: "/settings/api-keys",
   consultationSettings: "/settings/consultations",
-  consultationSetup: "/settings/consultations?setup=1",
+  /** Opens dashboard launch wizard on Book step */
+  consultationSetup: "/hub/dashboard?launch=book",
+  /** Opens dashboard launch wizard on Sell step */
+  marketplaceSellFirst: "/hub/dashboard?launch=monetize",
+  /** Dashboard launch wizard — optional step focus */
+  launchDashboard: (step?: string) =>
+    step
+      ? `${ROUTES.hub.dashboard}?launch=${step}`
+      : `${ROUTES.hub.dashboard}#launch-wizard`,
   developers: "/developers",
   onboarding: "/onboarding",
   onboardingArchetype: "/onboarding/archetype",

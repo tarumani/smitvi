@@ -41,7 +41,7 @@ fly secrets set \
   SUPABASE_STORAGE_BUCKET=knowledge
 ```
 
-Optional later: Stripe / Razorpay live keys.
+Optional: Stripe live keys. **Payments (current): Razorpay only** — set `BILLING_PROVIDER=RAZORPAY` and Razorpay secrets on Fly.
 
 ```bash
 fly deploy
