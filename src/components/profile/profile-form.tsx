@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ROUTES } from "@/config/constants";
 import type { ProfileEntity } from "@/domain/profile/entities";
+import { ProfileAvatarUpload } from "@/components/profile/profile-avatar-upload";
 
 type ProfileFormProps = {
   mode: "create" | "edit";
@@ -36,6 +37,7 @@ type FormState = {
   websiteUrl: string;
   location: string;
   skills: string;
+  avatarUrl: string;
   publicTwinEnabled: boolean;
 };
 
@@ -58,6 +60,7 @@ export function ProfileForm({
     websiteUrl: initialProfile?.websiteUrl ?? "",
     location: initialProfile?.location ?? "",
     skills: initialProfile?.skills.map((skill) => skill.name).join(", ") ?? "",
+    avatarUrl: initialProfile?.avatarUrl ?? "",
     publicTwinEnabled: initialProfile?.publicTwinEnabled ?? true,
   });
 
@@ -81,6 +84,7 @@ export function ProfileForm({
           bio: form.bio || null,
           websiteUrl: form.websiteUrl || null,
           location: form.location || null,
+          avatarUrl: form.avatarUrl.trim() || null,
           skills: form.skills
             .split(",")
             .map((skill) => skill.trim())
@@ -128,6 +132,15 @@ export function ProfileForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      <ProfileAvatarUpload
+        displayName={form.displayName || "You"}
+        avatarUrl={form.avatarUrl.trim() || null}
+        onUploaded={(url) => {
+          updateField("avatarUrl", url);
+          router.refresh();
+        }}
+      />
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="username">Username</Label>

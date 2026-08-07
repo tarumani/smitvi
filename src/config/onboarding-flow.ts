@@ -5,6 +5,7 @@ export const ONBOARDING_FLOW_STEPS = [
   "welcome",
   "profession",
   "interests",
+  "photo",
   "bio",
   "knowledge",
   "follow",
@@ -17,6 +18,7 @@ export const ONBOARDING_STEP_LABELS: Record<OnboardingFlowStep, string> = {
   welcome: "Welcome",
   profession: "Profession",
   interests: "Interests",
+  photo: "Photo",
   bio: "Bio",
   knowledge: "Knowledge",
   follow: "Follow",
@@ -60,6 +62,7 @@ export const ONBOARDING_INTERESTS = [
 ] as const;
 
 export const INTELLIGENCE_POINT_WEIGHTS = {
+  profilePicture: 10,
   profession: 10,
   interests: 10,
   bio: 10,
@@ -71,7 +74,7 @@ export const INTELLIGENCE_POINT_WEIGHTS = {
   emailVerified: 10,
 } as const;
 
-export const INTELLIGENCE_MAX_SCORE = 90;
+export const INTELLIGENCE_MAX_SCORE = 100;
 
 export const INTELLIGENCE_BADGES = [
   { id: "explorer", label: "Explorer", minScore: 15 },
@@ -88,7 +91,6 @@ const LEGACY_ONBOARDING_STEPS: Record<string, OnboardingFlowStep> = {
   connect: "knowledge",
   build: "follow",
   celebrate: "score",
-  photo: "bio",
 };
 
 export function normalizeOnboardingStep(

@@ -60,6 +60,24 @@ export const optionalUrlSchema = z
   .nullable()
   .or(z.literal("").transform(() => null));
 
+/** Uploaded avatars use app paths; external URLs still allowed. */
+export const avatarUrlSchema = z
+  .string()
+  .trim()
+  .max(512)
+  .optional()
+  .nullable()
+  .or(z.literal("").transform(() => null))
+  .refine(
+    (value) =>
+      value == null ||
+      value === "" ||
+      value.startsWith("/api/v1/avatars/") ||
+      value.startsWith("http://") ||
+      value.startsWith("https://"),
+    "Invalid profile photo",
+  );
+
 export const socialPlatformSchema = z.enum([
   "linkedin",
   "github",
@@ -131,6 +149,7 @@ export const createProfileSchema = z.object({
     .optional()
     .nullable(),
   hubDigestEmailEnabled: z.boolean().optional(),
+  avatarUrl: avatarUrlSchema,
 });
 
 export const updateProfileSchema = createProfileSchema.partial().extend({
