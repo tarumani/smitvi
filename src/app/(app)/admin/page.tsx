@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { GetGrowthMetrics } from "@/application/growth/get-growth-metrics";
 import { container } from "@/application/container";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ROUTES } from "@/config/constants";
+import { formatInrFromMinorUnits } from "@/lib/format-money";
 
 export const metadata: Metadata = {
   title: "Admin",
 };
 
 export default async function AdminOverviewPage() {
-  const [users, twins, knowledge, conversations, failedUploads, bannedUsers, incompleteOnboarding] =
+  const [users, twins, knowledge, conversations, failedUploads, bannedUsers, incompleteOnboarding, growth] =
     await Promise.all([
       container.users.countAll(),
       container.profiles.countAll(),
@@ -18,6 +20,7 @@ export default async function AdminOverviewPage() {
       container.knowledge.countByStatus("FAILED"),
       container.users.countBanned(),
       container.users.countForAdminList({ filter: "incomplete" }),
+      new GetGrowthMetrics().execute(),
     ]);
 
   const cards = [
@@ -26,6 +29,17 @@ export default async function AdminOverviewPage() {
       label: "Incomplete onboarding",
       value: incompleteOnboarding,
       href: `${ROUTES.adminUsers}?filter=incomplete`,
+    },
+    {
+      label: "Public hubs live",
+      value: growth.qualifiedPublicHubs,
+      href: ROUTES.adminGrowth,
+    },
+    {
+      label: "Marketplace net (INR)",
+      value: growth.marketplaceNetRevenueCents,
+      href: ROUTES.adminGrowth,
+      formatMoney: true,
     },
     { label: "Twins / profiles", value: twins, href: ROUTES.adminTwins },
     { label: "Knowledge uploads", value: knowledge, href: ROUTES.adminKnowledge },
@@ -40,7 +54,11 @@ export default async function AdminOverviewPage() {
         <Link key={card.label} href={card.href}>
           <GlassCard className="p-5 transition-colors hover:bg-[var(--surface-elevated)]">
             <p className="text-sm text-[var(--muted)]">{card.label}</p>
-            <p className="mt-2 font-display text-3xl font-bold">{card.value}</p>
+            <p className="mt-2 font-display text-3xl font-bold">
+              {"formatMoney" in card && card.formatMoney
+                ? formatInrFromMinorUnits(card.value as number)
+                : card.value}
+            </p>
           </GlassCard>
         </Link>
       ))}

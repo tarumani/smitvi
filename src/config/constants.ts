@@ -96,6 +96,7 @@ export const ROUTES = {
   adminTwins: "/admin/twins",
   adminKnowledge: "/admin/knowledge",
   adminModeration: "/admin/moderation",
+  adminGrowth: "/admin/growth",
   organizations: "/orgs",
   organizationNew: "/orgs/new",
   organization: (slug: string) => `/orgs/${slug}` as const,

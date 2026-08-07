@@ -97,20 +97,34 @@ export async function IntelligenceActivationHub({
             Recommended experts
           </h3>
           <ul className="mt-3 space-y-2">
-            {experts.slice(0, 5).map((expert) => (
-              <li key={expert.username}>
+            {experts.length === 0 ? (
+              <li className="rounded-xl border border-dashed border-[var(--border)] px-4 py-6 text-center text-sm text-[var(--muted-foreground)]">
+                No public Twins yet — yours can be first.{" "}
                 <Link
-                  href={ROUTES.publicProfile(expert.username)}
-                  className="flex items-center justify-between rounded-xl border border-[var(--border)] px-4 py-3 text-sm hover:border-[var(--accent)]"
+                  href={ROUTES.hub.intelligence}
+                  className="font-semibold text-[var(--accent)] hover:underline"
                 >
-                  <span>
-                    {expert.displayName}{" "}
-                    <span className="text-[var(--muted)]">@{expert.username}</span>
-                  </span>
-                  <ArrowRight className="h-4 w-4 text-[var(--accent)]" />
+                  {TRAIN_TWIN_LABEL}
                 </Link>
               </li>
-            ))}
+            ) : (
+              experts.slice(0, 5).map((expert) => (
+                <li key={expert.username}>
+                  <Link
+                    href={ROUTES.publicProfile(expert.username)}
+                    className="flex items-center justify-between rounded-xl border border-[var(--border)] px-4 py-3 text-sm hover:border-[var(--accent)]"
+                  >
+                    <span>
+                      {expert.displayName}{" "}
+                      <span className="text-[var(--muted)]">
+                        @{expert.username}
+                      </span>
+                    </span>
+                    <ArrowRight className="h-4 w-4 text-[var(--accent)]" />
+                  </Link>
+                </li>
+              ))
+            )}
           </ul>
         </section>
         <section>

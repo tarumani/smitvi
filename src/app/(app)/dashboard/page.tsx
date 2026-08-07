@@ -12,6 +12,7 @@ import {
   TRAIN_TWIN_LABEL,
 } from "@/config/constants";
 import { IntelligenceActivationHub } from "@/components/dashboard/intelligence-activation-hub";
+import { TwinLaunchChecklist } from "@/components/dashboard/twin-launch-checklist";
 import { formatInrFromMinorUnits } from "@/lib/format-money";
 
 export const metadata: Metadata = {
@@ -60,6 +61,8 @@ export default async function DashboardPage() {
 
   const userId = session.user.id;
   const sources = await container.knowledge.listByUser(userId);
+  const sellerListings = await container.marketplace.listActiveBySeller(userId);
+  const twinReady = sources.some((source) => source.status === "READY");
 
   const [engagement, totalEarningsCents, monthlyEarningsCents, inboxCount, pendingConsults, marketplaceOrders] =
     await Promise.all([
@@ -144,6 +147,13 @@ export default async function DashboardPage() {
           </Link>
         </p>
       </div>
+
+      <TwinLaunchChecklist
+        username={session.profile.username}
+        knowledgeCount={sources.length}
+        twinReady={twinReady}
+        listingCount={sellerListings.length}
+      />
 
       <IntelligenceActivationHub
         userId={userId}
