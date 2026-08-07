@@ -184,7 +184,7 @@ export class PrismaProfileRepository implements ProfileRepository {
       where: { userId },
       data: {
         isOnboarded: true,
-        onboardingStep: "celebrate",
+        onboardingStep: "score",
       },
       include: profileInclude,
     });

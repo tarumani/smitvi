@@ -105,13 +105,17 @@ export class SaveOnboardingStep {
             displayName,
             bio: body.bio?.trim() || null,
             headline: body.headline?.trim() || null,
-            onboardingStep: "knowledge",
             ...(body.bio?.trim()
               ? { intelligencePoints: { increment: 10 } }
               : {}),
           },
         });
-        return { nextStep: "knowledge" };
+        await new CompleteOnboarding(
+          container.profiles,
+          container.auditLogs,
+        ).execute(userId);
+        const score = await this.refreshScore(userId);
+        return { nextStep: null, completed: true, score };
       }
       case "knowledge":
         await prisma.profile.update({
@@ -129,9 +133,13 @@ export class SaveOnboardingStep {
         });
         return { nextStep: "score" };
       case "score": {
-        await new CompleteOnboarding(container.profiles, container.auditLogs).execute(
-          userId,
-        );
+        const existing = await container.profiles.findByUserId(userId);
+        if (!existing?.isOnboarded) {
+          await new CompleteOnboarding(
+            container.profiles,
+            container.auditLogs,
+          ).execute(userId);
+        }
         const score = await this.refreshScore(userId);
         return { nextStep: null, completed: true, score };
       }

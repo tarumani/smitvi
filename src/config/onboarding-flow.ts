@@ -1,6 +1,6 @@
 import type { HubArchetypeId } from "@/config/brand";
 
-/** Ordered activation funnel — one screen per step. */
+/** Ordered activation funnel — one screen per step. Account unlocks after `bio`. */
 export const ONBOARDING_FLOW_STEPS = [
   "welcome",
   "profession",

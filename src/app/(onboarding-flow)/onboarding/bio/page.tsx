@@ -70,7 +70,7 @@ export default function OnboardingBioPage() {
           }
           className="inline-flex w-full items-center justify-center rounded-xl bg-[var(--accent)] px-6 py-3.5 text-sm font-semibold text-[var(--accent-foreground)] disabled:opacity-50"
         >
-          {isPending ? "Saving…" : "Continue"}
+          {isPending ? "Opening dashboard…" : "Go to dashboard"}
         </button>
       }
     >
