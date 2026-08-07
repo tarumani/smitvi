@@ -78,6 +78,7 @@ export const ROUTES = {
   productMarketplace: "/product/marketplace",
   marketplace: "/marketplace",
   marketplaceSell: "/marketplace/sell",
+  marketplaceSellFirst: "/marketplace/sell?first=1",
   marketplaceOrders: "/marketplace/orders",
   billingSettings: "/settings/billing",
   profileSettings: "/settings/profile",

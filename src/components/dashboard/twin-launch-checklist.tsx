@@ -47,7 +47,8 @@ export function TwinLaunchChecklist({
       id: "monetize",
       label: "Publish a marketplace offer",
       done: listingCount > 0,
-      href: ROUTES.marketplaceSell,
+      href:
+        listingCount > 0 ? ROUTES.hub.marketplace : ROUTES.marketplaceSellFirst,
       action: listingCount > 0 ? "Manage listings" : "Create listing",
     },
   ] as const;
@@ -80,7 +81,7 @@ export function TwinLaunchChecklist({
           </Button>
         ) : listingCount === 0 ? (
           <Button asChild className="shrink-0">
-            <Link href={ROUTES.marketplaceSell}>Create first listing</Link>
+            <Link href={ROUTES.marketplaceSellFirst}>Create first listing</Link>
           </Button>
         ) : null}
       </div>
