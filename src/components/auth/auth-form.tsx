@@ -9,8 +9,10 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ROUTES, APP_OUTCOME } from "@/config/constants";
+import { getPublicEnv } from "@/config/env";
 import { createSupabaseBrowserClient } from "@/infrastructure/auth/supabase/client";
 import { getBrowserOrigin } from "@/infrastructure/http/request-origin";
+import { readApiErrorMessage } from "@/lib/api-response";
 import { formatAuthErrorMessage } from "@/lib/auth-error-message";
 
 type AuthMode = "login" | "signup";
@@ -26,6 +28,14 @@ function getSafeNextPath(value: string | null): string {
     return ROUTES.hub.dashboard;
   }
   return value;
+}
+
+function authAppOrigin(): string {
+  const configured = getPublicEnv().appUrl.replace(/\/$/, "");
+  if (configured && !configured.includes("localhost")) {
+    return configured;
+  }
+  return getBrowserOrigin();
 }
 
 export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
@@ -71,7 +81,6 @@ export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
     startTransition(async () => {
       try {
         const supabase = createSupabaseBrowserClient();
-        const origin = getBrowserOrigin();
 
         if (mode === "login") {
           const { data, error } = await supabase.auth.signInWithPassword({
@@ -102,36 +111,53 @@ export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
           return;
         }
 
-        const { data, error } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-          options: {
-            emailRedirectTo: `${origin}${ROUTES.authCallback}?next=${encodeURIComponent(nextPath)}`,
-          },
+        const response = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email.trim(),
+            password,
+          }),
         });
-        if (error) throw error;
+        const json: unknown = await response.json().catch(() => null);
+        if (!response.ok) {
+          const message = readApiErrorMessage(
+            json,
+            formatAuthErrorMessage(null, "Could not create account"),
+          );
+          throw new Error(message);
+        }
 
-        // Email confirmation is required — never treat an unverified signup as logged in.
-        if (data.session && data.user?.email_confirmed_at) {
+        const payload = json as {
+          data?: {
+            user?: {
+              identitiesCount?: number;
+              emailConfirmed?: boolean;
+            } | null;
+            session?: boolean;
+          };
+        };
+        const user = payload.data?.user;
+        const hasSession = payload.data?.session;
+
+        if (hasSession && user?.emailConfirmed) {
           toast.success("Account created");
           router.replace(nextPath);
           router.refresh();
           return;
         }
 
-        // Supabase may return a session when confirm-email is off — never keep it.
-        if (data.session) {
+        if (hasSession) {
           await supabase.auth.signOut();
         }
 
-        if (!data.user) {
+        if (!user) {
           throw new Error(
             "Could not create your account. Try a different email or sign in if you already registered.",
           );
         }
 
-        // Existing accounts return a user with no identities and no email is sent.
-        if ((data.user.identities?.length ?? 0) === 0) {
+        if ((user.identitiesCount ?? 0) === 0) {
           setShowResend(true);
           throw new Error(
             "An account with this email already exists. Sign in, or resend the verification email if you haven’t confirmed yet.",
@@ -146,9 +172,17 @@ export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
         router.replace(
           `${ROUTES.login}?next=${encodeURIComponent(nextPath)}&verify=1&email=${encodeURIComponent(email.trim())}`,
         );
+        return;
       } catch (error) {
         console.error("[auth]", error);
-        toast.error(formatAuthErrorMessage(error, "Authentication failed"));
+        const message =
+          error instanceof Error
+            ? error.message
+            : formatAuthErrorMessage(error, "Authentication failed");
+        toast.error(
+          mode === "signup" ? "Could not create account" : "Authentication failed",
+          { description: message },
+        );
       }
     });
   }
@@ -161,20 +195,28 @@ export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
     }
     startTransition(async () => {
       try {
-        const supabase = createSupabaseBrowserClient();
-        const { error } = await supabase.auth.resend({
-          type: "signup",
-          email: target,
-          options: {
-            emailRedirectTo: `${getBrowserOrigin()}${ROUTES.authCallback}?next=${encodeURIComponent(nextPath)}`,
-          },
+        const response = await fetch("/api/auth/resend-verification", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: target }),
         });
-        if (error) throw error;
+        const json: unknown = await response.json().catch(() => null);
+        if (!response.ok) {
+          const message = readApiErrorMessage(
+            json,
+            formatAuthErrorMessage(null, "Could not resend verification email"),
+          );
+          throw new Error(message);
+        }
         toast.success("Verification email resent", {
           description: "Check your inbox (and spam), then open the link.",
         });
       } catch (error) {
-        toast.error(formatAuthErrorMessage(error, "Could not resend verification email"));
+        const message =
+          error instanceof Error
+            ? error.message
+            : formatAuthErrorMessage(error, "Could not resend verification email");
+        toast.error("Could not resend verification email", { description: message });
       }
     });
   }
@@ -186,7 +228,7 @@ export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${getBrowserOrigin()}${ROUTES.authCallback}?next=${encodeURIComponent(nextPath)}`,
+          redirectTo: `${authAppOrigin()}${ROUTES.authCallback}?next=${encodeURIComponent(nextPath)}`,
           skipBrowserRedirect: false,
         },
       });

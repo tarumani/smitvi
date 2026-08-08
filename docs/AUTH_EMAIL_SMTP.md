@@ -26,22 +26,21 @@ Use a real mailbox on **smitvi.com** (GoDaddy Email / Microsoft / Google Workspa
 
 ### 2. Email templates
 
-Supabase → **Authentication → Email Templates → Confirm signup**:
+Use **`{{ .ConfirmationURL }}`** for every action link (never hardcode `https://smitvi.com/auth/callback`).
 
-- **Subject:** `Confirm your Smitvi account`
-- **Body:** Replace default copy; use `{{ .ConfirmationURL }}` for the link.
-- Remove or replace the “powered by Supabase” footer in the HTML template.
+Supabase → **Authentication → Email Templates**:
 
-Example opening line:
+| Template | Subject example |
+|--------|------------------|
+| Confirm signup | `Confirm your Smitvi account` |
+| Reset password | `Reset your password` |
+| Magic link | `Your Smitvi sign-in link` |
+
+Example link line (all templates):
 
 ```html
-<p>Hi,</p>
-<p>Thanks for joining Smitvi. Confirm your email to finish signup:</p>
 <p><a href="{{ .ConfirmationURL }}">Confirm email</a></p>
-<p>— The Smitvi team<br/>https://smitvi.com</p>
 ```
-
-Also update **Magic link**, **Reset password**, and **Change email** templates for consistency.
 
 ### Password reset (including Google sign-in accounts)
 
@@ -70,6 +69,12 @@ If reset fails in the app (or Supabase Auth logs show mail errors), **Custom SMT
 2. Check inbox: **From** should be `Smitvi <your-smtp-address@>`  
 3. If it fails: Supabase → **Logs → Auth** and your SMTP provider logs  
 
-## Google sign-in (optional, later)
+## Google sign-in
 
-The app hides **Continue with Google** unless `NEXT_PUBLIC_ENABLE_GOOGLE_AUTH=true` (see `fly.toml`). Re-enable after Supabase **custom domain** (`auth.smitvi.com`) and Google OAuth branding — see `PRODUCTION.md` §4b.
+**Continue with Google** is enabled in production builds (`NEXT_PUBLIC_ENABLE_GOOGLE_AUTH=true`). Users can sign up or sign in without verification email — useful when SMTP is not ready yet.
+
+Supabase → **Authentication → Providers → Google** must be ON with Client ID/secret from Google Cloud Console.
+
+Redirect URIs in Google Cloud must include your Supabase callback (see Supabase Google provider page).
+
+Optional: Supabase **custom domain** (`auth.smitvi.com`) so Google shows Smitvi instead of `*.supabase.co` — see `PRODUCTION.md` §4b.

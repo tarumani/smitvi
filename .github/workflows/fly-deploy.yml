@@ -22,5 +22,6 @@ jobs:
           flyctl deploy --remote-only --app smitvi
           --build-arg NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          --build-arg NEXT_PUBLIC_ENABLE_GOOGLE_AUTH=true
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
