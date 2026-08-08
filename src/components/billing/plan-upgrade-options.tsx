@@ -78,17 +78,17 @@ export function PlanUpgradeOptions({ plan }: PlanUpgradeOptionsProps) {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="space-y-1">
+    <div className="flex w-full flex-col gap-3">
+      <div className="w-full space-y-1">
         <p className="text-center text-[10px] uppercase tracking-wider text-[var(--muted)]">
           India
         </p>
         <Button
-          className="w-full"
+          className="h-11 w-full"
           onClick={checkoutRazorpay}
           disabled={isPending}
         >
-          {isPending ? "Opening Razorpay…" : `Upgrade with Razorpay`}
+          {isPending ? "Opening Razorpay…" : "Upgrade with Razorpay"}
         </Button>
       </div>
       <PayPalSubscriptionButtons plan={plan} />

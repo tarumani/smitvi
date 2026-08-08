@@ -14,7 +14,11 @@ export function getPayPalMode(): PayPalMode {
 }
 
 export function getPayPalClientId(): string {
-  return process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.trim() ?? "";
+  return (
+    process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.trim() ||
+    process.env.PAYPAL_CLIENT_ID?.trim() ||
+    ""
+  );
 }
 
 export function getPayPalPlanId(plan: Exclude<UserPlan, "FREE">): string | null {
