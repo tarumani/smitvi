@@ -43,7 +43,24 @@ Use a real mailbox on **smitvi.com** (GoDaddy Email / Microsoft / Google Workspa
 
 If `noreply@` is not needed, use one working mailbox (e.g. `support@smitvi.com`) for both **Username** and **Sender email**.
 
-### 2. Email templates
+#### cPanel / hosting mail (Roundcube, Email Accounts)
+
+If `@smitvi.com` mail is on **cPanel** (not GoDaddy `smtpout`):
+
+| Field | Value |
+|--------|--------|
+| Host | **`mail.smitvi.com`** (preferred) or the hostname cPanel → **Email Accounts → Connect Devices** shows — avoid raw IP unless your host requires it |
+| Port | **465** (SSL) **or** **587** (TLS) — match what cPanel lists for “Secure SSL/TLS” vs “STARTTLS” |
+| Username | Full address: `noreply@smitvi.com` |
+| Password | cPanel **Email Accounts** password for that mailbox |
+| Sender email | Same as username |
+
+1. cPanel → **Email Accounts** → confirm **`noreply@smitvi.com`** exists (Create if missing).
+2. Open **Roundcube** (or Webmail) and log in as `noreply@smitvi.com` — if webmail fails, fix password in cPanel first.
+3. Supabase SMTP → paste the **same** password → **Save**.
+4. **Logs → Auth**: signup should show **200** on `/signup`, not **500** / **535**.
+
+If **465** fails, try **587** with host `mail.smitvi.com`. If **535** persists, the password or username does not match the cPanel mailbox.
 
 Use **`{{ .ConfirmationURL }}`** for every action link (never hardcode `https://smitvi.com/auth/callback`).
 
