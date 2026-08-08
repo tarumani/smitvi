@@ -20,14 +20,14 @@ export function readApiDataField(
 }
 
 export function readApiErrorMessage(json: unknown, fallback: string): string {
-  if (
-    typeof json === "object" &&
-    json !== null &&
-    "error" in json &&
-    typeof (json as { error?: { message?: string } }).error?.message ===
-      "string"
-  ) {
-    return (json as { error: { message: string } }).error.message;
+  if (typeof json === "object" && json !== null && "error" in json) {
+    const message = (json as { error?: { message?: string } }).error?.message;
+    if (typeof message === "string") {
+      const trimmed = message.trim();
+      if (trimmed && trimmed !== "{}") {
+        return trimmed;
+      }
+    }
   }
   return fallback;
 }

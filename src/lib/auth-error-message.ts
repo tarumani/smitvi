@@ -33,7 +33,7 @@ function emptyMessageFallback(context: AuthErrorContext): string {
     case "reset-password":
       return "Could not update your password. Open the reset link from your email again, or request a new link from Forgot password.";
     default:
-      return "Something went wrong. Check Supabase Auth logs and SMTP settings.";
+      return "Enable Custom SMTP in Supabase (Authentication → SMTP), use {{ .ConfirmationURL }} in email templates, and add https://smitvi.com/auth/callback to Redirect URLs — or use Continue with Google.";
   }
 }
 

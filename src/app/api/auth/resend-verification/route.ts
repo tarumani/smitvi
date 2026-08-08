@@ -1,8 +1,10 @@
 import { z } from "zod";
-import { buildAuthCallbackRedirectTo } from "@/application/auth/auth-email-redirect";
+import {
+  buildAuthCallbackRedirectTo,
+  resolveAuthEmailOrigin,
+} from "@/application/auth/auth-email-redirect";
 import { ValidationError } from "@/domain/shared/errors";
-import { createSupabaseServerClient } from "@/infrastructure/auth/supabase/server";
-import { getRequestOrigin } from "@/infrastructure/http/request-origin";
+import { createSupabaseAnonAuthClient } from "@/infrastructure/auth/supabase/anon-auth";
 import { jsonError, jsonOk } from "@/infrastructure/http/respond";
 import { formatAuthErrorMessage } from "@/lib/auth-error-message";
 
@@ -17,8 +19,10 @@ export async function POST(request: Request) {
       throw new ValidationError("Enter a valid email address");
     }
 
-    const redirectTo = buildAuthCallbackRedirectTo(getRequestOrigin(request));
-    const supabase = await createSupabaseServerClient();
+    const redirectTo = buildAuthCallbackRedirectTo(
+      resolveAuthEmailOrigin(request),
+    );
+    const supabase = createSupabaseAnonAuthClient();
     const { error } = await supabase.auth.resend({
       type: "signup",
       email: parsed.data.email,

@@ -14,6 +14,7 @@ import { createSupabaseBrowserClient } from "@/infrastructure/auth/supabase/clie
 import { getBrowserOrigin } from "@/infrastructure/http/request-origin";
 import { readApiErrorMessage } from "@/lib/api-response";
 import { formatAuthErrorMessage } from "@/lib/auth-error-message";
+import { toastAuthError } from "@/lib/auth-toast";
 
 type AuthMode = "login" | "signup";
 
@@ -51,6 +52,7 @@ export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
   const [showResend, setShowResend] = useState(
     () => searchParams.get("verify") === "1",
   );
+  const [formError, setFormError] = useState<string | null>(null);
 
   const title = mode === "login" ? "Welcome back" : "Start earning";
   const subtitle =
@@ -66,18 +68,66 @@ export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
       });
     }
 
-    const error = searchParams.get("error");
+    const error = searchParams.get("error")?.trim();
     if (!error) return;
     const messages: Record<string, string> = {
       missing_code: "Sign-in was cancelled or incomplete. Try again.",
       auth_callback_failed:
         "Could not finish Google sign-in. Confirm Supabase Auth → URL configuration includes your site’s /auth/callback (e.g. https://smitvi.com/auth/callback and http://localhost:3000/auth/callback for local).",
     };
-    toast.error(messages[error] ?? "Authentication failed. Please try again.");
+    toastAuthError(
+      messages[error] ?? "Authentication failed. Please try again.",
+    );
   }, [searchParams]);
+
+  function authEmailRedirectTo(): string {
+    return `${authAppOrigin()}${ROUTES.authCallback}`;
+  }
+
+  async function finishSignupFlow(
+    supabase: ReturnType<typeof createSupabaseBrowserClient>,
+    user: { identitiesCount?: number; emailConfirmed?: boolean } | null | undefined,
+    hasSession: boolean,
+  ) {
+    if (hasSession && user?.emailConfirmed) {
+      setFormError(null);
+      toast.success("Account created");
+      router.replace(nextPath);
+      router.refresh();
+      return;
+    }
+
+    if (hasSession) {
+      await supabase.auth.signOut();
+    }
+
+    if (!user) {
+      throw new Error(
+        "Could not create your account. Try a different email or sign in if you already registered.",
+      );
+    }
+
+    if ((user.identitiesCount ?? 0) === 0) {
+      setShowResend(true);
+      throw new Error(
+        "An account with this email already exists. Sign in, or resend the verification email if you haven’t confirmed yet.",
+      );
+    }
+
+    setFormError(null);
+    setShowResend(true);
+    toast.success("Verification email sent", {
+      description:
+        "Open the link in your inbox to verify your email, then sign in. Check spam if you don’t see it.",
+    });
+    router.replace(
+      `${ROUTES.login}?next=${encodeURIComponent(nextPath)}&verify=1&email=${encodeURIComponent(email.trim())}`,
+    );
+  }
 
   function handleEmailAuth(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setFormError(null);
     startTransition(async () => {
       try {
         const supabase = createSupabaseBrowserClient();
@@ -120,69 +170,57 @@ export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
           }),
         });
         const json: unknown = await response.json().catch(() => null);
-        if (!response.ok) {
-          const message = readApiErrorMessage(
-            json,
-            formatAuthErrorMessage(null, "Could not create account"),
-          );
-          throw new Error(message);
-        }
 
-        const payload = json as {
-          data?: {
-            user?: {
-              identitiesCount?: number;
-              emailConfirmed?: boolean;
-            } | null;
-            session?: boolean;
+        if (response.ok) {
+          const payload = json as {
+            data?: {
+              user?: {
+                identitiesCount?: number;
+                emailConfirmed?: boolean;
+              } | null;
+              session?: boolean;
+            };
           };
-        };
-        const user = payload.data?.user;
-        const hasSession = payload.data?.session;
-
-        if (hasSession && user?.emailConfirmed) {
-          toast.success("Account created");
-          router.replace(nextPath);
-          router.refresh();
+          await finishSignupFlow(
+            supabase,
+            payload.data?.user,
+            Boolean(payload.data?.session),
+          );
           return;
         }
 
-        if (hasSession) {
-          await supabase.auth.signOut();
-        }
-
-        if (!user) {
-          throw new Error(
-            "Could not create your account. Try a different email or sign in if you already registered.",
-          );
-        }
-
-        if ((user.identitiesCount ?? 0) === 0) {
-          setShowResend(true);
-          throw new Error(
-            "An account with this email already exists. Sign in, or resend the verification email if you haven’t confirmed yet.",
-          );
-        }
-
-        setShowResend(true);
-        toast.success("Verification email sent", {
-          description:
-            "Open the link in your inbox to verify your email, then sign in. Check spam if you don’t see it.",
-        });
-        router.replace(
-          `${ROUTES.login}?next=${encodeURIComponent(nextPath)}&verify=1&email=${encodeURIComponent(email.trim())}`,
+        let signupError = readApiErrorMessage(
+          json,
+          formatAuthErrorMessage(null, "Could not create account"),
         );
-        return;
+
+        if (response.status >= 500) {
+          const { data, error } = await supabase.auth.signUp({
+            email: email.trim(),
+            password,
+            options: { emailRedirectTo: authEmailRedirectTo() },
+          });
+          if (!error) {
+            await finishSignupFlow(supabase, {
+              identitiesCount: data.user?.identities?.length ?? 0,
+              emailConfirmed: Boolean(data.user?.email_confirmed_at),
+            }, Boolean(data.session));
+            return;
+          }
+          signupError = formatAuthErrorMessage(error, "Could not create account");
+        }
+
+        throw new Error(signupError);
       } catch (error) {
         console.error("[auth]", error);
         const message =
           error instanceof Error
             ? error.message
             : formatAuthErrorMessage(error, "Authentication failed");
-        toast.error(
-          mode === "signup" ? "Could not create account" : "Authentication failed",
-          { description: message },
-        );
+        const heading =
+          mode === "signup" ? "Could not create account" : "Authentication failed";
+        setFormError(message || heading);
+        toastAuthError(heading, message);
       }
     });
   }
@@ -216,7 +254,7 @@ export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
           error instanceof Error
             ? error.message
             : formatAuthErrorMessage(error, "Could not resend verification email");
-        toast.error("Could not resend verification email", { description: message });
+        toastAuthError("Could not resend verification email", message);
       }
     });
   }
@@ -239,7 +277,7 @@ export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
       }
       throw new Error("Google sign-in did not return a redirect URL");
     } catch (error) {
-      toast.error(formatAuthErrorMessage(error, "Google sign-in failed"));
+      toastAuthError("Google sign-in failed", formatAuthErrorMessage(error, "Google sign-in failed"));
       setOauthLoading(false);
     }
   }
@@ -279,6 +317,14 @@ export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
         className={enableGoogleAuth ? "space-y-3" : "mt-5 space-y-3"}
         onSubmit={handleEmailAuth}
       >
+        {formError ? (
+          <p
+            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200"
+            role="alert"
+          >
+            {formError}
+          </p>
+        ) : null}
         <div className="space-y-1.5">
           <Label htmlFor="email">Email</Label>
           <Input

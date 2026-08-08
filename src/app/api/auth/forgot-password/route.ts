@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { buildPasswordResetRedirectTo } from "@/application/auth/password-reset-redirect";
+import { resolveAuthEmailOrigin } from "@/application/auth/auth-email-redirect";
 import { ValidationError } from "@/domain/shared/errors";
-import { createSupabaseServerClient } from "@/infrastructure/auth/supabase/server";
-import { getRequestOrigin } from "@/infrastructure/http/request-origin";
+import { createSupabaseAnonAuthClient } from "@/infrastructure/auth/supabase/anon-auth";
 import { jsonError, jsonOk } from "@/infrastructure/http/respond";
 import { formatAuthErrorMessage } from "@/lib/auth-error-message";
 
@@ -17,9 +17,10 @@ export async function POST(request: Request) {
       throw new ValidationError("Enter a valid email address");
     }
 
-    const origin = getRequestOrigin(request);
-    const redirectTo = buildPasswordResetRedirectTo(origin);
-    const supabase = await createSupabaseServerClient();
+    const redirectTo = buildPasswordResetRedirectTo(
+      resolveAuthEmailOrigin(request),
+    );
+    const supabase = createSupabaseAnonAuthClient();
     const { error } = await supabase.auth.resetPasswordForEmail(
       parsed.data.email,
       { redirectTo },
