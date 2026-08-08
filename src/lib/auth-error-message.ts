@@ -84,9 +84,11 @@ export function formatAuthErrorMessage(
     combined.includes("error sending email") ||
     combined.includes("smtp") ||
     combined.includes("recovery") ||
-    combined.includes("mailer")
+    combined.includes("mailer") ||
+    combined.includes("535") ||
+    combined.includes("authentication failed for")
   ) {
-    return "Could not send the email. In Supabase → Authentication → SMTP, confirm host/port (usually 587), username, password, and sender email — then check Auth logs.";
+    return "Could not send the email. Supabase SMTP rejected the mailbox login (535). In Authentication → SMTP, use the full email as username, the correct mailbox password, port 587, and a real @smitvi.com mailbox — then check Auth logs.";
   }
   if (
     combined.includes("not authorized") ||

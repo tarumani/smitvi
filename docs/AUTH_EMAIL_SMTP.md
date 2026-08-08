@@ -24,6 +24,25 @@ Supabase → **Authentication → SMTP Settings**:
 
 Use a real mailbox on **smitvi.com** (GoDaddy Email / Microsoft / Google Workspace). Add **SPF/DKIM** in GoDaddy DNS if your provider gives records — improves deliverability.
 
+#### GoDaddy Workspace Email (common for smitvi.com)
+
+| Field | Value |
+|--------|--------|
+| Host | `smtpout.secureserver.net` |
+| Port | **587** (STARTTLS) |
+| Username | **Full address** — e.g. `noreply@smitvi.com` (must match an existing mailbox) |
+| Password | That mailbox’s password (reset in GoDaddy → Email if unsure) |
+| Sender email | Same as username, e.g. `noreply@smitvi.com` |
+
+**Auth log `535 Authentication Failed for noreply@smitvi.com`** means Supabase reached GoDaddy but **login was rejected**:
+
+1. Create the mailbox in GoDaddy (or use `support@smitvi.com` you know works).
+2. Log in to **webmail** for that address once to confirm the password.
+3. Paste the **same** password into Supabase SMTP → Save.
+4. Retry signup or forgot-password; the log should show **200** on `/signup` or `/recover`, not 500.
+
+If `noreply@` is not needed, use one working mailbox (e.g. `support@smitvi.com`) for both **Username** and **Sender email**.
+
 ### 2. Email templates
 
 Use **`{{ .ConfirmationURL }}`** for every action link (never hardcode `https://smitvi.com/auth/callback`).
