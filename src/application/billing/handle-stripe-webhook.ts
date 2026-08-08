@@ -14,6 +14,7 @@ export class HandleStripeWebhook {
   constructor(
     private readonly billing: PrismaBillingRepository,
     private readonly marketplace: PrismaMarketplaceRepository,
+    private readonly fulfillment?: import("@/application/monetization/marketplace-fulfillment-service").MarketplaceFulfillmentService,
     private readonly auditLogs = new PrismaAuditLogRepository(),
   ) {}
 
@@ -80,7 +81,11 @@ export class HandleStripeWebhook {
     }
 
     if (session.mode === "payment" && session.metadata?.orderId) {
-      await this.marketplace.markOrderPaid(session.metadata.orderId);
+      if (this.fulfillment) {
+        await this.fulfillment.fulfillPaidOrder(session.metadata.orderId);
+      } else {
+        await this.marketplace.markOrderPaid(session.metadata.orderId);
+      }
       const existing = await this.billing.findPaymentBySession(session.id);
       if (
         existing?.externalPaymentId == null &&

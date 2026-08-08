@@ -26,7 +26,14 @@ export const MARKETPLACE_LISTING_TYPE_LABELS = {
   SERVICE_PACKAGE: "Service package",
   TEMPLATE: "Template",
   PROMPT_PACK: "Prompt pack",
+  GUIDE: "Guide",
+  CHECKLIST: "Checklist",
+  CASE_STUDY: "Case study",
   COURSE: "Course",
+  VIDEO: "Video",
+  AUDIO: "Audio",
+  BUNDLE: "Bundle",
+  PDF: "PDF",
 } as const;
 
 export const ONBOARDING_STEPS = [
@@ -111,6 +118,13 @@ export const ROUTES = {
   adminModeration: "/admin/moderation",
   adminGrowth: "/admin/growth",
   adminSearch: "/admin/search",
+  adminRecommendations: "/admin/recommendations",
+  adminTwin: "/admin/twin",
+  adminMarketplace: "/admin/marketplace",
+  monetizationDashboard: "/dashboard/monetization",
+  monetizationAnalytics: "/dashboard/monetization/analytics",
+  customerLibrary: "/dashboard/library",
+  publicStore: (username: string) => `/u/${username}/store` as const,
   organizations: "/orgs",
   organizationNew: "/orgs/new",
   organization: (slug: string) => `/orgs/${slug}` as const,

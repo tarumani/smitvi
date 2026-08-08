@@ -11,10 +11,8 @@ import {
   ROUTES,
   TRAIN_TWIN_LABEL,
 } from "@/config/constants";
-import {
-  DashboardDiscoverySections,
-  IntelligenceActivationHub,
-} from "@/components/dashboard/intelligence-activation-hub";
+import { IntelligenceActivationHub } from "@/components/dashboard/intelligence-activation-hub";
+import { ForYouFeed } from "@/components/recommendations/for-you-feed";
 import { TwinLaunchWizard } from "@/components/dashboard/twin-launch-wizard";
 import { HubSharePromo } from "@/components/dashboard/hub-share-promo";
 import { ReferralInviteCard } from "@/components/dashboard/referral-invite-card";
@@ -264,7 +262,7 @@ export default async function DashboardPage({
         />
       </div>
 
-      <DashboardDiscoverySections />
+      <ForYouFeed />
     </div>
   );
 }

@@ -17,12 +17,20 @@ type Citation = {
   score: number;
 };
 
+type TwinMeta = {
+  confidenceLevel?: string;
+  claimLevel?: string;
+  relatedQuestions?: string[];
+  suggestedActions?: string[];
+};
+
 type ChatMessage = {
   id: string;
   role: "USER" | "ASSISTANT";
   content: string;
   confidence?: number | null;
   citations?: Citation[];
+  twinMeta?: TwinMeta | null;
 };
 
 type TwinChatProps = {
@@ -52,7 +60,7 @@ export function TwinChat({
   organizationId = null,
   voiceEnabled = false,
   title = "Twin Chat",
-  subtitle = "Answers only from your uploaded knowledge — with citations.",
+  subtitle = "Answers from your graph, profile, and knowledge — with citations and confidence.",
 }: TwinChatProps) {
   const [conversationId, setConversationId] = useState<string | null>(
     initialConversationId,
@@ -147,6 +155,7 @@ export function TwinChat({
               conversationId?: string;
               confidence?: number;
               citations?: Citation[];
+              twinMeta?: TwinMeta;
               message?: string;
             };
 
@@ -161,6 +170,7 @@ export function TwinChat({
                         ...message,
                         confidence: event.confidence,
                         citations: event.citations,
+                        twinMeta: event.twinMeta ?? null,
                       }
                     : message,
                 ),
@@ -252,6 +262,17 @@ export function TwinChat({
                 message.content
               )}
             </div>
+            {message.role === "ASSISTANT" && message.twinMeta?.confidenceLevel ? (
+              <p className="mt-2 text-xs text-[var(--muted-foreground)]">
+                Confidence:{" "}
+                <span className="font-medium text-[var(--foreground)]">
+                  {message.twinMeta.confidenceLevel}
+                </span>
+                {message.twinMeta.claimLevel
+                  ? ` · ${message.twinMeta.claimLevel}`
+                  : null}
+              </p>
+            ) : null}
             {message.role === "ASSISTANT" && message.citations?.length ? (
               <div className="mt-2 space-y-1">
                 {message.citations.slice(0, 3).map((citation) => (
@@ -262,6 +283,42 @@ export function TwinChat({
                     {citation.sourceTitle} · score {citation.score}
                   </p>
                 ))}
+              </div>
+            ) : null}
+            {message.role === "ASSISTANT" && message.content ? (
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className="text-xs text-[var(--accent)] hover:underline"
+                  onClick={() =>
+                    void fetch("/api/twin/feedback", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        feedback: "HELPFUL",
+                        conversationId,
+                      }),
+                    })
+                  }
+                >
+                  Helpful
+                </button>
+                <button
+                  type="button"
+                  className="text-xs text-[var(--muted)] hover:underline"
+                  onClick={() =>
+                    void fetch("/api/twin/feedback", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        feedback: "NOT_HELPFUL",
+                        conversationId,
+                      }),
+                    })
+                  }
+                >
+                  Not helpful
+                </button>
               </div>
             ) : null}
           </div>

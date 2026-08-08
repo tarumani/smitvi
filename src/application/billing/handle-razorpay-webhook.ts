@@ -31,6 +31,7 @@ export class HandleRazorpayWebhook {
   constructor(
     private readonly billing: PrismaBillingRepository,
     private readonly marketplace: PrismaMarketplaceRepository,
+    private readonly fulfillment?: import("@/application/monetization/marketplace-fulfillment-service").MarketplaceFulfillmentService,
     private readonly auditLogs = new PrismaAuditLogRepository(),
   ) {}
 
@@ -118,7 +119,11 @@ export class HandleRazorpayWebhook {
     const buyerId = payment.notes?.buyerId ?? pending?.userId;
     if (!orderId || !buyerId) return;
 
-    await this.marketplace.markOrderPaid(orderId);
+    if (this.fulfillment) {
+      await this.fulfillment.fulfillPaidOrder(orderId);
+    } else {
+      await this.marketplace.markOrderPaid(orderId);
+    }
 
     if (pending) {
       await this.billing.markPaymentSucceeded(pending.id, {

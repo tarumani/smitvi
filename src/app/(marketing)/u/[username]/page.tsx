@@ -10,6 +10,7 @@ import { ConsultationRequestForm } from "@/components/consultations/consultation
 import { FollowButton } from "@/components/profile/follow-button";
 import { ShareProfileButton } from "@/components/profile/share-profile-button";
 import { ReviewForm } from "@/components/profile/review-form";
+import { HubMonetizeStrip } from "@/components/hub/hub-monetize-strip";
 import { IntelligenceHubTabs } from "@/components/profile/intelligence-hub-tabs";
 import type { HubActivityItem } from "@/components/profile/hub-activity-feed";
 import { HubUpdatesBanner } from "@/components/profile/hub-updates-banner";
@@ -480,6 +481,12 @@ export default async function PublicProfilePage({ params }: PageProps) {
             ) : null}
           </div>
         </div>
+
+        <HubMonetizeStrip
+          username={profile.username}
+          twinEnabled={profile.publicTwinEnabled}
+          listingCount={offerListings.length}
+        />
 
         <IntelligenceHubTabs
           username={profile.username}

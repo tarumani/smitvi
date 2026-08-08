@@ -1,26 +1,21 @@
-import {
-  ANSWER_MIN_CONFIDENCE,
-  ANSWER_MIN_TOP_SCORE,
-  LOW_CONFIDENCE_REPLY,
-  RETRIEVAL_MIN_SCORE,
-  RETRIEVAL_TOP_K,
-} from "@/config/ai";
+import { LOW_CONFIDENCE_REPLY } from "@/config/ai";
+import { INSUFFICIENT_EVIDENCE_REPLY } from "@/config/twin-ai";
 import { hasUnlimitedAi } from "@/config/billing";
 import { FREE_AI_CHATS_PER_DAY } from "@/config/constants";
-import { averageScore } from "@/domain/knowledge/similarity";
 import {
   ForbiddenError,
   UnauthorizedError,
   ValidationError,
 } from "@/domain/shared/errors";
+import type { TwinPreparedIntelligence } from "@/domain/twin/types";
 import {
   CHAT_MODEL,
-  embedTexts,
   getOpenAIClient,
 } from "@/infrastructure/ai/openai-client";
 import type { PrismaKnowledgeRepository } from "@/infrastructure/database/repositories/knowledge-repository";
 import type { PrismaConversationRepository } from "@/infrastructure/database/repositories/conversation-repository";
 import type { UserPlan } from "@/domain/user/entities";
+import type { TwinIntelligenceEngine } from "@/application/twin/twin-intelligence-engine";
 
 export type TwinCitation = {
   sourceId: string;
@@ -30,13 +25,19 @@ export type TwinCitation = {
   score: number;
 };
 
-const TWIN_SYSTEM_PROMPT =
-  "You are a Knowledge Twin. Answer using the provided context. Handle typos and informal phrasing in the question. If the context mentions skills, tools, bio, or services that answer the question, summarize them clearly and cite sources as [1], [2] matching context order. Reply exactly \"I don't know.\" only when the context has no relevant information at all. Never invent facts beyond the context.";
+export type TwinChatMeta = {
+  confidenceLevel?: TwinPreparedIntelligence["confidenceLevel"];
+  claimLevel?: TwinPreparedIntelligence["claimLevel"];
+  relatedQuestions?: string[];
+  suggestedActions?: string[];
+  contradictions?: TwinPreparedIntelligence["contradictions"];
+};
 
 export class AskTwin {
   constructor(
     private readonly knowledge: PrismaKnowledgeRepository,
     private readonly conversations: PrismaConversationRepository,
+    private readonly intelligence: TwinIntelligenceEngine,
   ) {}
 
   async prepare(input: {
@@ -45,10 +46,9 @@ export class AskTwin {
     ownerUserId: string;
     conversationId?: string | null;
     question: string;
-    /** When chatting with someone else's Twin, only public knowledge is used. */
     publicOnly?: boolean;
-    /** Company workspace Twin — retrieves org knowledge instead of personal. */
     organizationId?: string | null;
+    responseMode?: "factual" | "representative";
   }) {
     if (!input.userId) {
       throw new UnauthorizedError();
@@ -78,13 +78,16 @@ export class AskTwin {
       { publicOnly, organizationId },
     );
     if (readyCount === 0) {
-      throw new ValidationError(
-        organizationId
-          ? "This workspace has no ready knowledge sources yet."
-          : publicOnly
-            ? "This Twin has no public knowledge sources yet."
-            : "No ready knowledge sources yet. Upload documents before chatting with your Twin.",
-      );
+      if (organizationId) {
+        throw new ValidationError(
+          "This workspace has no ready knowledge sources yet.",
+        );
+      }
+      if (publicOnly) {
+        throw new ValidationError(
+          "This Twin has no public knowledge sources yet.",
+        );
+      }
     }
 
     let conversationId = input.conversationId ?? null;
@@ -119,39 +122,48 @@ export class AskTwin {
       content: question,
     });
 
-    const [queryEmbedding] = await embedTexts([question]);
-    const retrieved = await this.knowledge.searchSimilar({
+    const intel = await this.intelligence.prepare({
       ownerUserId: input.ownerUserId,
-      queryEmbedding: queryEmbedding ?? [],
-      topK: RETRIEVAL_TOP_K,
-      minScore: RETRIEVAL_MIN_SCORE,
+      viewerUserId: input.userId,
+      question,
+      conversationId,
       publicOnly,
       organizationId,
+      responseMode: input.responseMode,
     });
 
-    const scores = retrieved.map((item) => item.score);
-    const topScore = scores.length > 0 ? Math.max(...scores) : 0;
-    const confidence = averageScore(
-      scores.slice(0, Math.min(3, scores.length)),
-    );
-    const citations: TwinCitation[] = retrieved.map((item) => ({
-      sourceId: item.sourceId,
-      sourceTitle: item.sourceTitle,
-      chunkId: item.id,
-      excerpt: item.content.slice(0, 220),
-      score: Number(item.score.toFixed(4)),
-    }));
+    if (readyCount === 0 && intel.contextBlocks.length === 0) {
+      throw new ValidationError(
+        "No ready knowledge sources yet. Upload documents or build your intelligence graph before chatting with your Twin.",
+      );
+    }
 
     return {
       conversationId,
-      confidence,
-      citations,
-      retrieved,
+      confidence: intel.confidence,
+      citations: intel.citations,
+      retrieved: intel.retrieved,
       question,
-      canAnswer:
-        retrieved.length > 0 &&
-        topScore >= ANSWER_MIN_TOP_SCORE &&
-        confidence >= ANSWER_MIN_CONFIDENCE,
+      canAnswer: intel.canAnswer,
+      contextBlocks: intel.contextBlocks,
+      systemPrompt: intel.systemPrompt,
+      twinMeta: {
+        confidenceLevel: intel.confidenceLevel,
+        claimLevel: intel.claimLevel,
+        relatedQuestions: intel.relatedQuestions,
+        suggestedActions: intel.suggestedActions,
+        contradictions: intel.contradictions,
+        extendedCitations: intel.extendedCitations,
+        understanding: intel.understanding,
+        plan: intel.plan,
+      } satisfies TwinChatMeta & {
+        extendedCitations: TwinPreparedIntelligence["extendedCitations"];
+        understanding: TwinPreparedIntelligence["understanding"];
+        plan: TwinPreparedIntelligence["plan"];
+      },
+      deterministicFallback: intel.deterministicFallback,
+      insufficientReply: intel.insufficientReply ?? INSUFFICIENT_EVIDENCE_REPLY,
+      useLlm: intel.plan.useLlm,
     };
   }
 
@@ -163,18 +175,27 @@ export class AskTwin {
     citations: TwinCitation[];
     contextBlocks: string[];
     canAnswer: boolean;
+    systemPrompt?: string;
+    deterministicFallback?: string | null;
+    insufficientReply?: string;
+    useLlm?: boolean;
+    twinMeta?: TwinChatMeta;
   }): Promise<{ answer: string; confidence: number; citations: TwinCitation[] }> {
-    if (!input.canAnswer) {
-      await this.conversations.addMessage({
-        conversationId: input.conversationId,
-        role: "ASSISTANT",
-        content: LOW_CONFIDENCE_REPLY,
+    const lowReply = input.insufficientReply ?? LOW_CONFIDENCE_REPLY;
+
+    if (input.deterministicFallback && input.useLlm === false) {
+      await this.persistAssistant(input, input.deterministicFallback);
+      return {
+        answer: input.deterministicFallback,
         confidence: input.confidence,
         citations: input.citations,
-      });
-      await this.conversations.incrementDailyUsage(input.userId);
+      };
+    }
+
+    if (!input.canAnswer) {
+      await this.persistAssistant(input, lowReply);
       return {
-        answer: LOW_CONFIDENCE_REPLY,
+        answer: lowReply,
         confidence: input.confidence,
         citations: input.citations,
       };
@@ -187,7 +208,7 @@ export class AskTwin {
       input: [
         {
           role: "system",
-          content: TWIN_SYSTEM_PROMPT,
+          content: input.systemPrompt ?? defaultPrompt(),
         },
         {
           role: "user",
@@ -196,16 +217,8 @@ export class AskTwin {
       ],
     });
 
-    const answer = response.output_text.trim() || LOW_CONFIDENCE_REPLY;
-    await this.conversations.addMessage({
-      conversationId: input.conversationId,
-      role: "ASSISTANT",
-      content: answer,
-      confidence: input.confidence,
-      citations: input.citations,
-    });
-    await this.conversations.incrementDailyUsage(input.userId);
-
+    const answer = response.output_text.trim() || lowReply;
+    await this.persistAssistant(input, answer);
     return {
       answer,
       confidence: input.confidence,
@@ -221,45 +234,33 @@ export class AskTwin {
     citations: TwinCitation[];
     contextBlocks: string[];
     canAnswer: boolean;
+    systemPrompt?: string;
+    deterministicFallback?: string | null;
+    insufficientReply?: string;
+    useLlm?: boolean;
+    twinMeta?: TwinChatMeta;
   }): Promise<ReadableStream<Uint8Array>> {
     const encoder = new TextEncoder();
+    const lowReply = input.insufficientReply ?? LOW_CONFIDENCE_REPLY;
+    const metaPayload = {
+      type: "meta" as const,
+      conversationId: input.conversationId,
+      confidence: input.confidence,
+      citations: input.citations,
+      twinMeta: input.twinMeta,
+    };
+
+    if (input.deterministicFallback && input.useLlm === false) {
+      return this.staticStream(
+        encoder,
+        metaPayload,
+        input,
+        input.deterministicFallback,
+      );
+    }
 
     if (!input.canAnswer) {
-      await this.conversations.addMessage({
-        conversationId: input.conversationId,
-        role: "ASSISTANT",
-        content: LOW_CONFIDENCE_REPLY,
-        confidence: input.confidence,
-        citations: input.citations,
-      });
-      await this.conversations.incrementDailyUsage(input.userId);
-
-      return new ReadableStream({
-        start(controller) {
-          controller.enqueue(
-            encoder.encode(
-              `${JSON.stringify({
-                type: "meta",
-                conversationId: input.conversationId,
-                confidence: input.confidence,
-                citations: input.citations,
-              })}\n`,
-            ),
-          );
-          controller.enqueue(
-            encoder.encode(
-              `${JSON.stringify({
-                type: "token",
-                content: LOW_CONFIDENCE_REPLY,
-              })}\n`,
-            ),
-          );
-          controller.enqueue(
-            encoder.encode(`${JSON.stringify({ type: "done" })}\n`),
-          );
-          controller.close();
-        },
-      });
+      return this.staticStream(encoder, metaPayload, input, lowReply);
     }
 
     const openai = getOpenAIClient();
@@ -271,7 +272,7 @@ export class AskTwin {
       input: [
         {
           role: "system",
-          content: TWIN_SYSTEM_PROMPT,
+          content: input.systemPrompt ?? defaultPrompt(),
         },
         {
           role: "user",
@@ -286,14 +287,7 @@ export class AskTwin {
     return new ReadableStream({
       async start(controller) {
         controller.enqueue(
-          encoder.encode(
-            `${JSON.stringify({
-              type: "meta",
-              conversationId: input.conversationId,
-              confidence: input.confidence,
-              citations: input.citations,
-            })}\n`,
-          ),
+          encoder.encode(`${JSON.stringify(metaPayload)}\n`),
         );
 
         try {
@@ -315,7 +309,7 @@ export class AskTwin {
             }
           }
 
-          const answer = full.trim() || LOW_CONFIDENCE_REPLY;
+          const answer = full.trim() || lowReply;
           await conversations.addMessage({
             conversationId: input.conversationId,
             role: "ASSISTANT",
@@ -344,4 +338,60 @@ export class AskTwin {
       },
     });
   }
+
+  private async persistAssistant(
+    input: {
+      userId: string;
+      conversationId: string;
+      confidence: number;
+      citations: TwinCitation[];
+    },
+    content: string,
+  ) {
+    await this.conversations.addMessage({
+      conversationId: input.conversationId,
+      role: "ASSISTANT",
+      content,
+      confidence: input.confidence,
+      citations: input.citations,
+    });
+    await this.conversations.incrementDailyUsage(input.userId);
+  }
+
+  private staticStream(
+    encoder: TextEncoder,
+    metaPayload: object,
+    input: {
+      userId: string;
+      conversationId: string;
+      confidence: number;
+      citations: TwinCitation[];
+    },
+    text: string,
+  ) {
+    return new ReadableStream({
+      start: async (controller) => {
+        controller.enqueue(
+          encoder.encode(`${JSON.stringify(metaPayload)}\n`),
+        );
+        controller.enqueue(
+          encoder.encode(
+            `${JSON.stringify({ type: "token", content: text })}\n`,
+          ),
+        );
+        await this.persistAssistant(input, text);
+        controller.enqueue(
+          encoder.encode(`${JSON.stringify({ type: "done" })}\n`),
+        );
+        controller.close();
+      },
+    });
+  }
 }
+
+function defaultPrompt() {
+  return "You are a Knowledge Twin. Answer using the provided context only.";
+}
+
+// Re-export for config module split
+export { LOW_CONFIDENCE_REPLY } from "@/config/ai";

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getCurrentSession } from "@/application/auth/get-current-session";
 import { ROUTES } from "@/config/constants";
 import { MyIntelligenceGraphPreview } from "@/components/intelligence/my-intelligence-graph";
+import { IntelligenceMapView } from "@/components/recommendations/for-you-feed";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
@@ -31,6 +32,7 @@ export default async function DashboardIntelligencePage() {
           <Link href={ROUTES.hub.intelligence}>Train Twin</Link>
         </Button>
       </div>
+      <IntelligenceMapView />
       <MyIntelligenceGraphPreview />
     </div>
   );

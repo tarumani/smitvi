@@ -12,6 +12,9 @@ const items = [
   { href: ROUTES.adminKnowledge, label: "Uploads" },
   { href: ROUTES.adminGrowth, label: "Growth" },
   { href: ROUTES.adminSearch, label: "Search" },
+  { href: ROUTES.adminRecommendations, label: "Recommendations" },
+  { href: ROUTES.adminTwin, label: "AI Twin" },
+  { href: ROUTES.adminMarketplace, label: "Marketplace" },
   { href: ROUTES.adminModeration, label: "Flags" },
 ] as const;
 

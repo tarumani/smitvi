@@ -1,57 +1,40 @@
 import type { Metadata } from "next";
 import { GetGrowthMetrics } from "@/application/growth/get-growth-metrics";
+import { container } from "@/application/container";
+import { prisma } from "@/infrastructure/database/prisma";
+import { GrowthAgentPanel } from "@/components/admin/growth-agent-panel";
 import { GlassCard } from "@/components/ui/glass-card";
 import { formatInrFromMinorUnits } from "@/lib/format-money";
 
 export const metadata: Metadata = {
-  title: "Growth metrics",
+  title: "Growth Agent",
 };
 
 export default async function AdminGrowthPage() {
   const metrics = await new GetGrowthMetrics().execute();
+  const overview = await container.growthAgent.getOverview();
+  const { prospects } = await container.growthProspects.list({ limit: 25 });
+
+  const pendingMessages = await prisma.growthMessage.findMany({
+    where: { approvalStatus: "PENDING_REVIEW" },
+    orderBy: { createdAt: "desc" },
+    take: 10,
+    include: { prospect: { select: { name: true } } },
+  });
 
   const activationRate =
     metrics.totalUsers > 0
       ? Math.round((metrics.onboardedProfiles / metrics.totalUsers) * 100)
       : 0;
-  const contentRate =
-    metrics.onboardedProfiles > 0
-      ? Math.round(
-          (metrics.profilesWithKnowledge / metrics.onboardedProfiles) * 100,
-        )
-      : 0;
-  const twinLiveRate =
-    metrics.profilesWithKnowledge > 0
-      ? Math.round((metrics.twinsReady / metrics.profilesWithKnowledge) * 100)
-      : 0;
 
   const kpis = [
     { label: "Total users", value: String(metrics.totalUsers) },
     { label: "Activated profiles", value: String(metrics.onboardedProfiles) },
+    { label: "Activation rate", value: `${activationRate}%` },
+    { label: "Growth prospects", value: String(overview.totalProspects) },
     {
-      label: "Activation rate",
-      value: `${activationRate}%`,
-      hint: "isOnboarded / users",
-    },
-    {
-      label: "Uploaded knowledge",
-      value: String(metrics.profilesWithKnowledge),
-    },
-    { label: "Content rate", value: `${contentRate}%`, hint: "upload / activated" },
-    { label: "Twins ready", value: String(metrics.twinsReady) },
-    { label: "Twin live rate", value: `${twinLiveRate}%`, hint: "READY / uploaders" },
-    {
-      label: "Public hubs (discoverable)",
-      value: String(metrics.qualifiedPublicHubs),
-      hint: "bio/headline + public READY source",
-    },
-    {
-      label: "Active listings",
-      value: String(metrics.activeMarketplaceListings),
-    },
-    {
-      label: "Paid orders",
-      value: String(metrics.paidMarketplaceOrders),
+      label: "Pending outreach review",
+      value: String(overview.pendingMessageReviews),
     },
     {
       label: "Marketplace net (INR)",
@@ -62,8 +45,8 @@ export default async function AdminGrowthPage() {
   return (
     <div className="space-y-8">
       <p className="text-sm text-[var(--muted-foreground)]">
-        Track progress toward genuine users, real content, and revenue. Focus:
-        activation → first upload → Twin READY → listings → paid orders.
+        AI Growth Agent — identify high-value creators, score fit, draft outreach
+        with mandatory human approval. Optimizes activated, monetizing creators.
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -71,40 +54,45 @@ export default async function AdminGrowthPage() {
           <GlassCard key={kpi.label} className="p-5">
             <p className="text-sm text-[var(--muted)]">{kpi.label}</p>
             <p className="mt-2 font-display text-2xl font-bold">{kpi.value}</p>
-            {"hint" in kpi && kpi.hint ? (
-              <p className="mt-1 text-xs text-[var(--muted-foreground)]">
-                {kpi.hint}
-              </p>
-            ) : null}
           </GlassCard>
         ))}
       </div>
 
-      <GlassCard className="p-6">
-        <h2 className="font-display text-lg font-semibold">
-          Incomplete onboarding by step
-        </h2>
-        <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-          Users who have not finished activation yet.
-        </p>
-        <ul className="mt-4 space-y-2">
-          {metrics.onboardingStepCounts.length === 0 ? (
-            <li className="text-sm text-[var(--muted)]">No incomplete profiles.</li>
-          ) : (
-            metrics.onboardingStepCounts.map((row) => (
+      <GrowthAgentPanel
+        opportunities={overview.topOpportunities}
+        prospects={prospects.map((p) => ({
+          ...p,
+          updatedAt: p.updatedAt.toISOString(),
+          campaign: p.campaign,
+        }))}
+        pendingReviews={overview.pendingMessageReviews}
+      />
+
+      {pendingMessages.length > 0 ? (
+        <GlassCard className="p-6">
+          <h2 className="font-display text-lg font-semibold">Message approvals</h2>
+          <ul className="mt-4 space-y-4">
+            {pendingMessages.map((m) => (
               <li
-                key={row.step}
-                className="flex items-center justify-between rounded-lg border border-[var(--border)] px-4 py-2 text-sm"
+                key={m.id}
+                className="rounded-lg border border-[var(--border)] p-4 text-sm"
               >
-                <span className="font-medium">{row.step}</span>
-                <span className="tabular-nums text-[var(--muted-foreground)]">
-                  {row.count}
-                </span>
+                <p className="font-medium">
+                  {m.prospect.name} · {m.channel}
+                </p>
+                {m.subject ? (
+                  <p className="mt-1 text-[var(--muted-foreground)]">{m.subject}</p>
+                ) : null}
+                <p className="mt-2 whitespace-pre-wrap">{m.body}</p>
+                <p className="mt-2 text-xs text-[var(--muted)]">
+                  Approve via POST /api/admin/growth/messages/approve (admin tools
+                  or API client).
+                </p>
               </li>
-            ))
-          )}
-        </ul>
-      </GlassCard>
+            ))}
+          </ul>
+        </GlassCard>
+      ) : null}
     </div>
   );
 }

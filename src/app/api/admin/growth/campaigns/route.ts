@@ -1,0 +1,21 @@
+import {
+  handleGetCampaigns,
+  handlePostCampaign,
+} from "@/application/growth/growth-admin-handlers";
+import { jsonError } from "@/infrastructure/http/respond";
+
+export async function GET() {
+  try {
+    return handleGetCampaigns();
+  } catch (e) {
+    return jsonError(e);
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    return handlePostCampaign(request);
+  } catch (e) {
+    return jsonError(e);
+  }
+}

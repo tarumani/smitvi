@@ -18,6 +18,7 @@
     "db:studio": "prisma studio",
     "db:local": "docker compose -f docker-compose.dev.yml up -d --wait",
     "db:local:down": "docker compose -f docker-compose.dev.yml down",
+    "db:check": "node scripts/check-db.mjs",
     "graph:backfill": "npx tsx src/scripts/backfill-graph.ts",
     "typecheck": "tsc --noEmit"
   },

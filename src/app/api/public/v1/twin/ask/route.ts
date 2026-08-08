@@ -43,11 +43,12 @@ export async function POST(request: Request) {
       question: prepared.question,
       confidence: prepared.confidence,
       citations: prepared.citations,
-      contextBlocks: prepared.retrieved.map(
-        (item, index) =>
-          `[${index + 1}] (${item.sourceTitle})\n${item.content}`,
-      ),
+      contextBlocks: prepared.contextBlocks,
       canAnswer: prepared.canAnswer,
+      systemPrompt: prepared.systemPrompt,
+      deterministicFallback: prepared.deterministicFallback,
+      insufficientReply: prepared.insufficientReply,
+      useLlm: prepared.useLlm,
     });
 
     return withPublicApiCors(

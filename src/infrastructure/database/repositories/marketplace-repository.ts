@@ -1,4 +1,4 @@
-import { calculateMarketplaceSplit } from "@/config/billing";
+import { PlatformFeeService } from "@/application/monetization/platform-fee-service";
 import {
   ForbiddenError,
   NotFoundError,
@@ -214,7 +214,8 @@ export class PrismaMarketplaceRepository {
       throw new ForbiddenError("You cannot purchase your own listing");
     }
 
-    const split = calculateMarketplaceSplit(listing.priceCents);
+    const feeService = new PlatformFeeService();
+    const split = await feeService.calculateSplit(listing.priceCents, "PRODUCT");
 
     return prisma.marketplaceOrder.create({
       data: {

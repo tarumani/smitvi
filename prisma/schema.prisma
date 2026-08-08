@@ -158,6 +158,14 @@ enum MarketplaceListingType {
   SERVICE_PACKAGE
   TEMPLATE
   PROMPT_PACK
+  GUIDE
+  CHECKLIST
+  CASE_STUDY
+  COURSE
+  VIDEO
+  AUDIO
+  BUNDLE
+  PDF
 }
 
 enum ImportJobType {
@@ -200,6 +208,55 @@ enum ConsultationRequestStatus {
   COMPLETED
 }
 
+enum ListingVisibility {
+  PUBLIC
+  UNLISTED
+  PRIVATE
+}
+
+enum CreatorWalletStatus {
+  ACTIVE
+  SUSPENDED
+  ON_HOLD
+}
+
+enum CreatorPayoutStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+  ON_HOLD
+}
+
+enum TwinAccessMode {
+  FREE
+  PAID
+  SUBSCRIPTION
+  PRIVATE
+}
+
+enum MarketplaceEventType {
+  PRODUCT_VIEWED
+  PRODUCT_PURCHASED
+  AI_ACCESS_PURCHASED
+  SUBSCRIPTION_STARTED
+  SUBSCRIPTION_RENEWED
+  SUBSCRIPTION_CANCELLED
+  CONSULTATION_BOOKED
+  PAYMENT_FAILED
+  REFUND_CREATED
+  PAYOUT_COMPLETED
+}
+
+enum MarketplaceRefundStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 model User {
   id            String    @id @db.Uuid
   email         String    @unique
@@ -239,6 +296,18 @@ model User {
   importJobs                   ImportJob[]
   graphEntitiesOwned           GraphEntity[]         @relation("GraphEntityOwner")
   graphProcessingJobs          GraphProcessingJob[]
+  recommendationEvents         RecommendationEvent[]
+  recommendationFeedback       RecommendationFeedback[]
+  twinQueryEvents              TwinQueryEvent[]
+  twinFeedback                 TwinFeedback[]
+  creatorWallet                CreatorWallet?
+  creatorPayouts               CreatorPayout[]
+  twinMonetizationSettings     TwinMonetizationSettings?
+  twinCreatorSubscriptionsAsCreator TwinCreatorSubscription[] @relation("TwinCreator")
+  twinCreatorSubscriptionsAsSubscriber TwinCreatorSubscription[] @relation("TwinSubscriber")
+  marketplaceAccessGrants      MarketplaceAccess[]
+  marketplaceReviews           MarketplaceReview[]
+  marketplaceEvents            MarketplaceEvent[]
 
   @@index([role])
   @@index([plan])
@@ -610,18 +679,29 @@ model MarketplaceListing {
   type            MarketplaceListingType
   status          MarketplaceListingStatus @default(DRAFT)
   title           String                   @db.VarChar(160)
+  slug            String?                  @db.VarChar(120)
   description     String                   @db.VarChar(2000)
   currency        String                   @default("USD") @db.VarChar(3)
   priceCents      Int                      @map("price_cents")
   durationMinutes Int?                     @map("duration_minutes")
   knowledgeSourceId String?                @map("knowledge_source_id") @db.Uuid
+  contentReference String?                 @map("content_reference") @db.VarChar(500)
+  thumbnailUrl    String?                  @map("thumbnail_url")
+  visibility      ListingVisibility        @default(PUBLIC)
+  salesCount      Int                      @default(0) @map("sales_count")
+  ratingAverage   Float                    @default(0) @map("rating_average")
+  ratingCount     Int                      @default(0) @map("rating_count")
+  publishedAt     DateTime?                @map("published_at")
   isFeatured      Boolean                  @default(false) @map("is_featured")
   createdAt       DateTime                 @default(now()) @map("created_at")
   updatedAt       DateTime                 @updatedAt @map("updated_at")
 
   seller User               @relation("SellerListings", fields: [sellerId], references: [id], onDelete: Cascade)
   orders MarketplaceOrder[]
+  accessGrants MarketplaceAccess[]
+  reviews MarketplaceReview[]
 
+  @@unique([sellerId, slug])
   @@index([sellerId, status])
   @@index([status, createdAt])
   @@index([type, status])
@@ -1074,3 +1154,572 @@ model SearchEvent {
   @@index([queryNormalized])
   @@map("search_events")
 }
+
+// ─── Phase 3 — Recommendations ───────────────────────────────────────────
+
+enum RecommendationFeedbackType {
+  USEFUL
+  NOT_USEFUL
+  NOT_INTERESTED
+  ALREADY_KNOW
+  DISMISS
+}
+
+enum RecommendationActionType {
+  SHOWN
+  CLICK
+  PROFILE_OPEN
+  FOLLOW
+  CONNECT
+  MESSAGE
+  SAVE
+  DISMISS
+  HIRE
+  KNOWLEDGE_OPEN
+  OPPORTUNITY_OPEN
+  CONVERTED
+}
+
+model RecommendationEvent {
+  id                 String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId             String                   @map("user_id") @db.Uuid
+  recommendationType String                   @map("recommendation_type") @db.VarChar(64)
+  targetType         String                   @map("target_type") @db.VarChar(32)
+  targetId           String                   @map("target_id") @db.VarChar(64)
+  action             RecommendationActionType
+  score              Float?
+  metadata           Json                     @default("{}")
+  createdAt          DateTime                 @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([recommendationType, createdAt])
+  @@index([action, createdAt])
+  @@map("recommendation_events")
+}
+
+model RecommendationFeedback {
+  id                String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String                     @map("user_id") @db.Uuid
+  recommendationKey String                     @map("recommendation_key") @db.VarChar(128)
+  feedback          RecommendationFeedbackType
+  createdAt         DateTime                   @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, recommendationKey])
+  @@index([feedback, createdAt])
+  @@map("recommendation_feedback")
+}
+
+// ─── Phase 4 — AI Twin 2.0 intelligence ──────────────────────────────────
+
+enum TwinConfidenceLevel {
+  HIGH
+  MEDIUM
+  LOW
+  UNKNOWN
+}
+
+enum TwinFeedbackType {
+  HELPFUL
+  NOT_HELPFUL
+  CORRECT
+  INCORRECT
+  MISSING
+  HALLUCINATION
+}
+
+model TwinQueryEvent {
+  id              String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String              @map("user_id") @db.Uuid
+  ownerUserId     String              @map("owner_user_id") @db.Uuid
+  question        String              @db.Text
+  intent          String              @db.VarChar(64)
+  sources         Json
+  confidence      Float
+  confidenceLevel TwinConfidenceLevel @map("confidence_level")
+  latencyMs       Int                 @map("latency_ms")
+  graphUsed       Boolean             @default(false) @map("graph_used")
+  ragUsed         Boolean             @default(false) @map("rag_used")
+  createdAt       DateTime            @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([ownerUserId, createdAt])
+  @@index([intent, createdAt])
+  @@map("twin_query_events")
+}
+
+model TwinFeedback {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String           @map("user_id") @db.Uuid
+  conversationId String?          @map("conversation_id") @db.Uuid
+  messageId      String?          @map("message_id") @db.Uuid
+  feedback       TwinFeedbackType
+  note           String?          @db.VarChar(500)
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([feedback, createdAt])
+  @@index([userId, createdAt])
+  @@map("twin_feedback")
+}
+
+// ─── Phase 5 — Monetization ───────────────────────────────────────────────
+
+model PlatformFeeConfig {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  category        String   @unique @db.VarChar(32)
+  commissionRate  Float    @map("commission_rate")
+  label           String?  @db.VarChar(120)
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("platform_fee_configs")
+}
+
+model CreatorWallet {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String              @unique @map("user_id") @db.Uuid
+  availableBalanceCents Int             @default(0) @map("available_balance_cents")
+  pendingBalanceCents   Int             @default(0) @map("pending_balance_cents")
+  lifetimeEarningsCents Int             @default(0) @map("lifetime_earnings_cents")
+  currency          String              @default("USD") @db.VarChar(3)
+  status            CreatorWalletStatus @default(ACTIVE)
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("creator_wallets")
+}
+
+model CreatorPayout {
+  id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String              @map("user_id") @db.Uuid
+  amountCents   Int                 @map("amount_cents")
+  currency      String              @db.VarChar(3)
+  status        CreatorPayoutStatus @default(PENDING)
+  externalRef   String?             @map("external_ref") @db.VarChar(120)
+  failureReason String?             @map("failure_reason") @db.VarChar(500)
+  createdAt     DateTime            @default(now()) @map("created_at")
+  paidAt        DateTime?           @map("paid_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@map("creator_payouts")
+}
+
+model MarketplaceAccess {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  listingId String   @map("listing_id") @db.Uuid
+  orderId   String?  @map("order_id") @db.Uuid
+  grantedAt DateTime @default(now()) @map("granted_at")
+
+  user    User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing MarketplaceListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listingId])
+  @@index([userId, grantedAt])
+  @@map("marketplace_access")
+}
+
+model MarketplaceReview {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  listingId String   @map("listing_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  orderId   String?  @map("order_id") @db.Uuid
+  rating    Int
+  body      String?  @db.VarChar(2000)
+  verifiedPurchase Boolean @default(false) @map("verified_purchase")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  listing MarketplaceListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  user    User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([listingId, userId])
+  @@index([listingId, createdAt])
+  @@map("marketplace_reviews")
+}
+
+model MarketplaceRefund {
+  id        String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId   String                  @unique @map("order_id") @db.Uuid
+  status    MarketplaceRefundStatus @default(REQUESTED)
+  reason    String?                 @db.VarChar(500)
+  createdAt DateTime                @default(now()) @map("created_at")
+  updatedAt DateTime                @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@map("marketplace_refunds")
+}
+
+model MarketplaceEvent {
+  id         String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String?              @map("user_id") @db.Uuid
+  creatorId  String?              @map("creator_id") @db.Uuid
+  listingId  String?              @map("listing_id") @db.Uuid
+  orderId    String?              @map("order_id") @db.Uuid
+  eventType  MarketplaceEventType @map("event_type")
+  metadata   Json                 @default("{}")
+  createdAt  DateTime             @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([creatorId, createdAt])
+  @@index([eventType, createdAt])
+  @@map("marketplace_events")
+}
+
+model TwinMonetizationSettings {
+  id                    String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                String         @unique @map("user_id") @db.Uuid
+  accessMode            TwinAccessMode @default(FREE) @map("access_mode")
+  pricePerConversationCents Int?     @map("price_per_conversation_cents")
+  monthlySubscriptionCents  Int?       @map("monthly_subscription_cents")
+  freeQuestionsPerDay   Int            @default(3) @map("free_questions_per_day")
+  currency              String         @default("USD") @db.VarChar(3)
+  enabled               Boolean        @default(false)
+  createdAt             DateTime       @default(now()) @map("created_at")
+  updatedAt             DateTime       @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("twin_monetization_settings")
+}
+
+model TwinCreatorSubscription {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  creatorId     String   @map("creator_id") @db.Uuid
+  subscriberId  String   @map("subscriber_id") @db.Uuid
+  priceCents    Int      @map("price_cents")
+  currency      String   @db.VarChar(3)
+  billingPeriod String   @map("billing_period") @db.VarChar(16)
+  status        String   @default("ACTIVE") @db.VarChar(24)
+  startedAt     DateTime @default(now()) @map("started_at")
+  renewedAt     DateTime? @map("renewed_at")
+  cancelledAt   DateTime? @map("cancelled_at")
+
+  creator    User @relation("TwinCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  subscriber User @relation("TwinSubscriber", fields: [subscriberId], references: [id], onDelete: Cascade)
+
+  @@unique([creatorId, subscriberId])
+  @@index([subscriberId, status])
+  @@map("twin_creator_subscriptions")
+}
+
+// ─── Phase 6 — AI Growth Agent ───────────────────────────────────────────
+
+enum GrowthProspectStatus {
+  DISCOVERED
+  RESEARCHED
+  QUALIFIED
+  APPROVED
+  MESSAGE_DRAFTED
+  READY_FOR_OUTREACH
+  CONTACTED
+  RESPONDED
+  INTERESTED
+  REGISTERED
+  ACTIVATED
+  CREATOR
+  MONETIZED
+  NOT_INTERESTED
+  DO_NOT_CONTACT
+  INVALID
+}
+
+enum GrowthProspectSource {
+  MANUAL
+  CSV_IMPORT
+  REFERRAL
+  PUBLIC_WEB
+  PUBLIC_PORTFOLIO
+  PARTNER
+  API
+  OTHER
+}
+
+enum GrowthMessageChannel {
+  EMAIL
+  LINKEDIN_NOTE
+  LINKEDIN_MESSAGE
+  TWITTER
+  COMMUNITY
+  WEBSITE_CONTACT
+  PERSONAL_INVITE
+}
+
+enum GrowthMessageApprovalStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  EDITED
+}
+
+enum GrowthCampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ARCHIVED
+}
+
+enum GrowthJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum GrowthJobType {
+  RESEARCH
+  SCORE
+  OPPORTUNITY_ANALYSIS
+  REPORT_DAILY
+  REPORT_WEEKLY
+}
+
+model GrowthProspect {
+  id                         String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                       String               @db.VarChar(160)
+  professionalTitle          String?              @map("professional_title") @db.VarChar(160)
+  profession                 String?              @db.VarChar(120)
+  company                    String?              @db.VarChar(160)
+  website                    String?              @db.VarChar(500)
+  portfolioUrl               String?              @map("portfolio_url") @db.VarChar(500)
+  publicProfileUrl           String?              @map("public_profile_url") @db.VarChar(500)
+  email                      String?              @db.VarChar(320)
+  source                     GrowthProspectSource @default(MANUAL)
+  sourceUrl                  String?              @map("source_url") @db.VarChar(500)
+  location                   String?              @db.VarChar(120)
+  country                    String?              @db.VarChar(2)
+  industry                   String?              @db.VarChar(120)
+  skills                     String[]             @default([])
+  topics                     String[]             @default([])
+  experienceYears            Int?                 @map("experience_years")
+  publicSignals              Json                 @default("{}") @map("public_signals")
+  expertiseSummary           String?              @map("expertise_summary") @db.Text
+  creatorPotentialScore      Int?                 @map("creator_potential_score")
+  smitviFitScore             Int?                 @map("smitvi_fit_score")
+  monetizationPotentialScore Int?                 @map("monetization_potential_score")
+  networkValueScore          Int?                 @map("network_value_score")
+  overallGrowthScore         Int?                 @map("overall_growth_score")
+  scoreBreakdown             Json                 @default("{}") @map("score_breakdown")
+  valueProposition           String?              @map("value_proposition") @db.Text
+  status                     GrowthProspectStatus @default(DISCOVERED)
+  campaignId                 String?              @map("campaign_id") @db.Uuid
+  linkedUserId               String?              @map("linked_user_id") @db.Uuid
+  acquisitionSource          String?              @map("acquisition_source") @db.VarChar(32)
+  doNotContact               Boolean              @default(false) @map("do_not_contact")
+  createdAt                  DateTime             @default(now()) @map("created_at")
+  updatedAt                  DateTime             @updatedAt @map("updated_at")
+
+  campaign GrowthCampaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  research GrowthProspectResearch[]
+  messages GrowthMessage[]
+  conversions GrowthConversion[]
+
+  @@index([status, overallGrowthScore])
+  @@index([campaignId])
+  @@index([email])
+  @@map("growth_prospects")
+}
+
+model GrowthProspectResearch {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  prospectId   String   @map("prospect_id") @db.Uuid
+  summary      String   @db.Text
+  evidence     Json     @default("[]")
+  confidence   Float    @default(0.5)
+  modelVersion String   @map("model_version") @db.VarChar(32)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  prospect GrowthProspect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+
+  @@index([prospectId, createdAt])
+  @@map("growth_prospect_research")
+}
+
+model GrowthCampaign {
+  id               String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String               @db.VarChar(160)
+  description      String?              @db.Text
+  targetProfession String?              @map("target_profession") @db.VarChar(120)
+  targetSkills     String[]             @default([]) @map("target_skills")
+  targetIndustries String[]             @default([]) @map("target_industries")
+  targetLocations  String[]             @default([]) @map("target_locations")
+  goal             String?              @db.VarChar(240)
+  status           GrowthCampaignStatus @default(DRAFT)
+  startDate        DateTime?            @map("start_date")
+  endDate          DateTime?            @map("end_date")
+  createdByUserId  String?              @map("created_by_user_id") @db.Uuid
+  createdAt        DateTime             @default(now()) @map("created_at")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+
+  prospects GrowthProspect[]
+
+  @@index([status, createdAt])
+  @@map("growth_campaigns")
+}
+
+model GrowthMessage {
+  id                 String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  prospectId         String                      @map("prospect_id") @db.Uuid
+  channel            GrowthMessageChannel
+  subject            String?                     @db.VarChar(240)
+  body               String                      @db.Text
+  approvalStatus     GrowthMessageApprovalStatus @default(DRAFT) @map("approval_status")
+  approvedByUserId   String?                     @map("approved_by_user_id") @db.Uuid
+  approvedAt         DateTime?                   @map("approved_at")
+  sentAt             DateTime?                   @map("sent_at")
+  createdAt          DateTime                    @default(now()) @map("created_at")
+
+  prospect       GrowthProspect        @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  outreachEvents GrowthOutreachEvent[]
+
+  @@index([prospectId, createdAt])
+  @@index([approvalStatus])
+  @@map("growth_messages")
+}
+
+model GrowthOutreachEvent {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  messageId String   @map("message_id") @db.Uuid
+  eventType String   @map("event_type") @db.VarChar(32)
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  message GrowthMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId, createdAt])
+  @@map("growth_outreach_events")
+}
+
+model GrowthConversion {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  prospectId       String    @map("prospect_id") @db.Uuid
+  userId           String?   @map("user_id") @db.Uuid
+  registeredAt     DateTime? @map("registered_at")
+  activatedAt      DateTime? @map("activated_at")
+  firstKnowledgeAt DateTime? @map("first_knowledge_at")
+  twinReadyAt      DateTime? @map("twin_ready_at")
+  firstSaleAt      DateTime? @map("first_sale_at")
+  revenueCents     Int       @default(0) @map("revenue_cents")
+  metadata         Json      @default("{}")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  prospect GrowthProspect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("growth_conversions")
+}
+
+model GrowthOpportunity {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title            String   @db.VarChar(160)
+  category         String   @db.VarChar(64)
+  opportunityScore Int      @map("opportunity_score")
+  demandSignal     String?  @map("demand_signal") @db.Text
+  supplySignal     String?  @map("supply_signal") @db.Text
+  rationale        String?  @db.Text
+  computedAt       DateTime @default(now()) @map("computed_at")
+
+  @@index([opportunityScore])
+  @@index([computedAt])
+  @@map("growth_opportunities")
+}
+
+model GrowthSuppressionEntry {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email     String?  @db.VarChar(320)
+  url       String?  @db.VarChar(500)
+  reason    String?  @db.VarChar(240)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([email])
+  @@map("growth_suppression_entries")
+}
+
+model GrowthModelVersion {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  version   String   @unique @db.VarChar(32)
+  weights   Json
+  notes     String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("growth_model_versions")
+}
+
+model GrowthExperiment {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String   @db.VarChar(160)
+  hypothesis String?  @db.Text
+  status     String   @default("DRAFT") @db.VarChar(24)
+  variants   Json     @default("[]")
+  results    Json     @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("growth_experiments")
+}
+
+model GrowthReport {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  kind      String   @db.VarChar(16)
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([kind, createdAt])
+  @@map("growth_reports")
+}
+
+model GrowthTargetProfile {
+  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                  String   @db.VarChar(160)
+  profession            String?  @db.VarChar(120)
+  skills                String[] @default([])
+  industries            String[] @default([])
+  minExperienceYears    Int?     @map("min_experience_years")
+  priority              Int      @default(50)
+  monetizationPotential String?  @map("monetization_potential") @db.VarChar(32)
+  active                Boolean  @default(true)
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@map("growth_target_profiles")
+}
+
+model FoundingCreatorProgram {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String   @db.VarChar(160)
+  slug       String   @unique @db.VarChar(80)
+  benefits   Json     @default("[]")
+  maxMembers Int?     @map("max_members")
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("founding_creator_programs")
+}
+
+model GrowthJob {
+  id          String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jobType     GrowthJobType   @map("job_type")
+  status      GrowthJobStatus @default(PENDING)
+  payload     Json            @default("{}")
+  result      Json?
+  error       String?         @db.Text
+  createdAt   DateTime        @default(now()) @map("created_at")
+  startedAt   DateTime?       @map("started_at")
+  completedAt DateTime?       @map("completed_at")
+
+  @@index([status, jobType])
+  @@map("growth_jobs")
+}
+

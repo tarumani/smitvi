@@ -37,6 +37,35 @@ import { ExtractGraphFromKnowledge } from "@/application/graph/extract-graph-fro
 import { ProcessGraphJob } from "@/application/graph/process-graph-job";
 import { BackfillUserGraphs } from "@/application/graph/backfill-user-graphs";
 import { UnifiedSearchService } from "@/application/search/unified-search-service";
+import { IntelligenceMapService } from "@/application/recommendations/intelligence-map-service";
+import { RecommendationAnalyticsService } from "@/application/recommendations/recommendation-analytics-service";
+import { RecommendationService } from "@/application/recommendations/recommendation-service";
+import { PlatformFeeService } from "@/application/monetization/platform-fee-service";
+import { CreatorWalletService } from "@/application/monetization/creator-wallet-service";
+import { MarketplaceEventService } from "@/application/monetization/marketplace-event-service";
+import { MarketplaceGraphSyncService } from "@/application/monetization/marketplace-graph-sync-service";
+import { MarketplaceFulfillmentService } from "@/application/monetization/marketplace-fulfillment-service";
+import { ProductPublishService } from "@/application/monetization/product-publish-service";
+import { MonetizationAnalyticsService } from "@/application/monetization/monetization-analytics-service";
+import { TwinMonetizationService } from "@/application/monetization/twin-monetization-service";
+import { GrowthAgentService } from "@/application/growth/growth-agent-service";
+import { GrowthJobRunner } from "@/application/growth/growth-agent-service";
+import { GrowthProspectService } from "@/application/growth/growth-prospect-service";
+import { GrowthCampaignService } from "@/application/growth/growth-campaign-service";
+import { GrowthMessageService } from "@/application/growth/growth-message-service";
+import {
+  GrowthAnalyticsService,
+  GrowthReportService,
+} from "@/application/growth/growth-report-service";
+import { GrowthConversionService } from "@/application/growth/growth-conversion-service";
+import { PortfolioAuditService } from "@/application/growth/portfolio-audit-service";
+import { LibraryService, ReviewService } from "@/application/monetization/library-service";
+import { TwinGraphRetriever } from "@/application/twin/twin-graph-retriever";
+import { TwinMemoryService } from "@/application/twin/twin-memory-service";
+import { TwinAnalyticsService } from "@/application/twin/twin-analytics-service";
+import { TwinIntelligenceEngine } from "@/application/twin/twin-intelligence-engine";
+import { TwinContextService } from "@/application/twin/twin-context-service";
+import { TwinEvaluationService } from "@/application/twin/twin-evaluation-service";
 
 const users = new PrismaUserRepository();
 const profiles = new PrismaProfileRepository();
@@ -76,6 +105,57 @@ const processImportJob = new ProcessImportJob(
   processKnowledgeSource,
 );
 
+const unifiedSearch = new UnifiedSearchService(graphService, search);
+const recommendationAnalytics = new RecommendationAnalyticsService();
+const intelligenceMap = new IntelligenceMapService(graphService);
+const recommendations = new RecommendationService(
+  graphService,
+  unifiedSearch,
+  recommendationAnalytics,
+);
+const twinGraphRetriever = new TwinGraphRetriever(graphService);
+const twinMemory = new TwinMemoryService(conversations);
+const twinAnalytics = new TwinAnalyticsService();
+const twinIntelligence = new TwinIntelligenceEngine(
+  twinGraphRetriever,
+  knowledge,
+  profiles,
+  twinMemory,
+  recommendations,
+  twinAnalytics,
+);
+const twinContext = new TwinContextService(
+  graphService,
+  profiles,
+  twinIntelligence,
+);
+const twinEvaluation = new TwinEvaluationService();
+
+const platformFees = new PlatformFeeService();
+const creatorWallet = new CreatorWalletService();
+const marketplaceEvents = new MarketplaceEventService();
+const marketplaceGraphSync = new MarketplaceGraphSyncService(graphService);
+const marketplaceFulfillment = new MarketplaceFulfillmentService(
+  marketplace,
+  creatorWallet,
+  marketplaceGraphSync,
+  marketplaceEvents,
+);
+const productPublish = new ProductPublishService(marketplace, marketplaceGraphSync);
+const monetizationAnalytics = new MonetizationAnalyticsService(marketplace);
+const twinMonetization = new TwinMonetizationService();
+const library = new LibraryService();
+const reviews = new ReviewService();
+const growthJobRunner = new GrowthJobRunner(graphService);
+const growthAgent = GrowthAgentService.create(graphService);
+const growthProspects = new GrowthProspectService();
+const growthCampaigns = new GrowthCampaignService();
+const growthMessages = new GrowthMessageService();
+const growthReports = new GrowthReportService();
+const growthAnalytics = new GrowthAnalyticsService();
+const growthConversions = new GrowthConversionService();
+const portfolioAudit = new PortfolioAuditService();
+
 export const container = {
   syncAuthenticatedUser: new SyncAuthenticatedUser(users, auditLogs),
   getMyProfile: new GetMyProfile(profiles),
@@ -91,13 +171,19 @@ export const container = {
     auditLogs,
   ),
   processKnowledgeSource,
-  askTwin: new AskTwin(knowledge, conversations),
+  askTwin: new AskTwin(knowledge, conversations, twinIntelligence),
   createSubscriptionCheckout: new CreateSubscriptionCheckout(billing),
   createMarketplaceCheckout: new CreateMarketplaceCheckout(marketplace, billing),
-  handleStripeWebhook: new HandleStripeWebhook(billing, marketplace, auditLogs),
+  handleStripeWebhook: new HandleStripeWebhook(
+    billing,
+    marketplace,
+    marketplaceFulfillment,
+    auditLogs,
+  ),
   handleRazorpayWebhook: new HandleRazorpayWebhook(
     billing,
     marketplace,
+    marketplaceFulfillment,
     auditLogs,
   ),
   createOrganization: new CreateOrganization(organizations, auditLogs),
@@ -125,5 +211,30 @@ export const container = {
     syncProfileToGraph,
     graphService,
   ),
-  unifiedSearch: new UnifiedSearchService(graphService, search),
+  unifiedSearch,
+  intelligenceMap,
+  recommendationAnalytics,
+  recommendations,
+  twinAnalytics,
+  twinContext,
+  twinEvaluation,
+  twinIntelligence,
+  platformFees,
+  creatorWallet,
+  marketplaceFulfillment,
+  productPublish,
+  monetizationAnalytics,
+  twinMonetization,
+  library,
+  reviews,
+  marketplaceEvents,
+  growthAgent,
+  growthJobRunner,
+  growthProspects,
+  growthCampaigns,
+  growthMessages,
+  growthReports,
+  growthAnalytics,
+  growthConversions,
+  portfolioAudit,
 };
