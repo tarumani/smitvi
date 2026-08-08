@@ -26,6 +26,15 @@ type PayPalActions = {
 
 type Status = "loading" | "ready" | "error";
 
+function containerHasPayPalButton(element: HTMLElement | null): boolean {
+  if (!element) return false;
+  return Boolean(
+    element.querySelector("iframe") ||
+      element.querySelector("[data-paypal-onboarding]") ||
+      element.childElementCount > 0,
+  );
+}
+
 export function PayPalSubscriptionButtons({ plan }: PayPalSubscriptionButtonsProps) {
   const containerId = useId().replace(/:/g, "");
   const router = useRouter();
@@ -129,7 +138,16 @@ export function PayPalSubscriptionButtons({ plan }: PayPalSubscriptionButtonsPro
           },
         }).render(`#${containerId}`);
 
-        if (!cancelled) setStatus("ready");
+        await new Promise((resolve) => window.setTimeout(resolve, 400));
+        if (cancelled) return;
+
+        if (!containerHasPayPalButton(containerRef.current)) {
+          throw new Error(
+            "PayPal button did not appear. Confirm Live Client ID and subscription plan ids in PayPal Dashboard.",
+          );
+        }
+
+        setStatus("ready");
       } catch (error) {
         if (cancelled) return;
         setStatus("error");
@@ -150,18 +168,15 @@ export function PayPalSubscriptionButtons({ plan }: PayPalSubscriptionButtonsPro
       <p className="mb-2 text-center text-[10px] uppercase tracking-wider text-[var(--muted)]">
         International
       </p>
-      <div
-        className="relative flex min-h-[48px] w-full items-center justify-center"
-        aria-busy={status === "loading"}
-      >
+      <div className="w-full space-y-2">
         {status === "loading" ? (
           <p className="text-center text-xs text-[var(--muted-foreground)]">
             Loading PayPal…
           </p>
         ) : null}
         {status === "error" ? (
-          <div className="w-full space-y-2 text-center">
-            <p className="text-xs text-[var(--muted-foreground)]">
+          <div className="space-y-2 text-center">
+            <p className="text-xs leading-relaxed text-[var(--muted-foreground)]">
               {errorMessage ?? "PayPal unavailable"}
             </p>
             <Button
@@ -178,7 +193,7 @@ export function PayPalSubscriptionButtons({ plan }: PayPalSubscriptionButtonsPro
         <div
           id={containerId}
           ref={containerRef}
-          className={`w-full [&>div]:!w-full [&>div]:!max-w-full ${status === "ready" ? "" : "pointer-events-none absolute opacity-0"}`}
+          className={`min-h-[48px] w-full max-w-full [&>div]:mx-auto [&>div]:w-full [&>div]:max-w-full ${status === "error" ? "hidden" : "block"}`}
         />
       </div>
     </div>
