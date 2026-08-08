@@ -53,6 +53,7 @@ export const ROUTES = {
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
   authCallback: "/auth/callback",
+  authRecoveryCallback: "/auth/recovery/callback",
   /** @deprecated Prefer ROUTES.hub.dashboard — kept for bookmarks and emails */
   dashboard: "/dashboard",
   /** @deprecated Prefer ROUTES.hub.intelligence */

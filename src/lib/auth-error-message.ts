@@ -29,7 +29,7 @@ export type AuthErrorContext = "auth" | "reset-email" | "reset-password";
 function emptyMessageFallback(context: AuthErrorContext): string {
   switch (context) {
     case "reset-email":
-      return "Could not send the password reset email. In Supabase → Authentication, enable Custom SMTP and update the Reset password template. Add https://smitvi.com/auth/callback to Redirect URLs, then check Logs → Auth.";
+      return "Could not send the password reset email. In Supabase → Authentication, enable Custom SMTP, fix the Reset password template (use {{ .ConfirmationURL }}), and add https://smitvi.com/auth/recovery/callback to Redirect URLs. Then check Logs → Auth.";
     case "reset-password":
       return "Could not update your password. Open the reset link from your email again, or request a new link from Forgot password.";
     default:
@@ -98,7 +98,7 @@ export function formatAuthErrorMessage(
     combined.includes("redirect") &&
     (combined.includes("not allowed") || combined.includes("whitelist"))
   ) {
-    return "Add https://smitvi.com/auth/callback to Supabase → Authentication → URL configuration → Redirect URLs.";
+    return "Add https://smitvi.com/auth/recovery/callback (and https://smitvi.com/auth/callback for Google) under Supabase → Authentication → URL configuration → Redirect URLs.";
   }
   if (
     combined.includes("user already") ||

@@ -52,7 +52,17 @@ If reset fails in the app (or Supabase Auth logs show mail errors), **Custom SMT
 ### 3. URL configuration (unchanged)
 
 - Site URL: `https://smitvi.com`
-- Redirect URLs: include `https://smitvi.com/auth/callback`
+- Redirect URLs (add **each** line):
+  - `https://smitvi.com/auth/callback` (Google / email signup)
+  - `https://smitvi.com/auth/recovery/callback` (**password reset** — exact path, no query string)
+  - `http://localhost:3000/auth/callback` and `http://localhost:3000/auth/recovery/callback` (local dev)
+
+### 3b. If reset still fails (checklist)
+
+1. **Authentication → Providers → Email** — enabled (required to send recovery mail).
+2. **Authentication → SMTP** — Custom SMTP **ON**, saved, sender mailbox works (send a test from your mail client).
+3. **Reset password template** — link must be `href="{{ .ConfirmationURL }}"`, not a bare `/auth/callback`.
+4. **Logs → Auth** — open the log row at the time you clicked “Send reset link”; SMTP and redirect errors appear there.
 
 ### 4. Test
 

@@ -8,18 +8,8 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ROUTES } from "@/config/constants";
-import { getPublicEnv } from "@/config/env";
-import { createSupabaseBrowserClient } from "@/infrastructure/auth/supabase/client";
-import { getBrowserOrigin } from "@/infrastructure/http/request-origin";
+import { readApiErrorMessage } from "@/lib/api-response";
 import { formatAuthErrorMessage } from "@/lib/auth-error-message";
-
-function passwordResetRedirectOrigin(): string {
-  const configured = getPublicEnv().appUrl.replace(/\/$/, "");
-  if (configured && !configured.includes("localhost")) {
-    return configured;
-  }
-  return getBrowserOrigin();
-}
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
@@ -36,24 +26,37 @@ export function ForgotPasswordForm() {
 
     startTransition(async () => {
       try {
-        const supabase = createSupabaseBrowserClient();
-        const redirectTo = `${passwordResetRedirectOrigin()}${ROUTES.authCallback}?next=${encodeURIComponent(ROUTES.resetPassword)}`;
-        const { error } = await supabase.auth.resetPasswordForEmail(target, {
-          redirectTo,
+        const response = await fetch("/api/auth/forgot-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: target }),
         });
-        if (error) throw error;
+        const json: unknown = await response.json().catch(() => null);
+        if (!response.ok) {
+          const message = readApiErrorMessage(
+            json,
+            formatAuthErrorMessage(
+              null,
+              "Could not send reset email",
+              "reset-email",
+            ),
+          );
+          throw new Error(message);
+        }
         setSent(true);
         toast.success("Check your email", {
           description: "If an account exists, we sent a password reset link.",
         });
       } catch (error) {
-        toast.error(
-          formatAuthErrorMessage(
-            error,
-            "Could not send reset email",
-            "reset-email",
-          ),
-        );
+        const message =
+          error instanceof Error
+            ? error.message
+            : formatAuthErrorMessage(
+                error,
+                "Could not send reset email",
+                "reset-email",
+              );
+        toast.error("Could not send reset email", { description: message });
       }
     });
   }

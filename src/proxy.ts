@@ -53,6 +53,9 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isAuthRoute && user) {
+    if (pathname === ROUTES.resetPassword) {
+      return applySessionCookies(response, sessionCookies);
+    }
     const next = safeNextPath(request.nextUrl.searchParams.get("next"));
     const dest = absoluteUrl(request, next ?? ROUTES.hub.dashboard);
     return applySessionCookies(NextResponse.redirect(dest), sessionCookies);
