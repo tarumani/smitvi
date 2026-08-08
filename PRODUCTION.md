@@ -116,6 +116,8 @@ Leave GoDaddy **email MX** records alone if you use GoDaddy email.
 
 ## 2. Migrations
 
+Before the first Human Intelligence Graph / search deploy, in Supabase → **Database → Extensions**, enable **`vector`** (pgvector).
+
 Fly runs this automatically on each deploy (`release_command` in `fly.toml`):
 
 ```bash

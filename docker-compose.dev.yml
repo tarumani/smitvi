@@ -1,0 +1,19 @@
+# Local dev Postgres (no Prisma CLI dev / npm SSL issues)
+# Usage: npm run db:local  then set in .env:
+#   DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/smitvi?sslmode=disable
+#   DIRECT_URL=postgresql://postgres:postgres@127.0.0.1:5432/smitvi?sslmode=disable
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: smitvi
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d smitvi"]
+      interval: 3s
+      timeout: 5s
+      retries: 15

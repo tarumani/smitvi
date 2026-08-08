@@ -13,16 +13,17 @@ function createPrismaClient(): PrismaClient {
     throw new Error("DATABASE_URL is required to initialize Prisma");
   }
 
+  const isLocal =
+    connectionString.includes("localhost") ||
+    connectionString.includes("127.0.0.1") ||
+    connectionString.includes("sslmode=disable");
+
   const pool =
     globalForPrisma.pgPool ??
     new Pool({
       connectionString,
       max: process.env.NODE_ENV === "production" ? 20 : 5,
-      ssl:
-        connectionString.includes("localhost") ||
-        connectionString.includes("127.0.0.1")
-          ? undefined
-          : { rejectUnauthorized: false },
+      ssl: isLocal ? undefined : { rejectUnauthorized: false },
     });
 
   if (process.env.NODE_ENV !== "production") {

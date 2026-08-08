@@ -7,10 +7,13 @@ import {
   type CreateProfileInput,
 } from "@/domain/profile/value-objects";
 
+import type { SyncProfileToGraph } from "@/application/graph/sync-profile-to-graph";
+
 export class CreateProfile {
   constructor(
     private readonly profiles: ProfileRepository,
     private readonly auditLogs: AuditLogRepository,
+    private readonly syncProfileToGraph?: SyncProfileToGraph,
   ) {}
 
   async execute(
@@ -39,6 +42,10 @@ export class CreateProfile {
       ipAddress: context?.ipAddress,
       userAgent: context?.userAgent,
     });
+
+    if (this.syncProfileToGraph) {
+      void this.syncProfileToGraph.execute(userId).catch(() => undefined);
+    }
 
     return profile;
   }

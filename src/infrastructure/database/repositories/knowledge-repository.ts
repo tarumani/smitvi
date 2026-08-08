@@ -243,6 +243,17 @@ export class PrismaKnowledgeRepository {
       });
     });
 
+    try {
+      await prisma.$executeRaw`
+        UPDATE knowledge_chunks
+        SET embedding_vector = ('[' || array_to_string(embedding, ',') || ']')::vector
+        WHERE source_id = ${input.id}::uuid
+          AND array_length(embedding, 1) > 0
+      `;
+    } catch {
+      /* pgvector optional until migration applied */
+    }
+
     return toSourceEntity(row);
   }
 

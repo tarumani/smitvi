@@ -237,6 +237,8 @@ model User {
   consultationRequestsReceived ConsultationRequest[] @relation("ConsultationExpert")
   consultationRequestsSent     ConsultationRequest[] @relation("ConsultationRequester")
   importJobs                   ImportJob[]
+  graphEntitiesOwned           GraphEntity[]         @relation("GraphEntityOwner")
+  graphProcessingJobs          GraphProcessingJob[]
 
   @@index([role])
   @@index([plan])
@@ -298,7 +300,8 @@ model Skill {
   slug      String   @unique
   createdAt DateTime @default(now()) @map("created_at")
 
-  profiles ProfileSkill[]
+  profiles     ProfileSkill[]
+  graphEntity  GraphEntity?
 
   @@map("skills")
 }
@@ -415,7 +418,8 @@ model KnowledgeSource {
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  chunks       KnowledgeChunk[]
+  chunks            KnowledgeChunk[]
+  graphEntitySources GraphEntitySource[]
 
   @@index([userId, createdAt])
   @@index([userId, status])
@@ -812,4 +816,261 @@ model ImportJob {
   @@index([userId, createdAt])
   @@index([status])
   @@map("import_jobs")
+}
+
+// ─── Human Intelligence Graph (Phase 1) ───────────────────────────────────
+
+enum GraphEntityType {
+  PERSON
+  SKILL
+  TOPIC
+  TECHNOLOGY
+  TOOL
+  INDUSTRY
+  COMPANY
+  PROJECT
+  PROFESSION
+  EDUCATION
+  CERTIFICATION
+  ARTICLE
+  DOCUMENT
+  COURSE
+  QUESTION
+  ANSWER
+  SERVICE
+  PRODUCT
+  COMMUNITY
+  USER
+}
+
+enum GraphEntityStatus {
+  ACTIVE
+  DEPRECATED
+  REMOVED
+}
+
+enum GraphVisibility {
+  PUBLIC
+  FOLLOWERS
+  CONNECTIONS
+  PRIVATE
+}
+
+enum GraphVerificationStatus {
+  PENDING
+  AI_DETECTED
+  USER_VERIFIED
+  USER_REJECTED
+  HIDDEN
+}
+
+enum GraphRelationshipSource {
+  USER
+  AI
+  PROFILE
+  IMPORT
+  ADMIN
+}
+
+enum GraphEvidenceSourceType {
+  KNOWLEDGE_SOURCE
+  KNOWLEDGE_CHUNK
+  PROFILE_FIELD
+  USER_ASSERTION
+  ADMIN
+}
+
+enum GraphAliasSource {
+  USER
+  AI
+  IMPORT
+  ADMIN
+}
+
+enum GraphProcessingJobType {
+  EXTRACT_FROM_KNOWLEDGE
+  SYNC_PROFILE
+  BACKFILL_USER
+}
+
+enum GraphProcessingJobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model GraphRelationshipType {
+  code       String  @id @db.VarChar(64)
+  label      String  @db.VarChar(120)
+  inverseCode String? @map("inverse_code") @db.VarChar(64)
+  isDirected Boolean @default(true) @map("is_directed")
+
+  relationships GraphRelationship[]
+
+  @@map("graph_relationship_types")
+}
+
+model GraphEntity {
+  id             String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  entityType     GraphEntityType   @map("entity_type")
+  canonicalName  String            @map("canonical_name") @db.VarChar(240)
+  slug           String            @db.VarChar(120)
+  description    String?           @db.VarChar(2000)
+  metadata       Json              @default("{}")
+  ownerUserId    String?           @map("owner_user_id") @db.Uuid
+  linkedUserId   String?           @unique @map("linked_user_id") @db.Uuid
+  skillId        String?           @unique @map("skill_id") @db.Uuid
+  visibility     GraphVisibility   @default(PRIVATE)
+  status         GraphEntityStatus @default(ACTIVE)
+  deletedAt      DateTime?         @map("deleted_at")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  ownerUser        User?               @relation("GraphEntityOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  skill            Skill?              @relation(fields: [skillId], references: [id], onDelete: SetNull)
+  aliases          GraphEntityAlias[]
+  sources          GraphEntitySource[]
+  versions         GraphEntityVersion[]
+  outgoingRelations GraphRelationship[] @relation("GraphRelSource")
+  incomingRelations GraphRelationship[] @relation("GraphRelTarget")
+  evidence         GraphEvidence[]
+
+  @@index([entityType, slug])
+  @@index([ownerUserId])
+  @@index([entityType, status])
+  @@index([deletedAt])
+  @@map("graph_entities")
+}
+
+model GraphEntityAlias {
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  entityId        String           @map("entity_id") @db.Uuid
+  alias           String           @db.VarChar(240)
+  normalizedAlias String           @map("normalized_alias") @db.VarChar(240)
+  source          GraphAliasSource
+  createdAt       DateTime         @default(now()) @map("created_at")
+
+  entity GraphEntity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@unique([entityId, normalizedAlias])
+  @@index([normalizedAlias])
+  @@map("graph_entity_aliases")
+}
+
+model GraphRelationship {
+  id                 String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceEntityId     String                  @map("source_entity_id") @db.Uuid
+  relationshipType   String                  @map("relationship_type") @db.VarChar(64)
+  targetEntityId     String                  @map("target_entity_id") @db.Uuid
+  confidenceScore    Float                   @default(0) @map("confidence_score")
+  weight             Float?
+  verified           Boolean                 @default(false)
+  verificationStatus GraphVerificationStatus @default(PENDING) @map("verification_status")
+  verificationSource String?                 @map("verification_source") @db.VarChar(64)
+  source             GraphRelationshipSource
+  evidenceId         String?                 @unique @map("evidence_id") @db.Uuid
+  metadata           Json                    @default("{}")
+  status             GraphEntityStatus       @default(ACTIVE)
+  deletedAt          DateTime?               @map("deleted_at")
+  createdAt          DateTime                @default(now()) @map("created_at")
+  updatedAt          DateTime                @updatedAt @map("updated_at")
+
+  sourceEntity GraphEntity            @relation("GraphRelSource", fields: [sourceEntityId], references: [id], onDelete: Cascade)
+  targetEntity GraphEntity            @relation("GraphRelTarget", fields: [targetEntityId], references: [id], onDelete: Cascade)
+  type         GraphRelationshipType  @relation(fields: [relationshipType], references: [code], onDelete: Restrict)
+  evidence     GraphEvidence?         @relation("RelationshipEvidence", fields: [evidenceId], references: [id], onDelete: SetNull)
+  evidenceRows GraphEvidence[]        @relation("EvidenceForRelationship")
+
+  @@index([sourceEntityId, relationshipType])
+  @@index([targetEntityId, relationshipType])
+  @@index([verificationStatus])
+  @@index([status])
+  @@map("graph_relationships")
+}
+
+model GraphEvidence {
+  id                String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  entityId          String?                 @map("entity_id") @db.Uuid
+  relationshipId    String?                 @map("relationship_id") @db.Uuid
+  sourceType        GraphEvidenceSourceType @map("source_type")
+  sourceId          String                  @map("source_id") @db.VarChar(64)
+  contentReference  String?                 @map("content_reference") @db.VarChar(512)
+  contentExcerpt    String?                 @map("content_excerpt") @db.VarChar(2000)
+  pageNumber        Int?                    @map("page_number")
+  confidence        Float
+  createdAt         DateTime                @default(now()) @map("created_at")
+
+  entity       GraphEntity?       @relation(fields: [entityId], references: [id], onDelete: SetNull)
+  relationship GraphRelationship? @relation("EvidenceForRelationship", fields: [relationshipId], references: [id], onDelete: Cascade)
+  primaryFor   GraphRelationship? @relation("RelationshipEvidence")
+
+  @@index([relationshipId])
+  @@index([entityId])
+  @@index([sourceType, sourceId])
+  @@map("graph_evidence")
+}
+
+model GraphEntitySource {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  entityId          String   @map("entity_id") @db.Uuid
+  knowledgeSourceId String   @map("knowledge_source_id") @db.Uuid
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  entity          GraphEntity     @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  knowledgeSource KnowledgeSource @relation(fields: [knowledgeSourceId], references: [id], onDelete: Cascade)
+
+  @@unique([entityId, knowledgeSourceId])
+  @@index([knowledgeSourceId])
+  @@map("graph_entity_sources")
+}
+
+model GraphEntityVersion {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  entityId  String   @map("entity_id") @db.Uuid
+  snapshot  Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  entity GraphEntity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@index([entityId, createdAt])
+  @@map("graph_entity_versions")
+}
+
+model GraphProcessingJob {
+  id           String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String                   @map("user_id") @db.Uuid
+  jobType      GraphProcessingJobType   @map("job_type")
+  payload      Json                     @default("{}")
+  status       GraphProcessingJobStatus @default(PENDING)
+  errorMessage String?                  @map("error_message") @db.Text
+  attempts     Int                      @default(0)
+  createdAt    DateTime                 @default(now()) @map("created_at")
+  startedAt    DateTime?                @map("started_at")
+  completedAt  DateTime?                @map("completed_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@map("graph_processing_jobs")
+}
+
+/// Phase 2 — Search analytics (anonymized)
+model SearchEvent {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  queryNormalized String   @map("query_normalized") @db.VarChar(240)
+  intent          String   @db.VarChar(64)
+  filters         Json     @default("{}")
+  resultCount     Int      @default(0) @map("result_count")
+  topUsername     String?  @map("top_username") @db.VarChar(30)
+  clickedUsername String?  @map("clicked_username") @db.VarChar(30)
+  successType     String?  @map("success_type") @db.VarChar(32)
+  sessionHash     String?  @map("session_hash") @db.VarChar(64)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([intent, createdAt])
+  @@index([createdAt])
+  @@index([queryNormalized])
+  @@map("search_events")
 }

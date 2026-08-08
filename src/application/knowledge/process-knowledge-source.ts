@@ -13,10 +13,15 @@ import {
 import { extractTextFromFile } from "@/infrastructure/knowledge/extract-text";
 import { readUpload } from "@/infrastructure/storage/object-storage";
 
+import type { PrismaGraphRepository } from "@/infrastructure/database/repositories/graph-repository";
+import type { ProcessGraphJob } from "@/application/graph/process-graph-job";
+
 export class ProcessKnowledgeSource {
   constructor(
     private readonly knowledge: PrismaKnowledgeRepository,
     private readonly auditLogs = new PrismaAuditLogRepository(),
+    private readonly graphRepo?: PrismaGraphRepository,
+    private readonly processGraphJob?: ProcessGraphJob,
   ) {}
 
   async execute(sourceId: string, userId: string): Promise<void> {
@@ -82,6 +87,15 @@ export class ProcessKnowledgeSource {
           tags: metadata.tags,
         },
       });
+
+      if (this.graphRepo && this.processGraphJob) {
+        const job = await this.graphRepo.createProcessingJob({
+          userId,
+          jobType: "EXTRACT_FROM_KNOWLEDGE",
+          payload: { knowledgeSourceId: sourceId },
+        });
+        void this.processGraphJob.execute(job.id);
+      }
     } catch (error) {
       const mapped = mapAiError(error);
       await this.knowledge.updateStatus(sourceId, "FAILED", mapped.message);

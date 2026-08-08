@@ -90,6 +90,8 @@ export const ROUTES = {
   consultationSetup: "/hub/dashboard?launch=book",
   /** Opens dashboard launch wizard on Sell step */
   marketplaceSellFirst: "/hub/dashboard?launch=monetize",
+  /** Human Intelligence Graph preview (Phase 1) */
+  intelligenceGraph: "/dashboard/intelligence",
   /** Dashboard launch wizard — optional step focus */
   launchDashboard: (step?: string) =>
     step
@@ -108,6 +110,7 @@ export const ROUTES = {
   adminKnowledge: "/admin/knowledge",
   adminModeration: "/admin/moderation",
   adminGrowth: "/admin/growth",
+  adminSearch: "/admin/search",
   organizations: "/orgs",
   organizationNew: "/orgs/new",
   organization: (slug: string) => `/orgs/${slug}` as const,

@@ -30,6 +30,13 @@ import { PrismaOrganizationRepository } from "@/infrastructure/database/reposito
 import { PrismaApiKeyRepository } from "@/infrastructure/database/repositories/api-key-repository";
 import { PrismaConsultationRepository } from "@/infrastructure/database/repositories/consultation-repository";
 import { PrismaImportJobRepository } from "@/infrastructure/database/repositories/import-job-repository";
+import { PrismaGraphRepository } from "@/infrastructure/database/repositories/graph-repository";
+import { GraphService } from "@/application/graph/graph-service";
+import { SyncProfileToGraph } from "@/application/graph/sync-profile-to-graph";
+import { ExtractGraphFromKnowledge } from "@/application/graph/extract-graph-from-knowledge";
+import { ProcessGraphJob } from "@/application/graph/process-graph-job";
+import { BackfillUserGraphs } from "@/application/graph/backfill-user-graphs";
+import { UnifiedSearchService } from "@/application/search/unified-search-service";
 
 const users = new PrismaUserRepository();
 const profiles = new PrismaProfileRepository();
@@ -44,7 +51,25 @@ const organizations = new PrismaOrganizationRepository();
 const apiKeys = new PrismaApiKeyRepository();
 const consultations = new PrismaConsultationRepository();
 const importJobs = new PrismaImportJobRepository();
-const processKnowledgeSource = new ProcessKnowledgeSource(knowledge, auditLogs);
+const graphRepo = new PrismaGraphRepository();
+const graphService = new GraphService(graphRepo);
+const syncProfileToGraph = new SyncProfileToGraph(graphService, graphRepo);
+const extractGraphFromKnowledge = new ExtractGraphFromKnowledge(
+  graphService,
+  graphRepo,
+  knowledge,
+);
+const processGraphJob = new ProcessGraphJob(
+  graphRepo,
+  extractGraphFromKnowledge,
+  syncProfileToGraph,
+);
+const processKnowledgeSource = new ProcessKnowledgeSource(
+  knowledge,
+  auditLogs,
+  graphRepo,
+  processGraphJob,
+);
 const processImportJob = new ProcessImportJob(
   importJobs,
   knowledge,
@@ -54,8 +79,8 @@ const processImportJob = new ProcessImportJob(
 export const container = {
   syncAuthenticatedUser: new SyncAuthenticatedUser(users, auditLogs),
   getMyProfile: new GetMyProfile(profiles),
-  createProfile: new CreateProfile(profiles, auditLogs),
-  updateProfile: new UpdateProfile(profiles, auditLogs),
+  createProfile: new CreateProfile(profiles, auditLogs, syncProfileToGraph),
+  updateProfile: new UpdateProfile(profiles, auditLogs, syncProfileToGraph),
   completeOnboarding: new CompleteOnboarding(profiles, auditLogs),
   saveOnboardingArchetype: new SaveOnboardingArchetype(profiles, auditLogs),
   updateReputation: new UpdateReputation(profiles, knowledge),
@@ -91,4 +116,14 @@ export const container = {
   consultations,
   importJobs,
   auditLogs,
+  graph: graphService,
+  graphRepo,
+  syncProfileToGraph,
+  processGraphJob,
+  backfillUserGraphs: new BackfillUserGraphs(
+    graphRepo,
+    syncProfileToGraph,
+    graphService,
+  ),
+  unifiedSearch: new UnifiedSearchService(graphService, search),
 };

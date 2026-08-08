@@ -141,7 +141,7 @@ export default async function KnowledgePage({
                       </p>
                     ) : null}
                     {source.status === "READY" ? (
-                      <div className="mt-4 border-t border-[var(--border)]/80 pt-4">
+                      <div className="mt-3 border-t border-[var(--border)]/80 pt-3">
                         <VisibilityToggle
                           sourceId={source.id}
                           isPublic={source.isPublic}
