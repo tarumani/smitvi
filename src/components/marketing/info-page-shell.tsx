@@ -60,9 +60,7 @@ export function InfoPageShell({
                 ) : undefined
               }
             />
-            <div className="prose prose-neutral mt-12 max-w-none dark:prose-invert prose-headings:font-display prose-headings:tracking-tight prose-p:text-[var(--muted-foreground)] prose-li:text-[var(--muted-foreground)]">
-              {children}
-            </div>
+            <div className="mt-10 space-y-5 sm:mt-12">{children}</div>
             <p className="mt-12 text-sm text-[var(--muted)]">
               <Link href={ROUTES.home} className="text-[var(--accent)] hover:underline">
                 ← Back to home

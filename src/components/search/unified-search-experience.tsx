@@ -36,24 +36,33 @@ export function UnifiedSearchExperience({ initialQuery = "" }: Props) {
   const [suggestions, setSuggestions] = useState<
     Array<{ type: string; label: string }>
   >([]);
+  const [inputFocused, setInputFocused] = useState(false);
+  const [lastSearchedQuery, setLastSearchedQuery] = useState("");
 
   const runSearch = useCallback(async (q: string, type: SearchCategory) => {
-    if (q.trim().length < 2) {
+    const trimmed = q.trim();
+    if (trimmed.length < 2) {
       setData(null);
+      setLastSearchedQuery("");
       return;
     }
     setLoading(true);
+    setSuggestions([]);
     try {
       const res = await fetch("/api/search/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: q.trim(), type, limit: 20 }),
+        body: JSON.stringify({ query: trimmed, type, limit: 20 }),
       });
       const body = (await res.json()) as {
         data?: UnifiedSearchResponse;
         error?: { message?: string };
       };
-      if (res.ok && body.data) setData(body.data);
+      if (res.ok && body.data) {
+        setData(body.data);
+        setLastSearchedQuery(trimmed.toLowerCase());
+        setSuggestions([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -66,11 +75,19 @@ export function UnifiedSearchExperience({ initialQuery = "" }: Props) {
   }, [initialQuery, category, runSearch]);
 
   useEffect(() => {
-    const t = setTimeout(() => {
-      if (query.trim().length < 2) {
+    const trimmed = query.trim().toLowerCase();
+    if (
+      !inputFocused ||
+      trimmed.length < 2 ||
+      loading ||
+      (data && lastSearchedQuery && trimmed === lastSearchedQuery)
+    ) {
+      if (!inputFocused || (lastSearchedQuery && trimmed === lastSearchedQuery)) {
         setSuggestions([]);
-        return;
       }
+      return;
+    }
+    const t = setTimeout(() => {
       void fetch(`/api/search/suggestions?q=${encodeURIComponent(query)}`)
         .then((r) => r.json())
         .then((j: { data?: { suggestions?: typeof suggestions } }) =>
@@ -79,14 +96,22 @@ export function UnifiedSearchExperience({ initialQuery = "" }: Props) {
         .catch(() => setSuggestions([]));
     }, 300);
     return () => clearTimeout(t);
-  }, [query]);
+  }, [query, inputFocused, loading, lastSearchedQuery, data]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setSuggestions([]);
+    setInputFocused(false);
     const params = new URLSearchParams({ q: query.trim() });
     window.history.replaceState(null, "", `/search?${params.toString()}`);
     void runSearch(query, category);
   };
+
+  const showSuggestionDropdown =
+    inputFocused &&
+    suggestions.length > 0 &&
+    !loading &&
+    query.trim().toLowerCase() !== lastSearchedQuery;
 
   const recordOpen = (username: string) => {
     if (!query.trim()) return;
@@ -120,8 +145,13 @@ export function UnifiedSearchExperience({ initialQuery = "" }: Props) {
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => setInputFocused(true)}
+          onBlur={() => {
+            window.setTimeout(() => setInputFocused(false), 150);
+          }}
           placeholder="Ask Smitvi to find someone…"
           className="h-12 border-[var(--glass-border)] bg-[var(--glass)] pr-[6.75rem] pl-11"
+          autoComplete="off"
         />
         <Button
           type="submit"
@@ -131,16 +161,26 @@ export function UnifiedSearchExperience({ initialQuery = "" }: Props) {
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
         </Button>
-        {suggestions.length ? (
-          <GlassCard className="absolute z-10 mt-1 w-full p-2">
+        {showSuggestionDropdown ? (
+          <GlassCard className="absolute z-10 mt-1 w-full p-2 shadow-lg">
             {suggestions.map((s) => (
               <button
                 key={s.label}
                 type="button"
                 className="block w-full rounded-md px-3 py-2 text-left text-sm hover:bg-[var(--surface-elevated)]"
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => {
-                  setQuery(s.label.replace(/ experts$/i, ""));
-                  void runSearch(s.label.replace(/ experts$/i, ""), category);
+                  const next = s.label.replace(/ experts$/i, "");
+                  setQuery(next);
+                  setSuggestions([]);
+                  setInputFocused(false);
+                  const params = new URLSearchParams({ q: next });
+                  window.history.replaceState(
+                    null,
+                    "",
+                    `/search?${params.toString()}`,
+                  );
+                  void runSearch(next, category);
                 }}
               >
                 {s.label}
@@ -157,6 +197,7 @@ export function UnifiedSearchExperience({ initialQuery = "" }: Props) {
             type="button"
             onClick={() => {
               setCategory(c.id);
+              setSuggestions([]);
               if (query.length >= 2) void runSearch(query, c.id);
             }}
             className={
@@ -178,6 +219,8 @@ export function UnifiedSearchExperience({ initialQuery = "" }: Props) {
             className="rounded-full border border-dashed border-[var(--border)] px-3 py-1 hover:border-[var(--accent)]"
             onClick={() => {
               setQuery(ex);
+              setSuggestions([]);
+              setInputFocused(false);
               void runSearch(ex, category);
             }}
           >
