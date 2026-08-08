@@ -53,7 +53,7 @@ export default async function HubLeadsPage() {
       kind: "order" as const,
       title: order.listing.title,
       subtitle: `@${order.buyer.profile?.username ?? order.buyer.profile?.displayName ?? "buyer"} · ${order.status}`,
-      href: ROUTES.marketplaceOrders,
+      href: `${ROUTES.marketplaceOrders}#order-${order.id}`,
       createdAt: order.createdAt,
     })),
   ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());

@@ -262,10 +262,18 @@ export class PrismaMarketplaceRepository {
       include: {
         listing: true,
         buyer: {
-          include: { profile: { select: { username: true, displayName: true } } },
+          include: {
+            profile: {
+              select: { username: true, displayName: true, avatarUrl: true },
+            },
+          },
         },
         seller: {
-          include: { profile: { select: { username: true, displayName: true } } },
+          include: {
+            profile: {
+              select: { username: true, displayName: true, avatarUrl: true },
+            },
+          },
         },
       },
       take: 50,
