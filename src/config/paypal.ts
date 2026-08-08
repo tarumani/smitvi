@@ -14,9 +14,11 @@ export function getPayPalMode(): PayPalMode {
 }
 
 export function getPayPalClientId(): string {
+  // PAYPAL_CLIENT_ID is read at runtime on the server (Fly secrets). NEXT_PUBLIC_* is
+  // inlined at Docker build time and stays empty if the build arg was not set.
   return (
-    process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.trim() ||
     process.env.PAYPAL_CLIENT_ID?.trim() ||
+    process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.trim() ||
     ""
   );
 }

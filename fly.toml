@@ -26,6 +26,9 @@ primary_region = "iad"
   NEXT_PUBLIC_APP_URL = "https://smitvi.com"
   NEXT_PUBLIC_APP_NAME = "Smitvi"
   NEXT_PUBLIC_ENABLE_GOOGLE_AUTH = "true"
+  PAYPAL_MODE = "live"
+  PAYPAL_PLAN_PRO = "P-9SS07355VB7661633NJ3UPLY"
+  PAYPAL_PLAN_BUSINESS = "P-6V88007284946041ENJ3UQ6A"
 
 [http_service]
   internal_port = 3000

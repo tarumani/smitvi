@@ -11,18 +11,20 @@ Pro and Business can be purchased with **PayPal** (international) or **Razorpay*
 
 | Variable | Where |
 |----------|--------|
-| `NEXT_PUBLIC_PAYPAL_CLIENT_ID` | Fly + Docker build (public) |
+| `PAYPAL_CLIENT_ID` | **Fly secrets (required for API)** — same REST Client ID as below |
+| `NEXT_PUBLIC_PAYPAL_CLIENT_ID` | Fly secrets + Docker `--build-arg` (PayPal JS SDK) |
 | `PAYPAL_CLIENT_SECRET` | Fly secrets only |
-| `PAYPAL_PLAN_PRO` | Fly secrets |
-| `PAYPAL_PLAN_BUSINESS` | Fly secrets |
+| `PAYPAL_PLAN_PRO` | Fly secrets or `fly.toml` `[env]` |
+| `PAYPAL_PLAN_BUSINESS` | Fly secrets or `fly.toml` `[env]` |
 | `PAYPAL_MODE` | `live` or `sandbox` |
 
-Local: add to `smitvi/.env` (never commit).
+Local: add to `smitvi/.env` (never commit). Set **`PAYPAL_CLIENT_ID`** to the same value as `NEXT_PUBLIC_PAYPAL_CLIENT_ID`.
 
 Production:
 
 ```powershell
 fly secrets set -a smitvi `
+  PAYPAL_CLIENT_ID=your_client_id `
   NEXT_PUBLIC_PAYPAL_CLIENT_ID=your_client_id `
   PAYPAL_CLIENT_SECRET=your_secret `
   PAYPAL_PLAN_PRO=P-9SS07355VB7661633NJ3UPLY `
@@ -30,7 +32,7 @@ fly secrets set -a smitvi `
   PAYPAL_MODE=live
 ```
 
-Redeploy so `NEXT_PUBLIC_PAYPAL_CLIENT_ID` is inlined at build time (GitHub Actions / `fly deploy`).
+Also add GitHub repo secret `NEXT_PUBLIC_PAYPAL_CLIENT_ID` so CI build inlines it for the SDK. The pricing page loads the Client ID from `/api/v1/billing/paypal/config`, so **`PAYPAL_CLIENT_ID` on Fly fixes “not configured”** even before the next CI build.
 
 ## Flow
 
