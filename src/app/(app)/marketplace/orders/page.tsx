@@ -6,6 +6,7 @@ import { container } from "@/application/container";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
+import { EmailContactButton } from "@/components/marketplace/email-contact-button";
 import { ROUTES } from "@/config/constants";
 import { prisma } from "@/infrastructure/database/prisma";
 
@@ -114,7 +115,7 @@ export default async function MarketplaceOrdersPage() {
                           </span>
                         ) : null}
                       </p>
-                      {!isBuyer && counterpartyEmail ? (
+                      {counterpartyEmail ? (
                         <p className="mt-1 text-[var(--muted-foreground)]">
                           {counterpartyEmail}
                         </p>
@@ -131,18 +132,24 @@ export default async function MarketplaceOrdersPage() {
                       </Link>
                     </Button>
                   ) : null}
-                  {!isBuyer && counterpartyEmail ? (
-                    <Button asChild size="sm">
-                      <a href={`mailto:${counterpartyEmail}?subject=${encodeURIComponent(`Your order: ${order.listing.title}`)}`}>
-                        Email buyer
-                      </a>
-                    </Button>
-                  ) : null}
-                  {isBuyer && counterpartyEmail ? (
+                  {counterpartyEmail ? (
+                    <EmailContactButton
+                      email={counterpartyEmail}
+                      subject={
+                        isBuyer
+                          ? `Question about: ${order.listing.title}`
+                          : `Your order: ${order.listing.title}`
+                      }
+                      label={isBuyer ? "Email seller" : "Email buyer"}
+                      variant={isBuyer ? "secondary" : "default"}
+                    />
+                  ) : username ? (
                     <Button asChild variant="secondary" size="sm">
-                      <a href={`mailto:${counterpartyEmail}?subject=${encodeURIComponent(`Question about: ${order.listing.title}`)}`}>
-                        Email seller
-                      </a>
+                      <Link
+                        href={`${ROUTES.publicProfile(username)}/chat`}
+                      >
+                        Message on Smitvi
+                      </Link>
                     </Button>
                   ) : null}
                 </div>
