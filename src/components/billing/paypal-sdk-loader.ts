@@ -16,7 +16,15 @@ export function loadPayPalSdk(clientId: string): Promise<void> {
   }
 
   loadedClientId = trimmed;
-  const src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(trimmed)}&vault=true&intent=subscription`;
+  const params = new URLSearchParams({
+    "client-id": trimmed,
+    vault: "true",
+    intent: "subscription",
+    components: "buttons",
+    // Standalone card button uses one-time checkout and breaks on createSubscription.
+    "disable-funding": "card,credit,paylater,venmo",
+  });
+  const src = `https://www.paypal.com/sdk/js?${params.toString()}`;
 
   loadPromise = new Promise((resolve, reject) => {
     let script = document.querySelector(

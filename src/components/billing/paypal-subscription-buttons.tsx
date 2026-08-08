@@ -195,6 +195,12 @@ export function PayPalSubscriptionButtons({ plan }: PayPalSubscriptionButtonsPro
           ref={containerRef}
           className={`min-h-[48px] w-full max-w-full [&>div]:mx-auto [&>div]:w-full [&>div]:max-w-full ${status === "error" ? "hidden" : "block"}`}
         />
+        {status === "ready" ? (
+          <p className="text-center text-[10px] leading-relaxed text-[var(--muted-foreground)]">
+            Pay with PayPal — debit or credit card at checkout without a PayPal
+            account.
+          </p>
+        ) : null}
       </div>
     </div>
   );

@@ -36,8 +36,8 @@ Also add GitHub repo secret `NEXT_PUBLIC_PAYPAL_CLIENT_ID` so CI build inlines i
 
 ## Flow
 
-1. User chooses PayPal on pricing → PayPal subscription checkout.
-2. Browser calls `POST /api/v1/billing/paypal/confirm` with `subscriptionId`.
+1. User chooses **PayPal** on pricing (not the removed standalone card button — card payers continue inside PayPal checkout).
+2. PayPal subscription checkout → browser calls `POST /api/v1/billing/paypal/confirm` with `subscriptionId`.
 3. Server verifies subscription with PayPal API and sets plan in Smitvi.
 
 Marketplace one-time purchases remain **Razorpay** for now.
