@@ -25,6 +25,8 @@ primary_region = "iad"
   SUPABASE_AVATARS_BUCKET = "avatars"
   NEXT_PUBLIC_APP_URL = "https://smitvi.com"
   NEXT_PUBLIC_APP_NAME = "Smitvi"
+  # Set to "true" only after Supabase custom domain + Google OAuth branding
+  NEXT_PUBLIC_ENABLE_GOOGLE_AUTH = "false"
 
 [http_service]
   internal_port = 3000

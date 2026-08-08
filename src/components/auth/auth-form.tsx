@@ -16,6 +16,8 @@ type AuthMode = "login" | "signup";
 
 type AuthFormProps = {
   mode: AuthMode;
+  /** Off by default until Supabase custom domain + Google branding are ready. */
+  enableGoogleAuth?: boolean;
 };
 
 function getSafeNextPath(value: string | null): string {
@@ -109,7 +111,7 @@ function errorMessage(error: unknown, fallback: string) {
   return message || fallback;
 }
 
-export function AuthForm({ mode }: AuthFormProps) {
+export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = getSafeNextPath(searchParams.get("next"));
@@ -294,23 +296,30 @@ export function AuthForm({ mode }: AuthFormProps) {
         </p>
       </div>
 
-      <Button
-        type="button"
-        variant="secondary"
-        className="mt-5 h-10 w-full"
-        disabled={isPending || oauthLoading}
-        onClick={() => void handleGoogle()}
+      {enableGoogleAuth ? (
+        <>
+          <Button
+            type="button"
+            variant="secondary"
+            className="mt-5 h-10 w-full"
+            disabled={isPending || oauthLoading}
+            onClick={() => void handleGoogle()}
+          >
+            {oauthLoading ? "Redirecting to Google…" : "Continue with Google"}
+          </Button>
+
+          <div className="my-4 flex items-center gap-3 text-[10px] uppercase tracking-wider text-[var(--muted)]">
+            <div className="h-px flex-1 bg-[var(--border)]" />
+            or email
+            <div className="h-px flex-1 bg-[var(--border)]" />
+          </div>
+        </>
+      ) : null}
+
+      <form
+        className={enableGoogleAuth ? "space-y-3" : "mt-5 space-y-3"}
+        onSubmit={handleEmailAuth}
       >
-        {oauthLoading ? "Redirecting to Google…" : "Continue with Google"}
-      </Button>
-
-      <div className="my-4 flex items-center gap-3 text-[10px] uppercase tracking-wider text-[var(--muted)]">
-        <div className="h-px flex-1 bg-[var(--border)]" />
-        or email
-        <div className="h-px flex-1 bg-[var(--border)]" />
-      </div>
-
-      <form className="space-y-3" onSubmit={handleEmailAuth}>
         <div className="space-y-1.5">
           <Label htmlFor="email">Email</Label>
           <Input

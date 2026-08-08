@@ -87,6 +87,15 @@ Leave GoDaddy **email MX** records alone if you use GoDaddy email.
      (use your project’s Auth callback URL from Supabase → Authentication → Providers → Google)
    - Paste Client ID + Client Secret into Supabase Google provider and turn **Enable** on
    - Without this, Google returns: `Unsupported provider: provider is not enabled`
+4b. **Google shows `*.supabase.co` (“Continue to…”) instead of Smitvi** — expected until you use a **Supabase Custom Domain** (paid add-on on Pro/Enterprise):
+   - Supabase Dashboard → **Project Settings → Custom Domains** → add e.g. `auth.smitvi.com` (recommended) or `api.smitvi.com`.
+   - GoDaddy DNS: add the **CNAME** records Supabase shows (verify domain in Supabase).
+   - When active, set **`NEXT_PUBLIC_SUPABASE_URL=https://auth.smitvi.com`** on Fly and in GitHub repo secrets (same anon key).
+   - Google Cloud → OAuth client → **Authorized redirect URIs**: add `https://auth.smitvi.com/auth/v1/callback` (keep the old `https://ofinmuzcjanjjzojxqdv.supabase.co/auth/v1/callback` until cutover works).
+   - **Authorized JavaScript origins**: `https://smitvi.com`, `https://www.smitvi.com`, `http://localhost:3000` (dev only).
+   - Google Auth Platform → **Branding**: app name **Smitvi**, logo, homepage `https://smitvi.com` (verification can take a few days; improves consent screen but does **not** replace custom domain on the account chooser).
+   - Smitvi app redirect URLs stay on **your site**: `https://smitvi.com/auth/callback` (already configured in Supabase → Authentication → URL configuration).
+   - Docs: [Supabase custom domains](https://supabase.com/docs/guides/platform/custom-domains), [Google + Supabase](https://supabase.com/docs/guides/auth/social-login/auth-google).
 5. Keep **Confirm email** enabled under Auth → Providers → Email (**required**).
    - Path: Supabase → Authentication → Providers → Email → **Confirm email** = ON.
    - After signup, users must open the confirmation email before they can use the app.
@@ -94,9 +103,12 @@ Leave GoDaddy **email MX** records alone if you use GoDaddy email.
    - Unverified login often shows “Invalid login credentials” from Supabase until the link is opened.
 6. **Custom SMTP is required for production signup emails** (Auth → SMTP):
    - Enable Custom SMTP and **Save** (toggle alone is not enough until saved).
+   - **Sender name:** `Smitvi` (not “Supabase Auth”).
+   - **Sender email:** a real address on your domain, e.g. `noreply@smitvi.com` or `support@smitvi.com` (GoDaddy mailbox or transactional provider).
    - Use port **587** (STARTTLS) unless your provider documents otherwise.
    - Sender / admin email must be allowed by your SMTP provider (verified domain or mailbox).
    - Set **Sender name** to `Smitvi`.
+   - Edit **Authentication → Email Templates** (Confirm signup) to remove “powered by Supabase” and use Smitvi copy — see `docs/AUTH_EMAIL_SMTP.md`.
    - After saving, raise Auth → Rate Limits if needed (custom SMTP starts low).
    - If signup shows “Error sending confirmation mail”, open **Logs → Auth** and your SMTP provider’s logs — wrong password, blocked port, or unverified domain are the usual causes.
    - GoDaddy/cPanel example: host `smtpout.secureserver.net` (or your cPanel “Outgoing Server”), port `587`, username = full email, password = that mailbox password.
