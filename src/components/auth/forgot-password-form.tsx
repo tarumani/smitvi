@@ -8,8 +8,18 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ROUTES } from "@/config/constants";
+import { getPublicEnv } from "@/config/env";
 import { createSupabaseBrowserClient } from "@/infrastructure/auth/supabase/client";
 import { getBrowserOrigin } from "@/infrastructure/http/request-origin";
+import { formatAuthErrorMessage } from "@/lib/auth-error-message";
+
+function passwordResetRedirectOrigin(): string {
+  const configured = getPublicEnv().appUrl.replace(/\/$/, "");
+  if (configured && !configured.includes("localhost")) {
+    return configured;
+  }
+  return getBrowserOrigin();
+}
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
@@ -27,7 +37,7 @@ export function ForgotPasswordForm() {
     startTransition(async () => {
       try {
         const supabase = createSupabaseBrowserClient();
-        const redirectTo = `${getBrowserOrigin()}${ROUTES.authCallback}?next=${encodeURIComponent(ROUTES.resetPassword)}`;
+        const redirectTo = `${passwordResetRedirectOrigin()}${ROUTES.authCallback}?next=${encodeURIComponent(ROUTES.resetPassword)}`;
         const { error } = await supabase.auth.resetPasswordForEmail(target, {
           redirectTo,
         });
@@ -38,9 +48,11 @@ export function ForgotPasswordForm() {
         });
       } catch (error) {
         toast.error(
-          error instanceof Error
-            ? error.message
-            : "Could not send reset email. Try again later.",
+          formatAuthErrorMessage(
+            error,
+            "Could not send reset email",
+            "reset-email",
+          ),
         );
       }
     });
@@ -55,6 +67,10 @@ export function ForgotPasswordForm() {
         <p className="mt-1.5 text-sm text-[var(--muted-foreground)]">
           Enter the email for your Smitvi account. We&apos;ll send a secure link
           to choose a new password.
+        </p>
+        <p className="mt-2 text-xs text-[var(--muted)]">
+          Signed up with Google before? Use the same email here — you&apos;ll set
+          a password you can use alongside Google sign-in.
         </p>
       </div>
 

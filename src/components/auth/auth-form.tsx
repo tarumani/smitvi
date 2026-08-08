@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { ROUTES, APP_OUTCOME } from "@/config/constants";
 import { createSupabaseBrowserClient } from "@/infrastructure/auth/supabase/client";
 import { getBrowserOrigin } from "@/infrastructure/http/request-origin";
+import { formatAuthErrorMessage } from "@/lib/auth-error-message";
 
 type AuthMode = "login" | "signup";
 
@@ -25,90 +26,6 @@ function getSafeNextPath(value: string | null): string {
     return ROUTES.hub.dashboard;
   }
   return value;
-}
-
-function readErrorField(error: object, key: string): string {
-  if (!(key in error)) return "";
-  const value = (error as Record<string, unknown>)[key];
-  if (typeof value === "string") return value.trim();
-  if (typeof value === "number" || typeof value === "boolean") {
-    return String(value);
-  }
-  if (value && typeof value === "object") {
-    try {
-      const encoded = JSON.stringify(value);
-      return encoded === "{}" ? "" : encoded;
-    } catch {
-      return "";
-    }
-  }
-  return "";
-}
-
-function errorMessage(error: unknown, fallback: string) {
-  let message = "";
-  let code = "";
-
-  if (error && typeof error === "object") {
-    message =
-      readErrorField(error, "message") ||
-      readErrorField(error, "msg") ||
-      readErrorField(error, "error_description") ||
-      readErrorField(error, "error");
-    code = readErrorField(error, "code") || readErrorField(error, "status");
-  } else if (typeof error === "string") {
-    message = error.trim();
-  }
-
-  if (!message && error instanceof Error) {
-    message = error.message.trim();
-  }
-
-  const combined = [message, code].filter(Boolean).join(" ").toLowerCase();
-  if (!combined) {
-    return `${fallback}. If this is signup, check Supabase Auth logs and SMTP settings.`;
-  }
-
-  if (combined.includes("provider is not enabled")) {
-    return "Google sign-in is not enabled yet in Supabase. Enable Authentication → Providers → Google.";
-  }
-  if (
-    combined.includes("invalid login credentials") ||
-    combined.includes("invalid credentials")
-  ) {
-    return "Invalid email or password — or your email is not verified yet. Check your inbox for the confirmation link, then try again.";
-  }
-  if (combined.includes("email not confirmed")) {
-    return "Confirm your email before signing in. Open the verification link we sent, then come back.";
-  }
-  if (
-    combined.includes("error sending confirmation") ||
-    combined.includes("error sending email") ||
-    combined.includes("smtp")
-  ) {
-    return "Could not send the verification email. In Supabase → Authentication → SMTP, confirm host/port (usually 587), username, password, and sender email — then check Auth logs.";
-  }
-  if (
-    combined.includes("not authorized") ||
-    combined.includes("email address cannot be used")
-  ) {
-    return "This email isn’t allowed until custom SMTP is working. Confirm SMTP is enabled and saved in Supabase, then try again.";
-  }
-  if (
-    combined.includes("redirect") &&
-    (combined.includes("not allowed") || combined.includes("whitelist"))
-  ) {
-    return "Add https://smitvi.com/auth/callback to Supabase → Authentication → URL configuration → Redirect URLs.";
-  }
-  if (
-    combined.includes("user already") ||
-    combined.includes("already registered") ||
-    combined.includes("already been registered")
-  ) {
-    return "An account with this email already exists. Sign in, or use Resend verification email if you haven’t confirmed yet.";
-  }
-
-  return message || fallback;
 }
 
 export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
@@ -231,7 +148,7 @@ export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
         );
       } catch (error) {
         console.error("[auth]", error);
-        toast.error(errorMessage(error, "Authentication failed"));
+        toast.error(formatAuthErrorMessage(error, "Authentication failed"));
       }
     });
   }
@@ -257,7 +174,7 @@ export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
           description: "Check your inbox (and spam), then open the link.",
         });
       } catch (error) {
-        toast.error(errorMessage(error, "Could not resend verification email"));
+        toast.error(formatAuthErrorMessage(error, "Could not resend verification email"));
       }
     });
   }
@@ -280,7 +197,7 @@ export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
       }
       throw new Error("Google sign-in did not return a redirect URL");
     } catch (error) {
-      toast.error(errorMessage(error, "Google sign-in failed"));
+      toast.error(formatAuthErrorMessage(error, "Google sign-in failed"));
       setOauthLoading(false);
     }
   }

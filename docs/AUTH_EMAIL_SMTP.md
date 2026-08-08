@@ -43,6 +43,12 @@ Example opening line:
 
 Also update **Magic link**, **Reset password**, and **Change email** templates for consistency.
 
+### Password reset (including Google sign-in accounts)
+
+Users who originally signed in with **Google** can use **Forgot password** with the **same email**. Supabase sends a recovery link; after they open it, they choose a password on `/reset-password`. They can then sign in with **email + password** or keep using **Google**.
+
+If reset fails in the app (or Supabase Auth logs show mail errors), **Custom SMTP must be enabled** — the default Supabase mailer often fails or is rate-limited in production.
+
 ### 3. URL configuration (unchanged)
 
 - Site URL: `https://smitvi.com`

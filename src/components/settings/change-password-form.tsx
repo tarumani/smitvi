@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createSupabaseBrowserClient } from "@/infrastructure/auth/supabase/client";
+import { formatAuthErrorMessage } from "@/lib/auth-error-message";
 
 export function ChangePasswordForm() {
   const [password, setPassword] = useState("");
@@ -33,7 +34,11 @@ export function ChangePasswordForm() {
         toast.success("Password updated");
       } catch (error) {
         toast.error(
-          error instanceof Error ? error.message : "Could not update password",
+          formatAuthErrorMessage(
+            error,
+            "Could not update password",
+            "reset-password",
+          ),
         );
       }
     });
