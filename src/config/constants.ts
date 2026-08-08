@@ -50,6 +50,8 @@ export const ROUTES = {
   home: "/",
   login: "/login",
   signup: "/signup",
+  forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
   authCallback: "/auth/callback",
   /** @deprecated Prefer ROUTES.hub.dashboard — kept for bookmarks and emails */
   dashboard: "/dashboard",
@@ -165,4 +167,9 @@ export const PROTECTED_PATH_PREFIXES = [
   "/orgs",
 ] as const;
 
-export const AUTH_PATH_PREFIXES = ["/login", "/signup"] as const;
+export const AUTH_PATH_PREFIXES = [
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+] as const;

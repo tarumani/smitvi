@@ -65,9 +65,12 @@ export async function GET(request: Request) {
   );
 
   const profile = await container.profiles.findSummaryByUserId(data.user.id);
-  const destination = profile?.isOnboarded
-    ? next
-    : resolveOnboardingRoute(profile);
+  const forceNext = next === ROUTES.resetPassword ? next : null;
+  const destination = forceNext
+    ? forceNext
+    : profile?.isOnboarded
+      ? next
+      : resolveOnboardingRoute(profile);
 
   return NextResponse.redirect(new URL(destination, origin));
 }

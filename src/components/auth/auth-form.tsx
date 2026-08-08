@@ -334,7 +334,17 @@ export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="password">Password</Label>
+          <div className="flex items-center justify-between gap-2">
+            <Label htmlFor="password">Password</Label>
+            {mode === "login" ? (
+              <Link
+                href={ROUTES.forgotPassword}
+                className="text-xs font-medium text-[var(--accent)] hover:underline"
+              >
+                Forgot password?
+              </Link>
+            ) : null}
+          </div>
           <Input
             id="password"
             type="password"
