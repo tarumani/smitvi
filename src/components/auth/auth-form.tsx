@@ -334,17 +334,7 @@ export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
           />
         </div>
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between gap-2">
-            <Label htmlFor="password">Password</Label>
-            {mode === "login" ? (
-              <Link
-                href={ROUTES.forgotPassword}
-                className="text-xs font-medium text-[var(--accent)] hover:underline"
-              >
-                Forgot password?
-              </Link>
-            ) : null}
-          </div>
+          <Label htmlFor="password">Password</Label>
           <Input
             id="password"
             type="password"
@@ -356,6 +346,16 @@ export function AuthForm({ mode, enableGoogleAuth = false }: AuthFormProps) {
             placeholder="Minimum 8 characters"
             className="h-10"
           />
+          {mode === "login" ? (
+            <div className="flex justify-end pt-0.5">
+              <Link
+                href={ROUTES.forgotPassword}
+                className="text-xs font-medium text-[var(--accent)] hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+          ) : null}
         </div>
         <Button className="mt-1 h-10 w-full" type="submit" disabled={isPending}>
           {isPending
