@@ -162,10 +162,20 @@ export const updateProfileSchema = createProfileSchema.partial().extend({
 export type CreateProfileInput = z.infer<typeof createProfileSchema>;
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 
+function validationMessageFromZod(error: z.ZodError): string {
+  const issue = error.issues[0];
+  if (!issue) return "Invalid profile data";
+  const field = issue.path.length ? issue.path.join(".") : "profile";
+  return `${field}: ${issue.message}`;
+}
+
 export function parseCreateProfileInput(input: unknown): CreateProfileInput {
   const parsed = createProfileSchema.safeParse(input);
   if (!parsed.success) {
-    throw new ValidationError("Invalid profile data", flattenZodErrors(parsed.error));
+    throw new ValidationError(
+      validationMessageFromZod(parsed.error),
+      flattenZodErrors(parsed.error),
+    );
   }
   return parsed.data;
 }
@@ -173,7 +183,10 @@ export function parseCreateProfileInput(input: unknown): CreateProfileInput {
 export function parseUpdateProfileInput(input: unknown): UpdateProfileInput {
   const parsed = updateProfileSchema.safeParse(input);
   if (!parsed.success) {
-    throw new ValidationError("Invalid profile data", flattenZodErrors(parsed.error));
+    throw new ValidationError(
+      validationMessageFromZod(parsed.error),
+      flattenZodErrors(parsed.error),
+    );
   }
   return parsed.data;
 }

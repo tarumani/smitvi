@@ -240,16 +240,12 @@ export class PrismaProfileRepository implements ProfileRepository {
         skills
           .map((name) => name.trim())
           .filter(Boolean)
-          .map((name) => [slugifySkill(name), name] as const),
+          .map((name) => [slugifySkill(name) || slugifySkill("skill"), name] as const),
       ).entries(),
     );
 
     for (const [slug, name] of unique) {
-      const skill = await tx.skill.upsert({
-        where: { slug },
-        create: { name, slug },
-        update: { name },
-      });
+      const skill = await this.resolveSkillRecord(tx, name, slug);
 
       await tx.profileSkill.create({
         data: {
@@ -258,6 +254,38 @@ export class PrismaProfileRepository implements ProfileRepository {
           level: 1,
         },
       });
+    }
+  }
+
+  /** Skills are global by name/slug; upsert-by-slug alone can hit unique name conflicts. */
+  private async resolveSkillRecord(
+    tx: Prisma.TransactionClient,
+    name: string,
+    slug: string,
+  ): Promise<{ id: string }> {
+    const normalizedSlug = slug.trim() || slugifySkill(name) || "skill";
+
+    const bySlug = await tx.skill.findUnique({ where: { slug: normalizedSlug } });
+    if (bySlug) return bySlug;
+
+    const byName = await tx.skill.findFirst({ where: { name } });
+    if (byName) return byName;
+
+    try {
+      return await tx.skill.create({
+        data: { name, slug: normalizedSlug },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        const existing = await tx.skill.findFirst({
+          where: { OR: [{ slug: normalizedSlug }, { name }] },
+        });
+        if (existing) return existing;
+      }
+      throw error;
     }
   }
 

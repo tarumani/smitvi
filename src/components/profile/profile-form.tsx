@@ -11,7 +11,8 @@ import { ProfileAvatarUpload } from "@/components/profile/profile-avatar-upload"
 import { TextareaWithAi } from "@/components/ai/textarea-with-ai";
 import { OnboardingStepNav } from "@/components/onboarding/onboarding-step-nav";
 import { BusyOverlay, Spinner } from "@/components/ui/spinner";
-import { ROUTES } from "@/config/constants";
+import { BIO_MAX, HEADLINE_MAX, ROUTES } from "@/config/constants";
+import { readApiErrorMessage } from "@/lib/api-response";
 
 type ProfileFormProps = {
   mode: "create" | "edit";
@@ -85,6 +86,12 @@ export function ProfileForm({
         if (!form.bio.trim()) {
           throw new Error("Bio is required");
         }
+        if (form.bio.trim().length > BIO_MAX) {
+          throw new Error(`Bio must be at most ${BIO_MAX} characters`);
+        }
+        if (form.headline.trim().length > HEADLINE_MAX) {
+          throw new Error(`Headline must be at most ${HEADLINE_MAX} characters`);
+        }
         let skillList = form.skills
           .split(",")
           .map((skill) => skill.trim())
@@ -127,15 +134,7 @@ export function ProfileForm({
 
         const json: unknown = await response.json();
         if (!response.ok) {
-          const message =
-            typeof json === "object" &&
-            json !== null &&
-            "error" in json &&
-            typeof (json as { error?: { message?: string } }).error?.message ===
-              "string"
-              ? (json as { error: { message: string } }).error.message
-              : "Failed to save profile";
-          throw new Error(message);
+          throw new Error(readApiErrorMessage(json, "Failed to save profile"));
         }
 
         toast.success(mode === "create" ? "Profile created" : "Profile updated");
@@ -270,6 +269,7 @@ export function ProfileForm({
         <Input
           id="headline"
           required
+          maxLength={HEADLINE_MAX}
           value={form.headline}
           onChange={(event) => updateField("headline", event.target.value)}
           placeholder="AI systems architect · Knowledge engineer"
@@ -283,7 +283,7 @@ export function ProfileForm({
         purpose="profile_bio"
         hint={`${form.displayName} ${form.headline}`.trim()}
         value={form.bio}
-        onChange={(value) => updateField("bio", value)}
+        onChange={(value) => updateField("bio", value.slice(0, BIO_MAX))}
         placeholder="What expertise should your Knowledge Twin represent?"
         disabled={isPending}
       />

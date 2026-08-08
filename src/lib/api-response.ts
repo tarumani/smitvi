@@ -21,10 +21,16 @@ export function readApiDataField(
 
 export function readApiErrorMessage(json: unknown, fallback: string): string {
   if (typeof json === "object" && json !== null && "error" in json) {
-    const message = (json as { error?: { message?: string } }).error?.message;
+    const err = (json as { error?: { message?: string; details?: Record<string, string[]> } })
+      .error;
+    const message = err?.message;
     if (typeof message === "string") {
       const trimmed = message.trim();
       if (trimmed && trimmed !== "{}") {
+        if (trimmed === "Invalid profile data" && err?.details) {
+          const firstDetail = Object.values(err.details).flat()[0];
+          if (firstDetail) return firstDetail;
+        }
         return trimmed;
       }
     }
