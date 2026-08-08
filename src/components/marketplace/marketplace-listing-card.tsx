@@ -54,7 +54,7 @@ export function MarketplaceListingCard({
   return (
     <article
       className={cn(
-        "flex flex-col rounded-2xl border border-[var(--border)] bg-[var(--glass)] p-4 shadow-sm transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--glass-shadow)]",
+        "flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--glass)] p-4 shadow-sm",
         className,
       )}
     >
@@ -84,13 +84,13 @@ export function MarketplaceListingCard({
       </p>
 
       {titleHref ? (
-        <h2 className="mt-1 font-display text-base font-semibold leading-snug">
+        <h2 className="mt-1 line-clamp-2 font-display text-base font-semibold leading-snug">
           <Link href={titleHref} className="hover:text-[var(--accent)]">
             {title}
           </Link>
         </h2>
       ) : (
-        <h2 className="mt-1 font-display text-base font-semibold leading-snug">
+        <h2 className="mt-1 line-clamp-2 font-display text-base font-semibold leading-snug">
           {title}
         </h2>
       )}
@@ -99,11 +99,11 @@ export function MarketplaceListingCard({
         {description}
       </p>
 
-      <div className="mt-3 flex items-center justify-between gap-2 border-t border-[var(--border)]/80 pt-3">
-        <p className="font-display text-lg font-bold tabular-nums">
+      <div className="mt-3 flex min-w-0 flex-col gap-2 border-t border-[var(--border)]/80 pt-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="shrink-0 font-display text-lg font-bold tabular-nums">
           {formatListingPrice(priceCents, currency)}
         </p>
-        <div className="flex shrink-0 flex-wrap justify-end gap-2">{actions}</div>
+        <div className="flex min-w-0 flex-wrap gap-2">{actions}</div>
       </div>
     </article>
   );

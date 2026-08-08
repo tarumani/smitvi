@@ -110,11 +110,21 @@ export default async function KnowledgePage({
               <GlassCard key={source.id} className="p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold">{source.title}</p>
-                    <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-                      {source.type} · {source.status}
-                      {source.chunkCount ? ` · ${source.chunkCount} chunks` : ""}
-                    </p>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="font-semibold">{source.title}</p>
+                        <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+                          {source.type} · {source.status}
+                          {source.chunkCount
+                            ? ` · ${source.chunkCount} chunks`
+                            : ""}
+                        </p>
+                      </div>
+                      <KnowledgeSourceActions
+                        sourceId={source.id}
+                        title={source.title}
+                      />
+                    </div>
                     {source.summary ? (
                       <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)]">
                         {source.summary}
@@ -130,20 +140,16 @@ export default async function KnowledgePage({
                         {source.errorMessage}
                       </p>
                     ) : null}
-                  </div>
-                  <div className="flex flex-col gap-2 sm:items-end">
-                    <KnowledgeSourceActions
-                      sourceId={source.id}
-                      title={source.title}
-                    />
                     {source.status === "READY" ? (
-                      <VisibilityToggle
-                        sourceId={source.id}
-                        isPublic={source.isPublic}
-                      />
+                      <div className="mt-4 border-t border-[var(--border)]/80 pt-4">
+                        <VisibilityToggle
+                          sourceId={source.id}
+                          isPublic={source.isPublic}
+                        />
+                      </div>
                     ) : (
-                      <p className="text-xs text-[var(--muted)]">
-                        Visibility available when source is ready
+                      <p className="mt-4 text-xs text-[var(--muted)]">
+                        Set visibility after this source finishes processing.
                       </p>
                     )}
                   </div>

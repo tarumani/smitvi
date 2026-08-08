@@ -3,8 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 
 type VisibilityToggleProps = {
   sourceId: string;
@@ -19,7 +18,7 @@ export function VisibilityToggle({
   const [isPending, startTransition] = useTransition();
 
   function setPublic(nextPublic: boolean) {
-    if (nextPublic === isPublic) return;
+    if (nextPublic === isPublic || isPending) return;
     startTransition(async () => {
       try {
         const response = await fetch(
@@ -43,7 +42,7 @@ export function VisibilityToggle({
           throw new Error(message);
         }
         toast.success(
-          nextPublic ? "Visible on your public profile" : "Kept private",
+          nextPublic ? "Shown on your public hub" : "Private to your Twin only",
         );
         router.refresh();
       } catch (error) {
@@ -52,23 +51,50 @@ export function VisibilityToggle({
     });
   }
 
-  const switchId = `source-visibility-${sourceId}`;
-
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)]/60 px-3 py-2 sm:min-w-[11rem]">
-      <Label
-        htmlFor={switchId}
-        className="text-xs font-medium text-[var(--muted-foreground)]"
+    <div className="space-y-2">
+      <p className="text-xs font-medium text-[var(--foreground)]">
+        Visibility
+      </p>
+      <div
+        className="inline-flex w-full max-w-xs rounded-lg border border-[var(--border)] bg-[var(--surface)] p-1 sm:w-auto"
+        role="group"
+        aria-label="Source visibility"
       >
-        {isPublic ? "Public" : "Private"}
-      </Label>
-      <Switch
-        id={switchId}
-        checked={isPublic}
-        disabled={isPending}
-        aria-label={isPublic ? "Public on profile" : "Private to you"}
-        onCheckedChange={setPublic}
-      />
+        <button
+          type="button"
+          disabled={isPending}
+          aria-pressed={!isPublic}
+          onClick={() => setPublic(false)}
+          className={cn(
+            "flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors sm:flex-none sm:px-4",
+            !isPublic
+              ? "bg-[var(--surface-elevated)] text-[var(--foreground)] shadow-sm"
+              : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
+          )}
+        >
+          Private
+        </button>
+        <button
+          type="button"
+          disabled={isPending}
+          aria-pressed={isPublic}
+          onClick={() => setPublic(true)}
+          className={cn(
+            "flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors sm:flex-none sm:px-4",
+            isPublic
+              ? "bg-[var(--accent-soft)] text-[var(--accent)] shadow-sm"
+              : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
+          )}
+        >
+          Public
+        </button>
+      </div>
+      <p className="text-[11px] leading-snug text-[var(--muted)]">
+        {isPublic
+          ? "Visitors on your public hub can see and chat with content from this source."
+          : "Only you (and your Twin in private chat) can use this source."}
+      </p>
     </div>
   );
 }

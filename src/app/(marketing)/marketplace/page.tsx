@@ -7,10 +7,9 @@ import { BuyButton } from "@/components/marketplace/buy-button";
 import { MarketplaceListingCard } from "@/components/marketplace/marketplace-listing-card";
 import { MarketplacePageHeader } from "@/components/marketplace/marketplace-page-header";
 import { DEMO_MARKETPLACE_LISTINGS } from "@/config/demo-content";
-import { DEMO_TOP_EARNERS } from "@/config/network-home-demo";
 import { ROUTES } from "@/config/constants";
-import { TopEarnersPanel } from "@/components/marketplace/top-earners-panel";
-import { formatInrFromMinorUnits } from "@/lib/format-money";
+
+const MARKETPLACE_HOME_LISTING_LIMIT = 2;
 
 export const metadata: Metadata = {
   title: "Marketplace",
@@ -18,33 +17,26 @@ export const metadata: Metadata = {
 };
 
 export default async function MarketplacePage() {
-  const [liveListings, liveEarners, session] = await Promise.all([
+  const [liveListings, session] = await Promise.all([
     container.marketplace.listActive(),
-    container.marketplace.topEarners(5),
     getCurrentSession(),
   ]);
   const usingDemo = liveListings.length === 0;
-  const hasLiveEarners = liveEarners.length > 0;
-  const topEarners = hasLiveEarners
-    ? liveEarners.map((e) => ({
-        username: e.username,
-        displayName: e.displayName,
-        headline: e.headline,
-        earningsLabel: formatInrFromMinorUnits(e.netEarningsCents),
-      }))
-    : DEMO_TOP_EARNERS.map((e) => ({
-        username: e.username,
-        displayName: e.displayName,
-        headline: e.headline,
-        earningsLabel: e.earningsLabel,
-      }));
+  const demoListings = DEMO_MARKETPLACE_LISTINGS.slice(
+    0,
+    MARKETPLACE_HOME_LISTING_LIMIT,
+  );
+  const visibleLiveListings = liveListings.slice(
+    0,
+    MARKETPLACE_HOME_LISTING_LIMIT,
+  );
   const sellHref = session
     ? ROUTES.marketplaceSell
     : `${ROUTES.login}?next=${encodeURIComponent(ROUTES.marketplaceSell)}`;
   const loginNext = `${ROUTES.login}?next=${encodeURIComponent(ROUTES.marketplace)}`;
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+    <div className="mx-auto w-full min-w-0 max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       <MarketplacePageHeader sellHref={sellHref} usingDemo={usingDemo} />
 
       {usingDemo ? (
@@ -56,22 +48,14 @@ export default async function MarketplacePage() {
         </p>
       ) : null}
 
-      <section aria-label="Marketplace listings" className="mt-6">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold text-[var(--foreground)]">
-            {usingDemo ? "Example offers" : "Live offers"}
-          </h2>
-          <p className="text-xs text-[var(--muted)] tabular-nums">
-            {usingDemo ? DEMO_MARKETPLACE_LISTINGS.length : liveListings.length}{" "}
-            {(usingDemo ? DEMO_MARKETPLACE_LISTINGS.length : liveListings.length) === 1
-              ? "listing"
-              : "listings"}
-          </p>
-        </div>
+      <section aria-label="Marketplace listings" className="mt-6 min-w-0">
+        <h2 className="mb-4 text-sm font-semibold text-[var(--foreground)]">
+          {usingDemo ? "Example offers" : "Featured offers"}
+        </h2>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
           {usingDemo
-            ? DEMO_MARKETPLACE_LISTINGS.map((listing) => (
+            ? demoListings.map((listing) => (
                 <MarketplaceListingCard
                   key={listing.id}
                   id={listing.id}
@@ -103,7 +87,7 @@ export default async function MarketplacePage() {
                   }
                 />
               ))
-            : liveListings.map((listing) => {
+            : visibleLiveListings.map((listing) => {
                 const seller = listing.seller.profile;
                 return (
                   <MarketplaceListingCard
@@ -133,14 +117,6 @@ export default async function MarketplacePage() {
               })}
         </div>
       </section>
-
-      <TopEarnersPanel
-        earners={topEarners}
-        hasLiveEarners={hasLiveEarners}
-        sellHref={sellHref}
-        variant="strip"
-        className="mt-10"
-      />
     </div>
   );
 }
