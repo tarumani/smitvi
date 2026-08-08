@@ -4,10 +4,13 @@ import { getCurrentSession } from "@/application/auth/get-current-session";
 import { container } from "@/application/container";
 import { Button } from "@/components/ui/button";
 import { BuyButton } from "@/components/marketplace/buy-button";
+import { MarketplaceAside } from "@/components/marketplace/marketplace-aside";
 import { MarketplaceListingCard } from "@/components/marketplace/marketplace-listing-card";
 import { MarketplacePageHeader } from "@/components/marketplace/marketplace-page-header";
 import { DEMO_MARKETPLACE_LISTINGS } from "@/config/demo-content";
+import { DEMO_TOP_EARNERS } from "@/config/network-home-demo";
 import { ROUTES } from "@/config/constants";
+import { formatInrFromMinorUnits } from "@/lib/format-money";
 
 const MARKETPLACE_HOME_LISTING_LIMIT = 2;
 
@@ -17,11 +20,26 @@ export const metadata: Metadata = {
 };
 
 export default async function MarketplacePage() {
-  const [liveListings, session] = await Promise.all([
+  const [liveListings, liveEarners, session] = await Promise.all([
     container.marketplace.listActive(),
+    container.marketplace.topEarners(5),
     getCurrentSession(),
   ]);
   const usingDemo = liveListings.length === 0;
+  const hasLiveEarners = liveEarners.length > 0;
+  const topEarners = hasLiveEarners
+    ? liveEarners.map((e) => ({
+        username: e.username,
+        displayName: e.displayName,
+        headline: e.headline,
+        earningsLabel: formatInrFromMinorUnits(e.netEarningsCents),
+      }))
+    : DEMO_TOP_EARNERS.map((e) => ({
+        username: e.username,
+        displayName: e.displayName,
+        headline: e.headline,
+        earningsLabel: e.earningsLabel,
+      }));
   const demoListings = DEMO_MARKETPLACE_LISTINGS.slice(
     0,
     MARKETPLACE_HOME_LISTING_LIMIT,
@@ -48,48 +66,18 @@ export default async function MarketplacePage() {
         </p>
       ) : null}
 
-      <section aria-label="Marketplace listings" className="mt-6 min-w-0">
-        <h2 className="mb-4 text-sm font-semibold text-[var(--foreground)]">
-          {usingDemo ? "Example offers" : "Featured offers"}
-        </h2>
+      <div className="mt-6 grid min-w-0 gap-6 lg:grid-cols-3 lg:items-start">
+        <section
+          aria-label="Marketplace listings"
+          className="min-w-0 lg:col-span-2"
+        >
+          <h2 className="mb-4 text-sm font-semibold text-[var(--foreground)]">
+            {usingDemo ? "Example offers" : "Featured offers"}
+          </h2>
 
-        <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
-          {usingDemo
-            ? demoListings.map((listing) => (
-                <MarketplaceListingCard
-                  key={listing.id}
-                  id={listing.id}
-                  type={listing.type}
-                  title={listing.title}
-                  description={listing.description}
-                  priceCents={listing.priceCents}
-                  currency={listing.currency}
-                  seller={{
-                    displayName: listing.seller.displayName,
-                    username: listing.seller.username,
-                  }}
-                  example
-                  actions={
-                    <>
-                      {session ? (
-                        <Button asChild size="sm" variant="secondary">
-                          <Link href={ROUTES.marketplaceSell}>Sell</Link>
-                        </Button>
-                      ) : (
-                        <Button asChild size="sm">
-                          <Link href={loginNext}>Sign in</Link>
-                        </Button>
-                      )}
-                      <Button asChild size="sm" variant="ghost">
-                        <Link href={ROUTES.exampleListing(listing.id)}>Details</Link>
-                      </Button>
-                    </>
-                  }
-                />
-              ))
-            : visibleLiveListings.map((listing) => {
-                const seller = listing.seller.profile;
-                return (
+          <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
+            {usingDemo
+              ? demoListings.map((listing) => (
                   <MarketplaceListingCard
                     key={listing.id}
                     id={listing.id}
@@ -99,24 +87,71 @@ export default async function MarketplacePage() {
                     priceCents={listing.priceCents}
                     currency={listing.currency}
                     seller={{
-                      displayName: seller?.displayName ?? "Expert",
-                      username: seller?.username ?? "unknown",
-                      avatarUrl: seller?.avatarUrl,
+                      displayName: listing.seller.displayName,
+                      username: listing.seller.username,
                     }}
+                    example
                     actions={
-                      session ? (
-                        <BuyButton listingId={listing.id} size="sm" className="shrink-0" />
-                      ) : (
-                        <Button asChild size="sm">
-                          <Link href={loginNext}>Sign in to buy</Link>
+                      <>
+                        {session ? (
+                          <Button asChild size="sm" variant="secondary">
+                            <Link href={ROUTES.marketplaceSell}>Sell</Link>
+                          </Button>
+                        ) : (
+                          <Button asChild size="sm">
+                            <Link href={loginNext}>Sign in</Link>
+                          </Button>
+                        )}
+                        <Button asChild size="sm" variant="ghost">
+                          <Link href={ROUTES.exampleListing(listing.id)}>
+                            Details
+                          </Link>
                         </Button>
-                      )
+                      </>
                     }
                   />
-                );
-              })}
-        </div>
-      </section>
+                ))
+              : visibleLiveListings.map((listing) => {
+                  const seller = listing.seller.profile;
+                  return (
+                    <MarketplaceListingCard
+                      key={listing.id}
+                      id={listing.id}
+                      type={listing.type}
+                      title={listing.title}
+                      description={listing.description}
+                      priceCents={listing.priceCents}
+                      currency={listing.currency}
+                      seller={{
+                        displayName: seller?.displayName ?? "Expert",
+                        username: seller?.username ?? "unknown",
+                        avatarUrl: seller?.avatarUrl,
+                      }}
+                      actions={
+                        session ? (
+                          <BuyButton
+                            listingId={listing.id}
+                            size="sm"
+                            className="shrink-0"
+                          />
+                        ) : (
+                          <Button asChild size="sm">
+                            <Link href={loginNext}>Sign in to buy</Link>
+                          </Button>
+                        )
+                      }
+                    />
+                  );
+                })}
+          </div>
+        </section>
+
+        <MarketplaceAside
+          earners={topEarners}
+          hasLiveEarners={hasLiveEarners}
+          sellHref={sellHref}
+        />
+      </div>
     </div>
   );
 }

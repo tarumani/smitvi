@@ -145,6 +145,7 @@ export default async function KnowledgePage({
                         <VisibilityToggle
                           sourceId={source.id}
                           isPublic={source.isPublic}
+                          username={session.profile?.username}
                         />
                       </div>
                     ) : (

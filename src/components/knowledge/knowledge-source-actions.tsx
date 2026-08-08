@@ -107,7 +107,10 @@ export function KnowledgeSourceActions({
         variant="secondary"
         size="sm"
         disabled={isPending}
-        onClick={() => setEditing(true)}
+        onClick={() => {
+          setDraftTitle(title);
+          setEditing(true);
+        }}
       >
         <Pencil className="h-4 w-4" />
         Edit title
