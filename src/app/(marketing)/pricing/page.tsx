@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { PLAN_CATALOG } from "@/config/billing";
 import { getCurrentSession } from "@/application/auth/get-current-session";
-import { UpgradeButtons } from "@/components/billing/upgrade-buttons";
+import { PlanUpgradeOptions } from "@/components/billing/plan-upgrade-options";
 import { PageHero } from "@/components/layout/page-hero";
 import { MarketingPageAtmosphere } from "@/components/marketing/marketing-page-atmosphere";
 import { MarketingVisual } from "@/components/marketing/marketing-illustrations";
@@ -101,7 +101,7 @@ export default async function PricingPage() {
                     Current plan
                   </Button>
                 ) : (
-                  <UpgradeButtons plan={plan.id} />
+                  <PlanUpgradeOptions plan={plan.id} />
                 )}
               </div>
             </GlassCard>

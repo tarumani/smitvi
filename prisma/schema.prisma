@@ -131,6 +131,7 @@ enum ShareLinkType {
 enum PaymentProvider {
   STRIPE
   RAZORPAY
+  PAYPAL
 }
 
 enum SubscriptionStatus {

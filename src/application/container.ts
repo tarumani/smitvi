@@ -13,6 +13,7 @@ import { AskTwin } from "@/application/chat/ask-twin";
 import { CreateSubscriptionCheckout } from "@/application/billing/create-subscription-checkout";
 import { CreateMarketplaceCheckout } from "@/application/billing/create-marketplace-checkout";
 import { HandleStripeWebhook } from "@/application/billing/handle-stripe-webhook";
+import { ActivatePayPalSubscription } from "@/application/billing/activate-paypal-subscription";
 import { HandleRazorpayWebhook } from "@/application/billing/handle-razorpay-webhook";
 import { GetFollowingFeed } from "@/application/discover/get-following-feed";
 import { GetNetworkHome } from "@/application/network/get-network-home";
@@ -173,6 +174,7 @@ export const container = {
   processKnowledgeSource,
   askTwin: new AskTwin(knowledge, conversations, twinIntelligence),
   createSubscriptionCheckout: new CreateSubscriptionCheckout(billing),
+  activatePayPalSubscription: new ActivatePayPalSubscription(billing, auditLogs),
   createMarketplaceCheckout: new CreateMarketplaceCheckout(marketplace, billing),
   handleStripeWebhook: new HandleStripeWebhook(
     billing,

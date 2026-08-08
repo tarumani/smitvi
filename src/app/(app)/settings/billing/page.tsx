@@ -69,6 +69,17 @@ export default async function BillingSettingsPage() {
               </a>
             </Button>
           ) : null}
+          {subscription?.provider === "PAYPAL" ? (
+            <Button variant="secondary" asChild>
+              <a
+                href="https://www.paypal.com/myaccount/autopay/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Manage in PayPal
+              </a>
+            </Button>
+          ) : null}
         </div>
       </GlassCard>
 
