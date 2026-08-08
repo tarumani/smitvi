@@ -72,7 +72,7 @@ export class PrismaMarketplaceRepository {
 
   async listBySeller(sellerId: string) {
     return prisma.marketplaceListing.findMany({
-      where: { sellerId },
+      where: { sellerId, status: { not: "ARCHIVED" } },
       orderBy: { createdAt: "desc" },
     });
   }
@@ -184,6 +184,18 @@ export class PrismaMarketplaceRepository {
           ? { durationMinutes: input.durationMinutes }
           : {}),
       },
+    });
+  }
+
+  async archiveListing(id: string, sellerId: string) {
+    const listing = await prisma.marketplaceListing.findFirst({
+      where: { id, sellerId },
+    });
+    if (!listing) throw new NotFoundError("Listing not found");
+
+    return prisma.marketplaceListing.update({
+      where: { id },
+      data: { status: "ARCHIVED" },
     });
   }
 

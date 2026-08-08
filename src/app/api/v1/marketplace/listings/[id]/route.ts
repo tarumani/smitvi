@@ -52,3 +52,20 @@ export async function PATCH(request: Request, context: RouteContext) {
     return jsonError(error);
   }
 }
+
+export async function DELETE(_request: Request, context: RouteContext) {
+  try {
+    const session = await requireSession();
+    const { id } = await context.params;
+    getRateLimiter().consume(`marketplace:delete:${session.user.id}`);
+
+    const listing = await container.marketplace.archiveListing(
+      id,
+      session.user.id,
+    );
+
+    return jsonOk({ listing });
+  } catch (error) {
+    return jsonError(error);
+  }
+}

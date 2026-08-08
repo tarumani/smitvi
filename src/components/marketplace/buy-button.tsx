@@ -7,9 +7,11 @@ import { ROUTES } from "@/config/constants";
 
 type BuyButtonProps = {
   listingId: string;
+  className?: string;
+  size?: "default" | "sm" | "lg" | "icon";
 };
 
-export function BuyButton({ listingId }: BuyButtonProps) {
+export function BuyButton({ listingId, className, size = "default" }: BuyButtonProps) {
   const [isPending, startTransition] = useTransition();
 
   function buy() {
@@ -90,8 +92,13 @@ export function BuyButton({ listingId }: BuyButtonProps) {
   }
 
   return (
-    <Button onClick={buy} disabled={isPending} className="w-full">
-      {isPending ? "Starting checkout…" : "Buy now with Razorpay"}
+    <Button
+      onClick={buy}
+      disabled={isPending}
+      size={size}
+      className={className ?? "w-full"}
+    >
+      {isPending ? "Starting checkout…" : size === "sm" ? "Buy" : "Buy now with Razorpay"}
     </Button>
   );
 }

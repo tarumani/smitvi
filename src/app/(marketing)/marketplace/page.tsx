@@ -2,18 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getCurrentSession } from "@/application/auth/get-current-session";
 import { container } from "@/application/container";
-import { PageHero } from "@/components/layout/page-hero";
-import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { GlassCard } from "@/components/ui/glass-card";
 import { BuyButton } from "@/components/marketplace/buy-button";
+import { MarketplaceListingCard } from "@/components/marketplace/marketplace-listing-card";
+import { MarketplacePageHeader } from "@/components/marketplace/marketplace-page-header";
 import { DEMO_MARKETPLACE_LISTINGS } from "@/config/demo-content";
 import { DEMO_TOP_EARNERS } from "@/config/network-home-demo";
-import {
-  MARKETPLACE_COMMISSION_RATE,
-  MARKETPLACE_LISTING_TYPE_LABELS,
-  ROUTES,
-} from "@/config/constants";
+import { ROUTES } from "@/config/constants";
 import { TopEarnersPanel } from "@/components/marketplace/top-earners-panel";
 import { formatInrFromMinorUnits } from "@/lib/format-money";
 
@@ -46,174 +41,106 @@ export default async function MarketplacePage() {
   const sellHref = session
     ? ROUTES.marketplaceSell
     : `${ROUTES.login}?next=${encodeURIComponent(ROUTES.marketplaceSell)}`;
+  const loginNext = `${ROUTES.login}?next=${encodeURIComponent(ROUTES.marketplace)}`;
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-      <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-        <PageHero
-          eyebrow="Marketplace"
-          title="Expert marketplace"
-          description={`Hire consultations and buy knowledge packs. Smitvi takes a ${Math.round(MARKETPLACE_COMMISSION_RATE * 100)}% platform fee so experts can monetize their intelligence.`}
-        />
-        <Button asChild size="lg" className="shrink-0 animate-fade-up-delay-1">
-          <Link href={sellHref}>Sell on Smitvi</Link>
-        </Button>
-      </div>
+    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+      <MarketplacePageHeader sellHref={sellHref} usingDemo={usingDemo} />
 
       {usingDemo ? (
-        <p className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--surface)]/70 px-4 py-3 text-sm text-[var(--muted-foreground)]">
-          Example offers to show how the marketplace looks.{" "}
-          <Link
-            href={sellHref}
-            className="font-semibold text-[var(--accent)] hover:underline"
-          >
-            Publish a real listing →
-          </Link>
+        <p className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--surface)]/60 px-3 py-2 text-sm text-[var(--muted-foreground)]">
+          <Link href={sellHref} className="font-semibold text-[var(--accent)] hover:underline">
+            Publish a real listing
+          </Link>{" "}
+          to replace these examples.
         </p>
       ) : null}
 
-      <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_min(100%,20rem)] lg:items-start">
-        <div className="grid gap-5 md:grid-cols-2">
-        {usingDemo
-          ? DEMO_MARKETPLACE_LISTINGS.map((listing, index) => (
-              <GlassCard
-                key={listing.id}
-                className={`flex flex-col p-6 transition-transform duration-300 hover:-translate-y-0.5 ${index < 2 ? "animate-fade-up-delay-1" : "animate-fade-up-delay-2"}`}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <Avatar
-                      name={listing.seller.displayName}
-                      src={null}
-                    />
-                    <div>
-                      <p className="font-semibold">
-                        {listing.seller.displayName}
-                      </p>
-                      <p className="text-sm text-[var(--muted)]">
-                        @{listing.seller.username}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="rounded-md bg-[var(--accent-soft)] px-2 py-1 text-[10px] font-semibold tracking-wide text-[var(--accent)] uppercase">
-                    Example
-                  </span>
-                </div>
-                <p className="mt-5 text-xs font-semibold tracking-[0.16em] text-[var(--accent)] uppercase">
-                  {MARKETPLACE_LISTING_TYPE_LABELS[
-                    listing.type as keyof typeof MARKETPLACE_LISTING_TYPE_LABELS
-                  ] ?? listing.type.replaceAll("_", " ")}
-                </p>
-                <h2 className="mt-2 font-display text-xl font-semibold">
-                  <Link
-                    href={ROUTES.exampleListing(listing.id)}
-                    className="hover:text-[var(--accent)]"
-                  >
-                    {listing.title}
-                  </Link>
-                </h2>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-[var(--muted-foreground)]">
-                  {listing.description}
-                </p>
-                <div className="mt-6 flex items-center justify-between gap-3">
-                  <p className="font-display text-3xl font-bold">
-                    ${(listing.priceCents / 100).toFixed(0)}
-                    <span className="text-sm font-medium text-[var(--muted)]">
-                      {" "}
-                      {listing.currency}
-                    </span>
-                  </p>
-                </div>
-                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                  {session ? (
-                    <Button asChild className="w-full sm:flex-1" variant="secondary">
-                      <Link href={ROUTES.marketplaceSell}>
-                        Publish a listing to sell
-                      </Link>
-                    </Button>
-                  ) : (
-                    <Button asChild className="w-full sm:flex-1" variant="secondary">
-                      <Link
-                        href={`${ROUTES.login}?next=${encodeURIComponent(ROUTES.marketplace)}`}
-                      >
-                        Sign in to buy
-                      </Link>
-                    </Button>
-                  )}
-                  <Button asChild className="w-full sm:flex-1" variant="ghost">
-                    <Link href={ROUTES.exampleListing(listing.id)}>
-                      View offer details
-                    </Link>
-                  </Button>
-                </div>
-              </GlassCard>
-            ))
-          : liveListings.map((listing, index) => {
-              const seller = listing.seller.profile;
-              return (
-                <GlassCard
-                  key={listing.id}
-                  className={`flex flex-col p-6 transition-transform duration-300 hover:-translate-y-0.5 ${index < 2 ? "animate-fade-up-delay-1" : "animate-fade-up-delay-2"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar
-                      src={seller?.avatarUrl}
-                      name={seller?.displayName ?? "Expert"}
-                    />
-                    <div>
-                      <p className="font-semibold">
-                        {seller?.displayName ?? "Expert"}
-                      </p>
-                      <p className="text-sm text-[var(--muted)]">
-                        @{seller?.username ?? "unknown"}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="mt-5 text-xs font-semibold tracking-[0.16em] text-[var(--accent)] uppercase">
-                    {MARKETPLACE_LISTING_TYPE_LABELS[
-                      listing.type as keyof typeof MARKETPLACE_LISTING_TYPE_LABELS
-                    ] ?? listing.type.replaceAll("_", " ")}
-                  </p>
-                  <h2 className="mt-2 font-display text-xl font-semibold">
-                    {listing.title}
-                  </h2>
-                  <p className="mt-2 flex-1 text-sm leading-relaxed text-[var(--muted-foreground)]">
-                    {listing.description}
-                  </p>
-                  <div className="mt-6 flex items-center justify-between gap-3">
-                    <p className="font-display text-3xl font-bold">
-                      ${(listing.priceCents / 100).toFixed(0)}
-                      <span className="text-sm font-medium text-[var(--muted)]">
-                        {" "}
-                        {listing.currency}
-                      </span>
-                    </p>
-                  </div>
-                  <div className="mt-4">
-                    {session ? (
-                      <BuyButton listingId={listing.id} />
-                    ) : (
-                      <Button asChild className="w-full">
-                        <Link
-                          href={`${ROUTES.login}?next=${encodeURIComponent(ROUTES.marketplace)}`}
-                        >
-                          Sign in to buy
-                        </Link>
-                      </Button>
-                    )}
-                  </div>
-                </GlassCard>
-              );
-            })}
+      <section aria-label="Marketplace listings" className="mt-6">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold text-[var(--foreground)]">
+            {usingDemo ? "Example offers" : "Live offers"}
+          </h2>
+          <p className="text-xs text-[var(--muted)] tabular-nums">
+            {usingDemo ? DEMO_MARKETPLACE_LISTINGS.length : liveListings.length}{" "}
+            {(usingDemo ? DEMO_MARKETPLACE_LISTINGS.length : liveListings.length) === 1
+              ? "listing"
+              : "listings"}
+          </p>
         </div>
 
-        <TopEarnersPanel
-          earners={topEarners}
-          hasLiveEarners={hasLiveEarners}
-          sellHref={sellHref}
-          className="lg:sticky lg:top-24"
-        />
-      </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {usingDemo
+            ? DEMO_MARKETPLACE_LISTINGS.map((listing) => (
+                <MarketplaceListingCard
+                  key={listing.id}
+                  id={listing.id}
+                  type={listing.type}
+                  title={listing.title}
+                  description={listing.description}
+                  priceCents={listing.priceCents}
+                  currency={listing.currency}
+                  seller={{
+                    displayName: listing.seller.displayName,
+                    username: listing.seller.username,
+                  }}
+                  example
+                  actions={
+                    <>
+                      {session ? (
+                        <Button asChild size="sm" variant="secondary">
+                          <Link href={ROUTES.marketplaceSell}>Sell</Link>
+                        </Button>
+                      ) : (
+                        <Button asChild size="sm">
+                          <Link href={loginNext}>Sign in</Link>
+                        </Button>
+                      )}
+                      <Button asChild size="sm" variant="ghost">
+                        <Link href={ROUTES.exampleListing(listing.id)}>Details</Link>
+                      </Button>
+                    </>
+                  }
+                />
+              ))
+            : liveListings.map((listing) => {
+                const seller = listing.seller.profile;
+                return (
+                  <MarketplaceListingCard
+                    key={listing.id}
+                    id={listing.id}
+                    type={listing.type}
+                    title={listing.title}
+                    description={listing.description}
+                    priceCents={listing.priceCents}
+                    currency={listing.currency}
+                    seller={{
+                      displayName: seller?.displayName ?? "Expert",
+                      username: seller?.username ?? "unknown",
+                      avatarUrl: seller?.avatarUrl,
+                    }}
+                    actions={
+                      session ? (
+                        <BuyButton listingId={listing.id} size="sm" className="shrink-0" />
+                      ) : (
+                        <Button asChild size="sm">
+                          <Link href={loginNext}>Sign in to buy</Link>
+                        </Button>
+                      )
+                    }
+                  />
+                );
+              })}
+        </div>
+      </section>
+
+      <TopEarnersPanel
+        earners={topEarners}
+        hasLiveEarners={hasLiveEarners}
+        sellHref={sellHref}
+        variant="strip"
+        className="mt-10"
+      />
     </div>
   );
 }

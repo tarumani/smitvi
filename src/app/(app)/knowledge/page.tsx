@@ -131,7 +131,7 @@ export default async function KnowledgePage({
                       </p>
                     ) : null}
                   </div>
-                  <div className="flex flex-col items-stretch gap-2 sm:items-end">
+                  <div className="flex flex-col gap-2 sm:items-end">
                     <KnowledgeSourceActions
                       sourceId={source.id}
                       title={source.title}
@@ -141,7 +141,11 @@ export default async function KnowledgePage({
                         sourceId={source.id}
                         isPublic={source.isPublic}
                       />
-                    ) : null}
+                    ) : (
+                      <p className="text-xs text-[var(--muted)]">
+                        Visibility available when source is ready
+                      </p>
+                    )}
                   </div>
                 </div>
               </GlassCard>

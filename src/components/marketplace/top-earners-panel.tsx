@@ -16,6 +16,8 @@ type Props = {
   hasLiveEarners: boolean;
   sellHref: string;
   className?: string;
+  /** Horizontal strip for use below the listing grid. */
+  variant?: "sidebar" | "strip";
 };
 
 export function TopEarnersPanel({
@@ -23,31 +25,54 @@ export function TopEarnersPanel({
   hasLiveEarners,
   sellHref,
   className,
+  variant = "sidebar",
 }: Props) {
+  const isStrip = variant === "strip";
+
   return (
-    <aside className={cn("space-y-4", className)}>
-      <div>
-        <h2 className="font-display text-lg font-semibold tracking-tight">
-          Top earners on the marketplace
-        </h2>
-        {hasLiveEarners ? (
-          <p className="mt-1 text-xs text-[var(--muted-foreground)]">
-            Net marketplace earnings from paid orders.
-          </p>
-        ) : (
-          <p className="mt-1 text-xs text-[var(--muted-foreground)]">
-            Sample leaderboard for layout only — not real sellers or payouts
-            yet.
-          </p>
-        )}
+    <aside
+      className={cn(
+        isStrip
+          ? "rounded-2xl border border-[var(--border)] bg-[var(--surface)]/50 p-4 sm:p-5"
+          : "space-y-4",
+        className,
+      )}
+    >
+      <div className={cn(isStrip && "mb-3 flex flex-wrap items-end justify-between gap-2")}>
+        <div>
+          <h2 className="font-display text-base font-semibold tracking-tight sm:text-lg">
+            Top earners
+          </h2>
+          {hasLiveEarners ? (
+            <p className="mt-0.5 text-xs text-[var(--muted-foreground)]">
+              Net marketplace earnings from paid orders.
+            </p>
+          ) : (
+            <p className="mt-0.5 text-xs text-[var(--muted-foreground)]">
+              Sample leaderboard — not real payouts yet.
+            </p>
+          )}
+        </div>
+        {!hasLiveEarners && isStrip ? (
+          <Button asChild size="sm" variant="secondary">
+            <Link href={sellHref}>Start selling</Link>
+          </Button>
+        ) : null}
       </div>
 
-      <ul className="space-y-2">
+      <ul
+        className={cn(
+          isStrip
+            ? "grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+            : "space-y-2",
+        )}
+      >
         {earners.slice(0, 5).map((earner, index) => {
           const row = (
             <div
               className={cn(
-                "flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--glass)] px-4 py-3",
+                "flex items-center justify-between gap-2 rounded-xl border border-[var(--border)] bg-[var(--glass)] px-3 py-2.5",
+                isStrip && "flex-col items-stretch sm:flex-row sm:items-center",
                 hasLiveEarners &&
                   "transition-colors hover:bg-[var(--surface-elevated)]",
               )}
@@ -91,10 +116,12 @@ export function TopEarnersPanel({
       </ul>
 
       {hasLiveEarners ? (
-        <Button asChild variant="secondary" className="w-full">
-          <Link href={ROUTES.marketplace}>Browse marketplace</Link>
-        </Button>
-      ) : (
+        !isStrip ? (
+          <Button asChild variant="secondary" className="w-full">
+            <Link href={ROUTES.marketplace}>Browse marketplace</Link>
+          </Button>
+        ) : null
+      ) : !isStrip ? (
         <div className="flex flex-col gap-2">
           <Button asChild className="w-full">
             <Link href={sellHref}>Start selling on Smitvi</Link>
@@ -103,7 +130,7 @@ export function TopEarnersPanel({
             <Link href={ROUTES.marketplace}>View example offers</Link>
           </Button>
         </div>
-      )}
+      ) : null}
     </aside>
   );
 }

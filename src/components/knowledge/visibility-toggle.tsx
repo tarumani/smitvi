@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 type VisibilityToggleProps = {
   sourceId: string;
@@ -17,7 +18,8 @@ export function VisibilityToggle({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  function toggle() {
+  function setPublic(nextPublic: boolean) {
+    if (nextPublic === isPublic) return;
     startTransition(async () => {
       try {
         const response = await fetch(
@@ -25,7 +27,7 @@ export function VisibilityToggle({
           {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ isPublic: !isPublic }),
+            body: JSON.stringify({ isPublic: nextPublic }),
           },
         );
         const json: unknown = await response.json();
@@ -40,7 +42,9 @@ export function VisibilityToggle({
               : "Update failed";
           throw new Error(message);
         }
-        toast.success(!isPublic ? "Published to public profile" : "Made private");
+        toast.success(
+          nextPublic ? "Visible on your public profile" : "Kept private",
+        );
         router.refresh();
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Update failed");
@@ -48,14 +52,23 @@ export function VisibilityToggle({
     });
   }
 
+  const switchId = `source-visibility-${sourceId}`;
+
   return (
-    <Button
-      size="sm"
-      variant={isPublic ? "secondary" : "outline"}
-      onClick={toggle}
-      disabled={isPending}
-    >
-      {isPublic ? "Public" : "Private"}
-    </Button>
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)]/60 px-3 py-2 sm:min-w-[11rem]">
+      <Label
+        htmlFor={switchId}
+        className="text-xs font-medium text-[var(--muted-foreground)]"
+      >
+        {isPublic ? "Public" : "Private"}
+      </Label>
+      <Switch
+        id={switchId}
+        checked={isPublic}
+        disabled={isPending}
+        aria-label={isPublic ? "Public on profile" : "Private to you"}
+        onCheckedChange={setPublic}
+      />
+    </div>
   );
 }

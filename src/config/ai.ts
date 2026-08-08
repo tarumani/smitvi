@@ -7,8 +7,10 @@ export const SPEECH_VOICE = "coral" as const;
 
 /** Minimum cosine similarity to treat a chunk as supporting evidence. */
 export const RETRIEVAL_MIN_SCORE = 0.28;
-/** Average top-k score required to answer; below this → "I don't know." */
-export const ANSWER_MIN_CONFIDENCE = 0.38;
+/** Top-chunk average score shown on answers; see ask-twin confidence logic. */
+export const ANSWER_MIN_CONFIDENCE = 0.30;
+/** Best matching chunk must reach this before the model is called. */
+export const ANSWER_MIN_TOP_SCORE = 0.30;
 export const RETRIEVAL_TOP_K = 6;
 export const CHUNK_SIZE_CHARS = 1200;
 export const CHUNK_OVERLAP_CHARS = 180;

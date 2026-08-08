@@ -1,5 +1,6 @@
 import {
   ANSWER_MIN_CONFIDENCE,
+  ANSWER_MIN_TOP_SCORE,
   LOW_CONFIDENCE_REPLY,
   RETRIEVAL_MIN_SCORE,
   RETRIEVAL_TOP_K,
@@ -28,6 +29,9 @@ export type TwinCitation = {
   excerpt: string;
   score: number;
 };
+
+const TWIN_SYSTEM_PROMPT =
+  "You are a Knowledge Twin. Answer using the provided context. Handle typos and informal phrasing in the question. If the context mentions skills, tools, bio, or services that answer the question, summarize them clearly and cite sources as [1], [2] matching context order. Reply exactly \"I don't know.\" only when the context has no relevant information at all. Never invent facts beyond the context.";
 
 export class AskTwin {
   constructor(
@@ -125,7 +129,11 @@ export class AskTwin {
       organizationId,
     });
 
-    const confidence = averageScore(retrieved.map((item) => item.score));
+    const scores = retrieved.map((item) => item.score);
+    const topScore = scores.length > 0 ? Math.max(...scores) : 0;
+    const confidence = averageScore(
+      scores.slice(0, Math.min(3, scores.length)),
+    );
     const citations: TwinCitation[] = retrieved.map((item) => ({
       sourceId: item.sourceId,
       sourceTitle: item.sourceTitle,
@@ -140,7 +148,10 @@ export class AskTwin {
       citations,
       retrieved,
       question,
-      canAnswer: retrieved.length > 0 && confidence >= ANSWER_MIN_CONFIDENCE,
+      canAnswer:
+        retrieved.length > 0 &&
+        topScore >= ANSWER_MIN_TOP_SCORE &&
+        confidence >= ANSWER_MIN_CONFIDENCE,
     };
   }
 
@@ -176,8 +187,7 @@ export class AskTwin {
       input: [
         {
           role: "system",
-          content:
-            "You are a Knowledge Twin. Answer ONLY using the provided context. If the context is insufficient, reply exactly: I don't know. Cite sources inline as [1], [2] matching context order. Never invent facts.",
+          content: TWIN_SYSTEM_PROMPT,
         },
         {
           role: "user",
@@ -261,8 +271,7 @@ export class AskTwin {
       input: [
         {
           role: "system",
-          content:
-            "You are a Knowledge Twin. Answer ONLY using the provided context. If the context is insufficient, reply exactly: I don't know. Cite sources inline as [1], [2] matching context order. Never invent facts.",
+          content: TWIN_SYSTEM_PROMPT,
         },
         {
           role: "user",

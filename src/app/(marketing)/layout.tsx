@@ -10,7 +10,7 @@ export default function MarketingLayout({
   return (
     <div className="relative flex min-h-full flex-col">
       <SiteHeader />
-      <main className="relative flex-1">{children}</main>
+      <main className="relative flex-1 overflow-x-hidden">{children}</main>
       <MarketingPageFooterAd />
       <SiteFooter />
     </div>
