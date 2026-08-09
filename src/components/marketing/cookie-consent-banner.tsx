@@ -45,8 +45,9 @@ export function CookieConsentBanner() {
             We use essential cookies for sign-in and theme.{" "}
             {ADSENSE_ENABLED ? (
               <>
-                With your consent, Google AdSense may use cookies to show ads and
-                measure traffic. See our{" "}
+                With your consent, Google AdSense may show ads on first-party
+                pages such as Guides and product explainers (not on Twin chat or
+                hub knowledge screens). See our{" "}
                 <Link href={ROUTES.privacy} className="text-[var(--accent)] hover:underline">
                   Privacy Policy
                 </Link>

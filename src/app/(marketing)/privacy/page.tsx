@@ -58,6 +58,13 @@ export default function PrivacyPage() {
           <strong>Cookie settings</strong> in the footer to change your choice, or
           manage cookies in your browser and via Google&apos;s ad settings.
         </p>
+        <p>
+          Google-served ads appear only on first-party Smitvi pages (for example
+          Guides, About, product explainers, and legal pages). We do not place
+          Google ads on user Intelligence Hubs, Twin chat, imported knowledge
+          views, or other screens that primarily show third-party or user-uploaded
+          material.
+        </p>
       </InfoContentSection>
 
       <InfoContentSection title="How we use your data" icon={Shield}>

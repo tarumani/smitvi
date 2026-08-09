@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { CircleHelp, Compass, Menu, Store, Tags, X } from "lucide-react";
+import { BookOpen, CircleHelp, Compass, Menu, Store, Tags, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/config/constants";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 const NAV_LINKS = [
   { href: ROUTES.discover, label: "Discover", icon: Compass },
   { href: ROUTES.marketplace, label: "Marketplace", icon: Store },
+  { href: ROUTES.guides, label: "Guides", icon: BookOpen },
   { href: ROUTES.howItHelps, label: "How it helps", icon: CircleHelp },
   { href: ROUTES.pricing, label: "Pricing", icon: Tags },
 ] as const;

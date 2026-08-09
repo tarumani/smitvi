@@ -1,7 +1,12 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ADSENSE_CLIENT, ADSENSE_ENABLED } from "@/config/adsense";
+import {
+  ADSENSE_CLIENT,
+  ADSENSE_ENABLED,
+  isAdSenseAllowedPath,
+} from "@/config/adsense";
 import {
   CONSENT_CHANGED_EVENT,
   hasAdvertisingConsent,
@@ -13,19 +18,26 @@ declare global {
   }
 }
 
-/** Optional display ad on public marketing pages (after cookie consent). */
+/** Display ad only on AdSense-allowlisted first-party pages (after cookie consent). */
 export function MarketingPageFooterAd() {
+  const pathname = usePathname();
   const [show, setShow] = useState(false);
   const slot = process.env.NEXT_PUBLIC_ADSENSE_DISPLAY_SLOT?.trim();
+  const pathAllowed = isAdSenseAllowedPath(pathname);
 
   useEffect(() => {
     function sync() {
-      setShow(ADSENSE_ENABLED && hasAdvertisingConsent() && Boolean(slot));
+      setShow(
+        ADSENSE_ENABLED &&
+          pathAllowed &&
+          hasAdvertisingConsent() &&
+          Boolean(slot),
+      );
     }
     sync();
     window.addEventListener(CONSENT_CHANGED_EVENT, sync);
     return () => window.removeEventListener(CONSENT_CHANGED_EVENT, sync);
-  }, [slot]);
+  }, [pathAllowed, slot]);
 
   useEffect(() => {
     if (!show) return;

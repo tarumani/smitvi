@@ -17,7 +17,7 @@ import {
   APP_OUTCOME,
   APP_TAGLINE,
   APP_VISION,
-  PLATFORM_PILLARS,
+  PLATFORM_PILLAR_DETAILS,
   ROUTES,
 } from "@/config/constants";
 
@@ -34,7 +34,7 @@ export default function AboutPage() {
       description={APP_VISION}
       visual="about"
       primaryCta={{ href: ROUTES.signup, label: "Join the network" }}
-      secondaryCta={{ href: ROUTES.howItHelps, label: "How it helps" }}
+      secondaryCta={{ href: ROUTES.guides, label: "Read guides" }}
     >
       <InfoPageIntro>
         {APP_TAGLINE} {APP_OUTCOME} We connect verified human expertise with
@@ -68,13 +68,19 @@ export default function AboutPage() {
       <InfoContentSection title="Platform pillars" icon={Globe2}>
         <p>Everything in the product maps to five pillars:</p>
         <ul>
-          {PLATFORM_PILLARS.map((pillar) => (
-            <li key={pillar}>
-              <strong>{pillar}</strong> — identity, graph intelligence, audience
-              growth, marketplace, and business tooling for creators.
+          {PLATFORM_PILLAR_DETAILS.map((pillar) => (
+            <li key={pillar.name}>
+              <strong>{pillar.name}</strong> — {pillar.summary}
             </li>
           ))}
         </ul>
+        <p>
+          For a deeper walkthrough, see{" "}
+          <Link href={ROUTES.guide("human-intelligence-os-explained")}>
+            Human Intelligence OS explained
+          </Link>
+          .
+        </p>
       </InfoContentSection>
 
       <InfoContentSection title="For experts & teams" icon={Users}>
@@ -86,7 +92,18 @@ export default function AboutPage() {
         <p>
           Visitors use <Link href={ROUTES.discover}>Discover</Link> and{" "}
           <Link href={ROUTES.search}>Search</Link> to find humans by skill,
-          industry, and evidence — then book or buy when judgment matters.
+          industry, and evidence — then book or buy when judgment matters. Our{" "}
+          <Link href={ROUTES.guides}>Guides</Link> explain how to evaluate Twins
+          and how creators publish high-quality hubs.
+        </p>
+      </InfoContentSection>
+
+      <InfoContentSection title="Content & advertising standards">
+        <p>
+          Public hubs should feature original expert writing and curated sources —
+          not mirrored third-party pages. Google ads, when enabled, appear only on
+          first-party pages such as Guides, About, product explainers, and legal
+          documents — never on user Twin chat or imported knowledge screens.
         </p>
       </InfoContentSection>
 
@@ -101,7 +118,7 @@ export default function AboutPage() {
             <a href="mailto:support@smitvi.com">support@smitvi.com</a>
           </li>
           <li>
-            <Link href={ROUTES.contact}>Contact form</Link>
+            <Link href={ROUTES.contact}>Contact page</Link>
           </li>
           <li>
             <Link href={ROUTES.privacy}>Privacy Policy</Link> ·{" "}

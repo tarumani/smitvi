@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { listIndexablePublicHubs } from "@/application/seo/indexable-public-hubs";
 import { ROUTES } from "@/config/constants";
+import { getGuideSlugs } from "@/content/guides";
 import { appOrigin } from "@/lib/public-hub-url";
 
 const STATIC_PATHS = [
@@ -8,10 +9,14 @@ const STATIC_PATHS = [
   ROUTES.discover,
   ROUTES.search,
   ROUTES.marketplace,
+  ROUTES.guides,
   ROUTES.about,
   ROUTES.contact,
+  ROUTES.howItHelps,
+  ROUTES.pricing,
   ROUTES.privacy,
   ROUTES.terms,
+  ROUTES.disclaimer,
   ROUTES.productTrainTwin,
   ROUTES.productTwinChat,
   ROUTES.productConsultations,
@@ -23,13 +28,27 @@ const STATIC_PATHS = [
 export const dynamic = "force-dynamic";
 
 function staticSitemapEntries(origin: string, now: Date): MetadataRoute.Sitemap {
-  return STATIC_PATHS.map((path) => ({
+  const guideEntries: MetadataRoute.Sitemap = getGuideSlugs().map((slug) => ({
+    url: `${origin}${ROUTES.guide(slug)}`,
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
+
+  const baseEntries: MetadataRoute.Sitemap = STATIC_PATHS.map((path) => ({
     url: `${origin}${path}`,
     lastModified: now,
     changeFrequency:
       path === ROUTES.discover || path === ROUTES.marketplace ? "daily" : "weekly",
-    priority: path === ROUTES.home ? 1 : path === ROUTES.discover ? 0.9 : 0.7,
+    priority:
+      path === ROUTES.home
+        ? 1
+        : path === ROUTES.discover || path === ROUTES.guides
+          ? 0.9
+          : 0.7,
   }));
+
+  return [...baseEntries, ...guideEntries];
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

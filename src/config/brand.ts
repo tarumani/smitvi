@@ -54,6 +54,35 @@ export const PLATFORM_PILLARS = [
   "Business",
 ] as const;
 
+/** Unique blurbs for About / editorial surfaces (avoid duplicate pillar copy). */
+export const PLATFORM_PILLAR_DETAILS = [
+  {
+    name: "Identity",
+    summary:
+      "Your @username, profile, archetype, and public reputation — the durable home for everything you publish.",
+  },
+  {
+    name: "Intelligence",
+    summary:
+      "Sources, Human Intelligence Graph, and Twin chat with citations so answers stay grounded in what you own.",
+  },
+  {
+    name: "Audience",
+    summary:
+      "Discover, search, and recommendations that help the right visitors find your hub by skill and evidence.",
+  },
+  {
+    name: "Marketplace",
+    summary:
+      "Consultations, knowledge packs, courses, and subscriptions tied to the same identity visitors already trust.",
+  },
+  {
+    name: "Business",
+    summary:
+      "Inbox, leads, analytics, and billing so expertise can run as an operation — not only as one-off replies.",
+  },
+] as const;
+
 /** Creator levels (reputation — later sprints). */
 export const CREATOR_LEVELS = [
   "Explorer",

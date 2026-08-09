@@ -10,6 +10,7 @@ export {
   TRAIN_TWIN_NAV_SHORT,
   HUB_ARCHETYPES,
   PLATFORM_PILLARS,
+  PLATFORM_PILLAR_DETAILS,
   CREATOR_LEVELS,
   PRODUCT_LITMUS_QUESTION,
 } from "@/config/brand";
@@ -79,6 +80,8 @@ export const ROUTES = {
   pricing: "/pricing",
   about: "/about",
   contact: "/contact",
+  guides: "/guides",
+  guide: (slug: string) => `/guides/${slug}` as const,
   privacy: "/privacy",
   terms: "/terms",
   disclaimer: "/disclaimer",
