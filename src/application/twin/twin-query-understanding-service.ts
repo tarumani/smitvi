@@ -10,6 +10,10 @@ const INDUSTRY_HINTS = [
   "mobile",
 ];
 
+/** Short thanks / ack / greetings — no knowledge retrieval needed. */
+const CONVERSATIONAL_PATTERN =
+  /^(?:thanks|thank you|thx|ty|thankyou)(?:\s+(?:for|so much|a lot)\b[\s\S]*)?[!.,\s]*$|^(?:ok|okay|got it|great|cool|awesome|perfect|sounds good|appreciate (?:it|that)|will do|noted|sure|np|no problem|you(?:'|’)re welcome)[!.,\s]*$|^(?:hi|hello|hey|good (?:morning|afternoon|evening))[!.,\s]*$/i;
+
 const INTENT_RULES: Array<{ intent: TwinIntent; pattern: RegExp }> = [
   { intent: "RECOMMENDATION_QUERY", pattern: /\b(recommend|who should i|follow|collaborat|opportunit)/i },
   { intent: "LEARNING_QUERY", pattern: /\b(learn|learning gap|what should i learn|skill to explore)/i },
@@ -35,14 +39,18 @@ export class TwinQueryUnderstandingService {
     const lower = rawQuestion.toLowerCase();
 
     let intent: TwinIntent = "UNKNOWN";
-    for (const rule of INTENT_RULES) {
-      if (rule.pattern.test(rawQuestion)) {
-        intent = rule.intent;
-        break;
+    if (CONVERSATIONAL_PATTERN.test(rawQuestion) && rawQuestion.length <= 120) {
+      intent = "CONVERSATIONAL";
+    } else {
+      for (const rule of INTENT_RULES) {
+        if (rule.pattern.test(rawQuestion)) {
+          intent = rule.intent;
+          break;
+        }
       }
-    }
-    if (intent === "UNKNOWN" && rawQuestion.includes("?")) {
-      intent = "PERSONAL_FACT_RETRIEVAL";
+      if (intent === "UNKNOWN" && rawQuestion.includes("?")) {
+        intent = "PERSONAL_FACT_RETRIEVAL";
+      }
     }
 
     const entities = extractEntities(lower);
@@ -74,6 +82,8 @@ function extractEntities(lowerQuestion: string): string[] {
 
 function defaultSourcesForIntent(intent: TwinIntent): TwinSource[] {
   switch (intent) {
+    case "CONVERSATIONAL":
+      return ["NONE"];
     case "SKILL_QUERY":
     case "EXPERIENCE_QUERY":
     case "PROJECT_QUERY":

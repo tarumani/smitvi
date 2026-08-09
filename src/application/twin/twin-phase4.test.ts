@@ -21,6 +21,47 @@ describe("TwinQueryUnderstandingService", () => {
     const u = svc.understand("Recommend a skill I should learn.");
     expect(u.intent).toBe("RECOMMENDATION_QUERY");
   });
+
+  it("detects conversational thanks without needing knowledge", () => {
+    expect(svc.understand("Thanks for the update.").intent).toBe(
+      "CONVERSATIONAL",
+    );
+    expect(svc.understand("Thank you").intent).toBe("CONVERSATIONAL");
+    expect(svc.understand("ok").intent).toBe("CONVERSATIONAL");
+  });
+});
+
+describe("TwinResponseGenerator conversational", () => {
+  const gen = new TwinResponseGenerator();
+
+  it("answers conversational turns without evidence", () => {
+    expect(
+      gen.shouldAnswer({
+        confidenceLevel: "UNKNOWN",
+        claimLevel: "UNKNOWN",
+        intent: "CONVERSATIONAL",
+        hasEvidence: false,
+        ragCanAnswer: false,
+        useLlm: false,
+      }),
+    ).toBe(true);
+  });
+
+  it("returns a welcome reply for thanks", () => {
+    const reply = gen.deterministicAnswer({
+      understanding: {
+        intent: "CONVERSATIONAL",
+        entities: [],
+        subject: "twin_owner",
+        requiredSources: ["NONE"],
+        rawQuestion: "Thanks for the update.",
+      },
+      graph: null,
+      ownerDisplayName: "Alex",
+    });
+    expect(reply).toMatch(/welcome/i);
+    expect(reply).not.toBe(INSUFFICIENT_EVIDENCE_REPLY);
+  });
 });
 
 describe("TwinQueryPlanner", () => {

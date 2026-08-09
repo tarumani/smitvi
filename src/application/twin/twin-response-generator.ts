@@ -95,6 +95,7 @@ export class TwinResponseGenerator {
     useLlm: boolean;
     hallucinationProbe?: boolean;
   }): boolean {
+    if (input.intent === "CONVERSATIONAL") return true;
     if (input.hallucinationProbe && !input.hasEvidence) return false;
     if (!input.useLlm && input.hasEvidence) return true;
     if (input.intent === "SKILL_QUERY" && input.hasEvidence) return true;
@@ -135,6 +136,9 @@ export class TwinResponseGenerator {
     graph: TwinGraphBundle | null;
     ownerDisplayName: string;
   }): string | null {
+    if (input.understanding.intent === "CONVERSATIONAL") {
+      return conversationalReply(input.understanding.rawQuestion);
+    }
     if (
       input.understanding.intent === "SKILL_QUERY" &&
       /what skills do i have/i.test(input.understanding.rawQuestion) &&
@@ -148,4 +152,15 @@ export class TwinResponseGenerator {
     }
     return null;
   }
+}
+
+function conversationalReply(rawQuestion: string): string {
+  const q = rawQuestion.trim().toLowerCase();
+  if (/^(hi|hello|hey|good (morning|afternoon|evening))\b/.test(q)) {
+    return "Hello! Ask me anything about the knowledge graph, profile, or sources — I’m here to help.";
+  }
+  if (/^(thanks|thank you|thx|ty|thankyou)\b/.test(q)) {
+    return "You’re welcome! Glad that helped — ask anytime if you need anything else.";
+  }
+  return "Sounds good. Let me know if there’s anything else you’d like to dig into.";
 }

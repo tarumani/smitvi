@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Mic, Square } from "lucide-react";
+import { Mic } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type VoiceAskButtonProps = {
   conversationId: string | null;
@@ -17,6 +18,19 @@ type VoiceAskButtonProps = {
     audioUrl: string;
   }) => void;
 };
+
+function ListeningDots({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn("inline-flex items-center gap-1", className)}
+      aria-hidden
+    >
+      <span className="animate-live-dot h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
+      <span className="animate-live-dot h-1.5 w-1.5 rounded-full bg-[var(--accent)] [animation-delay:0.2s]" />
+      <span className="animate-live-dot h-1.5 w-1.5 rounded-full bg-[var(--accent)] [animation-delay:0.4s]" />
+    </span>
+  );
+}
 
 export function VoiceAskButton({
   conversationId,
@@ -124,16 +138,35 @@ export function VoiceAskButton({
     });
   }
 
+  const listening = recording || isPending;
+
   return (
     <Button
       type="button"
-      variant={recording ? "destructive" : "outline"}
+      variant="outline"
       size="icon"
       disabled={isPending}
-      aria-label={recording ? "Stop recording" : "Ask with voice"}
+      aria-label={
+        recording
+          ? "Listening — tap to stop"
+          : isPending
+            ? "Processing voice"
+            : "Ask with voice"
+      }
+      title={
+        recording
+          ? "Listening — tap to stop"
+          : isPending
+            ? "Processing voice"
+            : "Ask with voice"
+      }
+      className={cn(
+        listening &&
+          "border-[var(--accent)]/40 bg-[var(--accent)]/10 text-[var(--accent)] hover:bg-[var(--accent)]/15",
+      )}
       onClick={() => (recording ? stopRecording() : void startRecording())}
     >
-      {recording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+      {listening ? <ListeningDots /> : <Mic className="h-4 w-4" />}
     </Button>
   );
 }

@@ -61,6 +61,59 @@ export class TwinIntelligenceEngine {
     const profile = await this.profiles.findByUserId(input.ownerUserId);
     const ownerDisplayName = profile?.displayName ?? "this expert";
 
+    if (understanding.intent === "CONVERSATIONAL") {
+      const fallback = this.responseGen.deterministicAnswer({
+        understanding,
+        graph: null,
+        ownerDisplayName,
+      });
+      void this.analytics.recordQuery({
+        userId: input.viewerUserId,
+        ownerUserId: input.ownerUserId,
+        question: input.question,
+        intent: understanding.intent,
+        sources: plan.sources,
+        confidence: 1,
+        confidenceLevel: "HIGH",
+        latencyMs: Date.now() - started,
+        graphUsed: false,
+        ragUsed: false,
+      });
+      return {
+        understanding,
+        plan,
+        graph: null,
+        profileBlock: null,
+        memoryBlock: null,
+        recommendationBlock: null,
+        evidence: [],
+        contradictions: [],
+        citations: [],
+        extendedCitations: [],
+        contextBlocks: [],
+        systemPrompt: this.responseGen.buildSystemPrompt({
+          ownerDisplayName,
+          mode: input.responseMode ?? "factual",
+          claimLevel: "UNKNOWN",
+          contradictions: [],
+        }),
+        confidence: 1,
+        confidenceLevel: "HIGH",
+        claimLevel: "UNKNOWN",
+        canAnswer: true,
+        relatedQuestions: this.responseGen.relatedQuestions(understanding.intent),
+        suggestedActions: this.responseGen.suggestedActions(understanding.intent),
+        retrievalMeta: {
+          graphUsed: false,
+          ragUsed: false,
+          ragChunkCount: 0,
+        },
+        retrieved: [],
+        deterministicFallback: fallback,
+        insufficientReply: INSUFFICIENT_EVIDENCE_REPLY,
+      };
+    }
+
     let graph = null as Awaited<ReturnType<TwinGraphRetriever["retrieve"]>>;
     if (plan.sources.includes("GRAPH") && !input.organizationId) {
       graph = await this.graphRetriever.retrieve(

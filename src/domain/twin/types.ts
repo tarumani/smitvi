@@ -14,6 +14,7 @@ export type TwinIntent =
   | "EXPLANATION_QUERY"
   | "CONTENT_GENERATION"
   | "LEARNING_QUERY"
+  | "CONVERSATIONAL"
   | "UNKNOWN";
 
 export type TwinSource =

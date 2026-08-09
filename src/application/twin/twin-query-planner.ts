@@ -9,6 +9,15 @@ export class TwinQueryPlanner {
     understanding: TwinUnderstanding,
     options?: { hasOrganization?: boolean; askMemory?: boolean },
   ): TwinQueryPlan {
+    if (understanding.intent === "CONVERSATIONAL") {
+      return {
+        sources: ["NONE"],
+        useLlm: false,
+        maxGraphEntities: 0,
+        rationale: "Casual acknowledgement — no knowledge retrieval.",
+      };
+    }
+
     if (options?.hasOrganization) {
       return {
         sources: ["RAG"],
