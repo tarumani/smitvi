@@ -6,7 +6,12 @@ import {
   InfoPageIntro,
 } from "@/components/marketing/info-content-section";
 import { InfoPageShell } from "@/components/marketing/info-page-shell";
-import { APP_NAME, PRODUCTION_APP_URL, ROUTES } from "@/config/constants";
+import {
+  APP_NAME,
+  PRODUCTION_APP_URL,
+  ROUTES,
+  SOCIAL_LINKS,
+} from "@/config/constants";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -90,6 +95,18 @@ export default function ContactPage() {
             {PRODUCTION_APP_URL.replace("https://", "")}
           </a>
           . Operated from India; serving experts and visitors worldwide.
+        </p>
+        <p>
+          Follow us on{" "}
+          {SOCIAL_LINKS.map((link, index) => (
+            <span key={link.id}>
+              {index > 0 ? (index === SOCIAL_LINKS.length - 1 ? ", and " : ", ") : null}
+              <a href={link.href} target="_blank" rel="noopener noreferrer">
+                {link.label}
+              </a>
+            </span>
+          ))}
+          .
         </p>
       </InfoContentSection>
     </InfoPageShell>

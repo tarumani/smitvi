@@ -13,6 +13,7 @@ export {
   PLATFORM_PILLAR_DETAILS,
   CREATOR_LEVELS,
   PRODUCT_LITMUS_QUESTION,
+  SOCIAL_LINKS,
 } from "@/config/brand";
 export type { HubArchetypeId } from "@/config/brand";
 

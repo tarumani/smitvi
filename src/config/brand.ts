@@ -96,3 +96,22 @@ export const CREATOR_LEVELS = [
 /** Feature litmus test before building. */
 export const PRODUCT_LITMUS_QUESTION =
   "Does this help users grow, monetize, or scale their intelligence?" as const;
+
+/** Official company social profiles. */
+export const SOCIAL_LINKS = [
+  {
+    id: "x",
+    label: "X",
+    href: "https://x.com/smitviai",
+  },
+  {
+    id: "instagram",
+    label: "Instagram",
+    href: "https://www.instagram.com/smitvihios/",
+  },
+  {
+    id: "linkedin",
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/company/smitvi/",
+  },
+] as const;
