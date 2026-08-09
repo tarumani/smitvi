@@ -1,0 +1,17 @@
+name: Inactive user cleanup
+
+on:
+  schedule:
+    # Daily 12:30 UTC — after activation nudges
+    - cron: "30 12 * * *"
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger inactive user cleanup cron
+        run: |
+          curl -fsS -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "https://smitvi.com/api/cron/inactive-users"

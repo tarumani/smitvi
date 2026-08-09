@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { ROUTES } from "@/config/constants";
 import { readApiErrorMessage } from "@/lib/api-response";
 import { formatAuthErrorMessage } from "@/lib/auth-error-message";
-import { toastAuthError } from "@/lib/auth-toast";
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
@@ -57,7 +56,7 @@ export function ForgotPasswordForm() {
                 "Could not send reset email",
                 "reset-email",
               );
-        toastAuthError("Could not send reset email", message);
+        toast.error("Could not send reset email", { description: message });
       }
     });
   }

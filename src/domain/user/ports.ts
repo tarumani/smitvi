@@ -28,6 +28,10 @@ export interface UserRepository {
   updateRole(id: string, role: UserRole): Promise<UserEntity>;
   updatePlan(id: string, plan: UserPlan): Promise<UserEntity>;
   setBanned(id: string, isBanned: boolean): Promise<UserEntity>;
+  /** Block an abandoned account for inactivity (reversible on login). */
+  markInactiveBlocked(id: string, at: Date): Promise<UserEntity>;
+  /** Clear inactivity block after the user authenticates again. */
+  clearInactiveBlock(id: string): Promise<UserEntity>;
   listForAdmin(options?: {
     query?: string;
     filter?: AdminUserListFilter;

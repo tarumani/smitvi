@@ -33,7 +33,7 @@ function emptyMessageFallback(context: AuthErrorContext): string {
     case "reset-password":
       return "Could not update your password. Open the reset link from your email again, or request a new link from Forgot password.";
     default:
-      return "Enable Custom SMTP in Supabase (Authentication → SMTP), use {{ .ConfirmationURL }} in email templates, and add https://smitvi.com/auth/callback to Redirect URLs — or use Continue with Google.";
+      return "Enable Custom SMTP in Supabase (Authentication → SMTP): Host mail.smitvi.com (not IP), port 465, username noreply@smitvi.com, cPanel mailbox password, and {{ .ConfirmationURL }} in templates — or use Continue with Google.";
   }
 }
 
@@ -88,7 +88,7 @@ export function formatAuthErrorMessage(
     combined.includes("535") ||
     combined.includes("authentication failed for")
   ) {
-    return "Could not send the email. Supabase SMTP rejected the mailbox login (535). In Authentication → SMTP, use the full email as username, the correct mailbox password, port 587, and a real @smitvi.com mailbox — then check Auth logs.";
+    return "Could not send the email. Fix Supabase → Authentication → SMTP: Host must be mail.smitvi.com (not the server IP), port 465 or 587, username = full noreply@smitvi.com, and the same password that works in cPanel webmail — then check Auth logs for 535.";
   }
   if (
     combined.includes("not authorized") ||

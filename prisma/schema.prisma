@@ -259,17 +259,19 @@ enum MarketplaceRefundStatus {
 }
 
 model User {
-  id            String    @id @db.Uuid
-  email         String    @unique
-  emailVerified Boolean   @default(false) @map("email_verified")
-  role          Role      @default(USER)
-  plan          Plan      @default(FREE)
-  isActive      Boolean   @default(true) @map("is_active")
-  isBanned      Boolean   @default(false) @map("is_banned")
-  lastLoginAt   DateTime? @map("last_login_at")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  deletedAt     DateTime? @map("deleted_at")
+  id                 String    @id @db.Uuid
+  email              String    @unique
+  emailVerified      Boolean   @default(false) @map("email_verified")
+  role               Role      @default(USER)
+  plan               Plan      @default(FREE)
+  isActive           Boolean   @default(true) @map("is_active")
+  isBanned           Boolean   @default(false) @map("is_banned")
+  lastLoginAt        DateTime? @map("last_login_at")
+  /** Set when the inactivity cleaner blocks an abandoned account. Cleared on login. */
+  inactiveBlockedAt  DateTime? @map("inactive_blocked_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+  deletedAt          DateTime? @map("deleted_at")
 
   profile              Profile?
   auditLogs            AuditLog[]
@@ -314,6 +316,8 @@ model User {
   @@index([plan])
   @@index([createdAt])
   @@index([deletedAt])
+  @@index([lastLoginAt])
+  @@index([inactiveBlockedAt])
   @@map("users")
 }
 

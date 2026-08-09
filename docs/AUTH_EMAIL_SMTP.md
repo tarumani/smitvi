@@ -16,67 +16,56 @@ Supabase → **Authentication → SMTP Settings**:
 |--------|---------|
 | Enable Custom SMTP | ON → **Save** |
 | Sender name | `Smitvi` |
-| Sender email | `noreply@smitvi.com` or `support@smitvi.com` |
-| Host | GoDaddy: `smtpout.secureserver.net` (or your provider) |
-| Port | `587` (STARTTLS) |
-| Username | Full mailbox (e.g. `support@smitvi.com`) |
-| Password | That mailbox password |
+| Sender email | `noreply@smitvi.com` (must match the mailbox) |
+| Host | **`mail.smitvi.com`** — not the server IP |
+| Port | **`465`** (SSL, matches cPanel) or **`587`** (TLS) if 465 fails in Supabase |
+| Username | Full mailbox: `noreply@smitvi.com` |
+| Password | That mailbox’s password (same as cPanel / Roundcube login) |
 
 Use a real mailbox on **smitvi.com** (GoDaddy Email / Microsoft / Google Workspace). Add **SPF/DKIM** in GoDaddy DNS if your provider gives records — improves deliverability.
 
-#### GoDaddy Workspace Email (common for smitvi.com)
+#### cPanel vs Supabase — match these exactly
 
-| Field | Value |
-|--------|--------|
-| Host | `smtpout.secureserver.net` |
-| Port | **587** (STARTTLS) |
-| Username | **Full address** — e.g. `noreply@smitvi.com` (must match an existing mailbox) |
-| Password | That mailbox’s password (reset in GoDaddy → Email if unsure) |
-| Sender email | Same as username, e.g. `noreply@smitvi.com` |
+cPanel → **Email Accounts → Connect Devices → Mail Client Manual Settings** is the source of truth. Supabase must mirror **outgoing (SMTP)** values, not the raw server IP.
 
-**Auth log `535 Authentication Failed for noreply@smitvi.com`** means Supabase reached GoDaddy but **login was rejected**:
+| Field | cPanel (Secure SSL/TLS) | Common mistake in Supabase | Fix in Supabase |
+|--------|-------------------------|----------------------------|-----------------|
+| Outgoing host | `mail.smitvi.com` | `68.178.145.172` (IP) | **Host → `mail.smitvi.com`** |
+| SMTP port | **465** | 465 (OK) or wrong port | **465** first; if Auth logs still fail, try **587** + same host |
+| Username | `noreply@smitvi.com` | same | full email address |
+| Password | mailbox password | wrong / old password | reset in cPanel → Email Accounts, test **Roundcube** login, paste into Supabase → **Save** |
+| Sender email | `noreply@smitvi.com` | same | must match username |
+| Sender name | (your brand) | `Smitvi` | OK |
 
-1. Create the mailbox in GoDaddy (or use `support@smitvi.com` you know works).
-2. Log in to **webmail** for that address once to confirm the password.
-3. Paste the **same** password into Supabase SMTP → Save.
-4. Retry signup or forgot-password; the log should show **200** on `/signup` or `/recover`, not 500.
+**Why the IP breaks signup:** cPanel’s SSL certificate is for **`mail.smitvi.com`**. Supabase connecting to **`68.178.145.172`** often fails TLS or auth (`535 Authentication Failed`), so **no verification email** is sent and signup looks broken.
 
-If `noreply@` is not needed, use one working mailbox (e.g. `support@smitvi.com`) for both **Username** and **Sender email**.
+**Checklist after you change Host to `mail.smitvi.com`:**
 
-#### cPanel / hosting mail (Roundcube, Email Accounts)
+1. cPanel → confirm **`noreply@smitvi.com`** exists; log in to **Webmail/Roundcube** with that password.
+2. Supabase → Authentication → **SMTP** → Host `mail.smitvi.com`, Port `465`, Username + Sender email `noreply@smitvi.com`, correct password → **Save**.
+3. Supabase → **Logs → Auth** → sign up again → `/signup` should show **200**, not **500** / **535**.
+4. Confirm signup template uses `{{ .ConfirmationURL }}` (see §2 below).
 
-If `@smitvi.com` mail is on **cPanel** (not GoDaddy `smtpout`):
+**GoDaddy-only mail (not cPanel):** use `smtpout.secureserver.net`, port **587**, same full-email username/password.
 
-| Field | Value |
-|--------|--------|
-| Host | **`mail.smitvi.com`** (preferred) or the hostname cPanel → **Email Accounts → Connect Devices** shows — avoid raw IP unless your host requires it |
-| Port | **465** (SSL) **or** **587** (TLS) — match what cPanel lists for “Secure SSL/TLS” vs “STARTTLS” |
-| Username | Full address: `noreply@smitvi.com` |
-| Password | cPanel **Email Accounts** password for that mailbox |
-| Sender email | Same as username |
+### 2. Email templates
 
-1. cPanel → **Email Accounts** → confirm **`noreply@smitvi.com`** exists (Create if missing).
-2. Open **Roundcube** (or Webmail) and log in as `noreply@smitvi.com` — if webmail fails, fix password in cPanel first.
-3. Supabase SMTP → paste the **same** password → **Save**.
-4. **Logs → Auth**: signup should show **200** on `/signup`, not **500** / **535**.
+Supabase → **Authentication → Email Templates → Confirm signup**:
 
-If **465** fails, try **587** with host `mail.smitvi.com`. If **535** persists, the password or username does not match the cPanel mailbox.
+- **Subject:** `Confirm your Smitvi account`
+- **Body:** Replace default copy; use `{{ .ConfirmationURL }}` for the link.
+- Remove or replace the “powered by Supabase” footer in the HTML template.
 
-Use **`{{ .ConfirmationURL }}`** for every action link (never hardcode `https://smitvi.com/auth/callback`).
-
-Supabase → **Authentication → Email Templates**:
-
-| Template | Subject example |
-|--------|------------------|
-| Confirm signup | `Confirm your Smitvi account` |
-| Reset password | `Reset your password` |
-| Magic link | `Your Smitvi sign-in link` |
-
-Example link line (all templates):
+Example opening line:
 
 ```html
+<p>Hi,</p>
+<p>Thanks for joining Smitvi. Confirm your email to finish signup:</p>
 <p><a href="{{ .ConfirmationURL }}">Confirm email</a></p>
+<p>— The Smitvi team<br/>https://smitvi.com</p>
 ```
+
+Also update **Magic link**, **Reset password**, and **Change email** templates for consistency.
 
 ### Password reset (including Google sign-in accounts)
 
@@ -105,12 +94,6 @@ If reset fails in the app (or Supabase Auth logs show mail errors), **Custom SMT
 2. Check inbox: **From** should be `Smitvi <your-smtp-address@>`  
 3. If it fails: Supabase → **Logs → Auth** and your SMTP provider logs  
 
-## Google sign-in
+## Google sign-in (optional, later)
 
-**Continue with Google** is enabled in production builds (`NEXT_PUBLIC_ENABLE_GOOGLE_AUTH=true`). Users can sign up or sign in without verification email — useful when SMTP is not ready yet.
-
-Supabase → **Authentication → Providers → Google** must be ON with Client ID/secret from Google Cloud Console.
-
-Redirect URIs in Google Cloud must include your Supabase callback (see Supabase Google provider page).
-
-Optional: Supabase **custom domain** (`auth.smitvi.com`) so Google shows Smitvi instead of `*.supabase.co` — see `PRODUCTION.md` §4b.
+The app hides **Continue with Google** unless `NEXT_PUBLIC_ENABLE_GOOGLE_AUTH=true` (see `fly.toml`). Re-enable after Supabase **custom domain** (`auth.smitvi.com`) and Google OAuth branding — see `PRODUCTION.md` §4b.

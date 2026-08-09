@@ -34,6 +34,7 @@ export function toUserEntity(user: User): UserEntity {
     isActive: user.isActive,
     isBanned: user.isBanned,
     lastLoginAt: user.lastLoginAt,
+    inactiveBlockedAt: user.inactiveBlockedAt,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
@@ -140,6 +141,7 @@ export function toProfileSummary(profile: Profile): ProfileSummary {
     ratingCount: profile.ratingCount,
     hubArchetypeId: profile.hubArchetypeId,
     reputationScore: profile.reputationScore,
+    intelligencePoints: profile.intelligencePoints,
     onboardingStep: profile.onboardingStep,
   };
 }

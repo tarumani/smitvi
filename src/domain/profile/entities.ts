@@ -82,5 +82,6 @@ export type ProfileSummary = {
   readonly ratingCount: number;
   readonly hubArchetypeId: string | null;
   readonly reputationScore: number;
+  readonly intelligencePoints: number;
   readonly onboardingStep: string | null;
 };

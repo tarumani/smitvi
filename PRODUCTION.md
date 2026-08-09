@@ -111,7 +111,8 @@ Leave GoDaddy **email MX** records alone if you use GoDaddy email.
    - Edit **Authentication → Email Templates** (Confirm signup) to remove “powered by Supabase” and use Smitvi copy — see `docs/AUTH_EMAIL_SMTP.md`.
    - After saving, raise Auth → Rate Limits if needed (custom SMTP starts low).
    - If signup shows “Error sending confirmation mail”, open **Logs → Auth** and your SMTP provider’s logs — wrong password, blocked port, or unverified domain are the usual causes.
-   - GoDaddy/cPanel example: host `smtpout.secureserver.net` (or your cPanel “Outgoing Server”), port `587`, username = full email, password = that mailbox password.
+   - **cPanel mail for smitvi.com:** Supabase Host must be **`mail.smitvi.com`**, port **465** (or 587), **not** the server IP (e.g. `68.178.145.172`). See `docs/AUTH_EMAIL_SMTP.md` § cPanel vs Supabase.
+   - GoDaddy Workspace (non-cPanel): host `smtpout.secureserver.net`, port `587`, username = full email.
 7. Storage → create a **private** bucket named exactly `knowledge`
    (required for PDF/knowledge uploads; without it uploads fail with “Bucket not found”).
    The app will also try to auto-create this bucket on first upload if the service role key allows it.
@@ -119,7 +120,8 @@ Leave GoDaddy **email MX** records alone if you use GoDaddy email.
    Set `SUPABASE_AVATARS_BUCKET=avatars` on Fly (already in `fly.toml` `[env]`).
 9. **Cron & growth emails** — set the same secret on Fly and GitHub:
    - `fly secrets set CRON_SECRET=your-long-random-string --app smitvi`
-   - GitHub repo secret `CRON_SECRET` (for activation nudge, listing nudge, hub digest workflows)
+   - GitHub repo secret `CRON_SECRET` (for activation nudge, listing nudge, hub digest, inactive-user cleanup workflows)
+   - Inactive cleanup (abandoned empty FREE accounts): pause after 10 days with no activity, permanently delete 7 days later if they never sign back in. Disable with `INACTIVE_USER_CLEANUP_ENABLED=false`.
 10. **Optional:** `JINA_READER_API_KEY` for reliable Notion/website imports; `NEXT_PUBLIC_ADSENSE_DISPLAY_SLOT` for a footer ad unit after cookie consent.
 11. GitHub Actions build needs these repo secrets (inlined at build time):
    - `NEXT_PUBLIC_SUPABASE_URL`

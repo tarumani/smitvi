@@ -1,9 +1,12 @@
 import type { User as AuthUser } from "@supabase/supabase-js";
+import { headers } from "next/headers";
 import { DomainError, UnauthorizedError } from "@/domain/shared/errors";
 import type { UserEntity } from "@/domain/user/entities";
 import type { ProfileSummary } from "@/domain/profile/entities";
 import { container } from "@/application/container";
 import { resolveEffectiveUserPlan } from "@/domain/billing/effective-plan";
+import { resolveAuthUser } from "@/application/auth/resolve-auth-user";
+import { LAST_LOGIN_TOUCH_INTERVAL_MS } from "@/config/inactive-users";
 import { createSupabaseServerClient } from "@/infrastructure/auth/supabase/server";
 
 export type CurrentSession = {
@@ -23,11 +26,14 @@ function isAuthEmailVerified(authUser: AuthUser): boolean {
   );
 }
 
+async function usesBearerAuth(): Promise<boolean> {
+  const headerStore = await headers();
+  return headerStore.get("authorization")?.startsWith("Bearer ") ?? false;
+}
+
 export async function getCurrentSession(): Promise<CurrentSession | null> {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
+  const authUser = await resolveAuthUser();
+  const bearer = await usesBearerAuth();
 
   if (!authUser?.email) {
     return null;
@@ -36,7 +42,10 @@ export async function getCurrentSession(): Promise<CurrentSession | null> {
   // Email/password signups must verify before using the app.
   // Google OAuth accounts are confirmed by the provider.
   if (!isAuthEmailVerified(authUser)) {
-    await supabase.auth.signOut();
+    if (!bearer) {
+      const supabase = await createSupabaseServerClient();
+      await supabase.auth.signOut();
+    }
     return null;
   }
 
@@ -58,14 +67,32 @@ export async function getCurrentSession(): Promise<CurrentSession | null> {
     }
   } catch (error) {
     if (error instanceof DomainError && error.code === "FORBIDDEN") {
-      await supabase.auth.signOut();
+      if (!bearer) {
+        const supabase = await createSupabaseServerClient();
+        await supabase.auth.signOut();
+      }
       return null;
     }
     throw error;
   }
 
+  if (!user) {
+    return null;
+  }
+
+  // Inactivity-paused abandoned accounts can recover by signing in again.
+  if (user.inactiveBlockedAt && !user.isBanned) {
+    user = await container.users.clearInactiveBlock(user.id);
+  }
+
   if (!user.isActive || user.isBanned) {
     return null;
+  }
+
+  const lastTouch = user.lastLoginAt?.getTime() ?? 0;
+  if (Date.now() - lastTouch >= LAST_LOGIN_TOUCH_INTERVAL_MS) {
+    await container.users.updateLastLogin(user.id, new Date());
+    user = { ...user, lastLoginAt: new Date() };
   }
 
   const profile = await container.profiles.findSummaryByUserId(user.id);

@@ -16,6 +16,7 @@ export type UserEntity = {
   readonly isActive: boolean;
   readonly isBanned: boolean;
   readonly lastLoginAt: Date | null;
+  readonly inactiveBlockedAt: Date | null;
   readonly createdAt: Date;
   updatedAt: Date;
 };

@@ -89,6 +89,12 @@ export class PrismaUserRepository implements UserRepository {
         email,
         emailVerified: input.emailVerified,
         lastLoginAt: new Date(),
+        // Signing in again recovers an inactivity pause (not an admin ban).
+        ...(existing &&
+        existing.inactiveBlockedAt &&
+        !existing.isBanned
+          ? { isActive: true, inactiveBlockedAt: null }
+          : {}),
       },
     });
     return toUserEntity(user);
@@ -123,6 +129,30 @@ export class PrismaUserRepository implements UserRepository {
       data: {
         isBanned,
         isActive: !isBanned,
+        ...(isBanned ? {} : { inactiveBlockedAt: null }),
+      },
+    });
+    return toUserEntity(user);
+  }
+
+  async markInactiveBlocked(id: string, at: Date): Promise<UserEntity> {
+    const user = await prisma.user.update({
+      where: { id },
+      data: {
+        isActive: false,
+        inactiveBlockedAt: at,
+      },
+    });
+    return toUserEntity(user);
+  }
+
+  async clearInactiveBlock(id: string): Promise<UserEntity> {
+    const user = await prisma.user.update({
+      where: { id },
+      data: {
+        isActive: true,
+        inactiveBlockedAt: null,
+        lastLoginAt: new Date(),
       },
     });
     return toUserEntity(user);
