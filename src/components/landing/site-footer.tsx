@@ -1,5 +1,5 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
-import { Instagram, Linkedin } from "lucide-react";
 import { SmitviLogo } from "@/components/brand/smitvi-logo";
 import { CookieSettingsLink } from "@/components/marketing/cookie-settings-link";
 import {
@@ -32,7 +32,13 @@ const LEGAL_LINKS = [
   { href: ROUTES.disclaimer, label: "Disclaimer" },
 ] as const;
 
-function XIcon({ className }: { className?: string }) {
+function SocialSvg({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -40,15 +46,33 @@ function XIcon({ className }: { className?: string }) {
       aria-hidden
       className={className}
     >
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.727-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" />
+      {children}
     </svg>
   );
 }
 
 function SocialIcon({ id, className }: { id: string; className?: string }) {
-  if (id === "x") return <XIcon className={className} />;
-  if (id === "instagram") return <Instagram className={className} aria-hidden />;
-  if (id === "linkedin") return <Linkedin className={className} aria-hidden />;
+  if (id === "x") {
+    return (
+      <SocialSvg className={className}>
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.727-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" />
+      </SocialSvg>
+    );
+  }
+  if (id === "instagram") {
+    return (
+      <SocialSvg className={className}>
+        <path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2Zm0 1.5A4.25 4.25 0 0 0 3.5 7.75v8.5A4.25 4.25 0 0 0 7.75 20.5h8.5a4.25 4.25 0 0 0 4.25-4.25v-8.5A4.25 4.25 0 0 0 16.25 3.5h-8.5Zm8.75 1.75a1.125 1.125 0 1 1 0 2.25 1.125 1.125 0 0 1 0-2.25ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z" />
+      </SocialSvg>
+    );
+  }
+  if (id === "linkedin") {
+    return (
+      <SocialSvg className={className}>
+        <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.25 8.25h4.5V23.5H.25V8.25zM8.5 8.25h4.31v2.08h.06c.6-1.14 2.07-2.34 4.26-2.34 4.56 0 5.4 3 5.4 6.9v8.61h-4.5v-7.63c0-1.82-.03-4.16-2.54-4.16-2.54 0-2.93 1.98-2.93 4.03v7.76H8.5V8.25z" />
+      </SocialSvg>
+    );
+  }
   return null;
 }
 
