@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Loader2, ThumbsDown, ThumbsUp, UserPlus, X } from "lucide-react";
 import type { ExplainableRecommendation } from "@/domain/recommendations/types";
 import { ROUTES } from "@/config/constants";
@@ -37,15 +37,19 @@ export function RecommendationCard({ item, compact, onDismiss }: Props) {
   const feedback = async (
     fb: "USEFUL" | "NOT_USEFUL" | "NOT_INTERESTED" | "ALREADY_KNOW" | "DISMISS",
   ) => {
-    await fetch(
-      `/api/recommendations/${encodeURIComponent(item.id)}/feedback`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ feedback: fb }),
-      },
-    );
     if (fb === "DISMISS" || fb === "NOT_INTERESTED") onDismiss?.();
+    try {
+      await fetch(
+        `/api/recommendations/${encodeURIComponent(item.id)}/feedback`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ feedback: fb }),
+        },
+      );
+    } catch {
+      /* non-blocking */
+    }
   };
 
   const username =
@@ -152,7 +156,11 @@ export function RecommendationSection({
   items: ExplainableRecommendation[];
   empty?: string;
 }) {
-  if (items.length === 0) {
+  const [dismissed, setDismissed] = useState<Set<string>>(() => new Set());
+  const visible = items.filter((item) => !dismissed.has(item.id));
+
+  if (visible.length === 0) {
+    if (items.length > 0) return null;
     return empty ? (
       <section>
         <h3 className="font-display text-lg font-semibold">{title}</h3>
@@ -165,9 +173,14 @@ export function RecommendationSection({
     <section>
       <h3 className="font-display text-lg font-semibold">{title}</h3>
       <ul className="mt-3 space-y-3">
-        {items.map((item) => (
+        {visible.map((item) => (
           <li key={item.id}>
-            <RecommendationCard item={item} />
+            <RecommendationCard
+              item={item}
+              onDismiss={() =>
+                setDismissed((prev) => new Set(prev).add(item.id))
+              }
+            />
           </li>
         ))}
       </ul>
