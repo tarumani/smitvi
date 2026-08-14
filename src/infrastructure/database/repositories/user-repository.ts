@@ -5,6 +5,7 @@ import type {
   SyncUserInput,
   UserRepository,
 } from "@/domain/user/ports";
+import { ForbiddenError } from "@/domain/shared/errors";
 import {
   missingActivationLabels,
   incompleteProfileUserWhere,
