@@ -16,6 +16,7 @@ import type { PrismaKnowledgeRepository } from "@/infrastructure/database/reposi
 import type { PrismaConversationRepository } from "@/infrastructure/database/repositories/conversation-repository";
 import type { UserPlan } from "@/domain/user/entities";
 import type { TwinIntelligenceEngine } from "@/application/twin/twin-intelligence-engine";
+import type { TwinInboxPushNotifier } from "@/application/notifications/twin-inbox-push-notifier";
 
 export type TwinCitation = {
   sourceId: string;
@@ -38,6 +39,7 @@ export class AskTwin {
     private readonly knowledge: PrismaKnowledgeRepository,
     private readonly conversations: PrismaConversationRepository,
     private readonly intelligence: TwinIntelligenceEngine,
+    private readonly twinInboxPush?: TwinInboxPushNotifier,
   ) {}
 
   async prepare(input: {
@@ -121,6 +123,21 @@ export class AskTwin {
       role: "USER",
       content: question,
     });
+
+    const isVisitorPublicTwin =
+      publicOnly && input.ownerUserId !== input.userId;
+    if (isVisitorPublicTwin && this.twinInboxPush) {
+      void this.twinInboxPush
+        .notifyVisitorQuestion({
+          ownerUserId: input.ownerUserId,
+          visitorUserId: input.userId,
+          conversationId,
+          questionPreview: question,
+        })
+        .catch((err) => {
+          console.warn("[twin-inbox-push]", err);
+        });
+    }
 
     const intel = await this.intelligence.prepare({
       ownerUserId: input.ownerUserId,

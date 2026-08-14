@@ -13,6 +13,14 @@ export type ReviewEntity = {
   reviewerUsername: string;
 };
 
+export type FollowerActivity = {
+  id: string;
+  followerId: string;
+  createdAt: Date;
+  displayName: string;
+  username: string;
+};
+
 export class PrismaSocialRepository {
   async isFollowing(followerId: string, followingId: string): Promise<boolean> {
     const row = await prisma.follow.findUnique({
@@ -77,6 +85,32 @@ export class PrismaSocialRepository {
         data: { followingCount: { decrement: 1 } },
       });
     });
+  }
+
+  async listRecentFollowers(
+    followingId: string,
+    limit = 15,
+  ): Promise<FollowerActivity[]> {
+    const rows = await prisma.follow.findMany({
+      where: { followingId },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      include: {
+        follower: {
+          include: {
+            profile: { select: { displayName: true, username: true } },
+          },
+        },
+      },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      followerId: row.followerId,
+      createdAt: row.createdAt,
+      displayName: row.follower.profile?.displayName ?? "Member",
+      username: row.follower.profile?.username ?? "unknown",
+    }));
   }
 
   async listReviews(revieweeId: string, limit = 20): Promise<ReviewEntity[]> {

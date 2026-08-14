@@ -9,6 +9,11 @@ import { ProcessImportJob } from "@/application/import/process-import-job";
 import { SyncAuthenticatedUser } from "@/application/auth/sync-authenticated-user";
 import { UploadKnowledge } from "@/application/knowledge/upload-knowledge";
 import { ProcessKnowledgeSource } from "@/application/knowledge/process-knowledge-source";
+import { TwinInboxPushNotifier } from "@/application/notifications/twin-inbox-push-notifier";
+import { SocialActivityPushNotifier } from "@/application/notifications/social-activity-push-notifier";
+import { ConsultationRequestPushNotifier } from "@/application/notifications/consultation-request-push-notifier";
+import { MarketplaceOrderPushNotifier } from "@/application/notifications/marketplace-order-push-notifier";
+import { CreatorPayoutPushNotifier } from "@/application/notifications/creator-payout-push-notifier";
 import { AskTwin } from "@/application/chat/ask-twin";
 import { CreateSubscriptionCheckout } from "@/application/billing/create-subscription-checkout";
 import { CreateMarketplaceCheckout } from "@/application/billing/create-marketplace-checkout";
@@ -29,6 +34,9 @@ import { PrismaBillingRepository } from "@/infrastructure/database/repositories/
 import { PrismaMarketplaceRepository } from "@/infrastructure/database/repositories/marketplace-repository";
 import { PrismaOrganizationRepository } from "@/infrastructure/database/repositories/organization-repository";
 import { PrismaApiKeyRepository } from "@/infrastructure/database/repositories/api-key-repository";
+import { PrismaPushDeviceRepository } from "@/infrastructure/database/repositories/push-device-repository";
+import { PrismaTwinInboxReadRepository } from "@/infrastructure/database/repositories/twin-inbox-read-repository";
+import { PrismaSocialActivityReadRepository } from "@/infrastructure/database/repositories/social-activity-read-repository";
 import { PrismaConsultationRepository } from "@/infrastructure/database/repositories/consultation-repository";
 import { PrismaImportJobRepository } from "@/infrastructure/database/repositories/import-job-repository";
 import { PrismaGraphRepository } from "@/infrastructure/database/repositories/graph-repository";
@@ -44,6 +52,8 @@ import { RecommendationService } from "@/application/recommendations/recommendat
 import { PlatformFeeService } from "@/application/monetization/platform-fee-service";
 import { CreatorWalletService } from "@/application/monetization/creator-wallet-service";
 import { MarketplaceEventService } from "@/application/monetization/marketplace-event-service";
+import { MarketplaceRefundService } from "@/application/monetization/marketplace-refund-service";
+import { ProviderPaymentRefundService } from "@/application/billing/provider-payment-refund-service";
 import { MarketplaceGraphSyncService } from "@/application/monetization/marketplace-graph-sync-service";
 import { MarketplaceFulfillmentService } from "@/application/monetization/marketplace-fulfillment-service";
 import { ProductPublishService } from "@/application/monetization/product-publish-service";
@@ -79,6 +89,9 @@ const billing = new PrismaBillingRepository();
 const marketplace = new PrismaMarketplaceRepository();
 const organizations = new PrismaOrganizationRepository();
 const apiKeys = new PrismaApiKeyRepository();
+const pushDevices = new PrismaPushDeviceRepository();
+const twinInboxReads = new PrismaTwinInboxReadRepository();
+const socialActivityReads = new PrismaSocialActivityReadRepository();
 const consultations = new PrismaConsultationRepository();
 const importJobs = new PrismaImportJobRepository();
 const graphRepo = new PrismaGraphRepository();
@@ -131,6 +144,14 @@ const twinContext = new TwinContextService(
   twinIntelligence,
 );
 const twinEvaluation = new TwinEvaluationService();
+const twinInboxPush = new TwinInboxPushNotifier(pushDevices, profiles);
+const socialActivityPush = new SocialActivityPushNotifier(pushDevices, profiles);
+const consultationRequestPush = new ConsultationRequestPushNotifier(pushDevices);
+const marketplaceOrderPush = new MarketplaceOrderPushNotifier(
+  pushDevices,
+  profiles,
+);
+const creatorPayoutPush = new CreatorPayoutPushNotifier(pushDevices);
 
 const platformFees = new PlatformFeeService();
 const creatorWallet = new CreatorWalletService();
@@ -141,12 +162,19 @@ const marketplaceFulfillment = new MarketplaceFulfillmentService(
   creatorWallet,
   marketplaceGraphSync,
   marketplaceEvents,
+  marketplaceOrderPush,
 );
 const productPublish = new ProductPublishService(marketplace, marketplaceGraphSync);
 const monetizationAnalytics = new MonetizationAnalyticsService(marketplace);
 const twinMonetization = new TwinMonetizationService();
 const library = new LibraryService();
 const reviews = new ReviewService();
+const marketplaceRefunds = new MarketplaceRefundService(
+  creatorWallet,
+  marketplaceEvents,
+  new ProviderPaymentRefundService(),
+  marketplaceOrderPush,
+);
 const growthJobRunner = new GrowthJobRunner(graphService);
 const growthAgent = GrowthAgentService.create(graphService);
 const growthProspects = new GrowthProspectService();
@@ -172,7 +200,12 @@ export const container = {
     auditLogs,
   ),
   processKnowledgeSource,
-  askTwin: new AskTwin(knowledge, conversations, twinIntelligence),
+  askTwin: new AskTwin(
+    knowledge,
+    conversations,
+    twinIntelligence,
+    twinInboxPush,
+  ),
   createSubscriptionCheckout: new CreateSubscriptionCheckout(billing),
   activatePayPalSubscription: new ActivatePayPalSubscription(billing, auditLogs),
   createMarketplaceCheckout: new CreateMarketplaceCheckout(marketplace, billing),
@@ -201,6 +234,14 @@ export const container = {
   marketplace,
   organizations,
   apiKeys,
+  pushDevices,
+  twinInboxReads,
+  socialActivityReads,
+  twinInboxPush,
+  socialActivityPush,
+  consultationRequestPush,
+  marketplaceOrderPush,
+  creatorPayoutPush,
   consultations,
   importJobs,
   auditLogs,
@@ -229,6 +270,7 @@ export const container = {
   twinMonetization,
   library,
   reviews,
+  marketplaceRefunds,
   marketplaceEvents,
   growthAgent,
   growthJobRunner,

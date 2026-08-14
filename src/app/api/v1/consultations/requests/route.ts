@@ -82,6 +82,15 @@ export async function POST(request: Request) {
       metadata: { expertUserId: profile.userId },
     });
 
+    void container.consultationRequestPush
+      .notifyNewRequest({
+        expertUserId: profile.userId,
+        requestId: created.id,
+        requesterName: name,
+        messagePreview: body.message?.trim() || null,
+      })
+      .catch(() => undefined);
+
     return jsonCreated({ request: created });
   } catch (error) {
     return jsonError(error);

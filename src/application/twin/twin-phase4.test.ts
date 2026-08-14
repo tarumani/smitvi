@@ -6,6 +6,20 @@ import { TwinEvaluationService } from "@/application/twin/twin-evaluation-servic
 import { TwinResponseGenerator } from "@/application/twin/twin-response-generator";
 import { INSUFFICIENT_EVIDENCE_REPLY } from "@/config/twin-ai";
 
+describe("Twin structured context", () => {
+  it("instructs careful phrasing for unverified AI assumptions", () => {
+    const gen = new TwinResponseGenerator();
+    const prompt = gen.buildSystemPrompt({
+      ownerDisplayName: "Alex",
+      mode: "factual",
+      claimLevel: "INFERRED",
+      contradictions: [],
+    });
+    expect(prompt).toMatch(/USER_VERIFIED/);
+    expect(prompt).toMatch(/It appears that this person has experience/);
+  });
+});
+
 describe("TwinQueryUnderstandingService", () => {
   const svc = new TwinQueryUnderstandingService();
 

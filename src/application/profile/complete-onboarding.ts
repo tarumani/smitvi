@@ -24,6 +24,11 @@ export class CompleteOnboarding {
       metadata: { onboardingCompleted: true },
     });
 
+    const { ProfileActivationService } = await import(
+      "@/application/onboarding/profile-activation-service"
+    );
+    await new ProfileActivationService().refresh(userId).catch(() => undefined);
+
     return profile;
   }
 }

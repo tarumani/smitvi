@@ -76,6 +76,14 @@ export class UploadKnowledge {
     if (!ready) {
       throw new Error("Knowledge source disappeared after processing");
     }
+    void import("@/application/intelligence/record-meaningful-activity").then(
+      ({ recordMeaningfulActivity }) =>
+        recordMeaningfulActivity({
+          userId: input.userId!,
+          type: "KNOWLEDGE_ADDED",
+          title: `Published knowledge: ${title.slice(0, 80)}`,
+        }),
+    );
     return ready;
   }
 }

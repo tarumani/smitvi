@@ -15,6 +15,7 @@ import {
   MessageSquare,
   Settings,
   Shield,
+  Sparkles,
   Users,
 } from "lucide-react";
 import { AccountMenu } from "@/components/landing/account-menu";
@@ -34,6 +35,7 @@ type AppShellProps = {
 
 const baseNavItems = [
   { href: ROUTES.hub.dashboard, label: "Dashboard", icon: LayoutDashboard },
+  { href: ROUTES.hub.today, label: "Today", icon: Sparkles },
   { href: ROUTES.hub.intelligence, label: TRAIN_TWIN_LABEL, icon: BookOpen },
   { href: ROUTES.marketplaceSell, label: "Sell your expertise", icon: CircleDollarSign },
   { href: ROUTES.hub.leads, label: "Leads", icon: Users },
@@ -47,6 +49,7 @@ const baseNavItems = [
 ] as const;
 
 const mobileNavItems = [
+  { href: ROUTES.hub.today, label: "Today", icon: Sparkles },
   { href: ROUTES.hub.dashboard, label: "Home", icon: LayoutDashboard },
   { href: ROUTES.hub.intelligence, label: TRAIN_TWIN_NAV_SHORT, icon: BookOpen },
   { href: ROUTES.organizations, label: "Orgs", icon: Building2 },

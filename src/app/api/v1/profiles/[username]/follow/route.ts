@@ -18,7 +18,21 @@ export async function POST(_request: Request, context: RouteContext) {
     }
 
     await container.social.follow(session.user.id, profile.userId);
-    await container.profiles.findByUsername(username);
+    void import("@/application/intelligence/record-meaningful-activity").then(
+      ({ recordMeaningfulActivity }) =>
+        recordMeaningfulActivity({
+          userId: session.user.id,
+          type: "CONNECTION_MADE",
+          title: `Connected with ${profile.displayName}`,
+        }),
+    );
+
+    void container.socialActivityPush
+      .notifyNewFollower({
+        hubOwnerUserId: profile.userId,
+        followerUserId: session.user.id,
+      })
+      .catch((err) => console.warn("[push:follow]", err));
 
     return jsonOk({ following: true });
   } catch (error) {

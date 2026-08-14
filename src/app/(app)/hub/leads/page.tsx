@@ -5,6 +5,7 @@ import { getCurrentSession } from "@/application/auth/get-current-session";
 import { container } from "@/application/container";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ROUTES } from "@/config/constants";
+import { IntelligenceAlerts } from "@/components/intelligence/intelligence-alerts";
 
 export const metadata: Metadata = {
   title: "Leads",
@@ -69,6 +70,8 @@ export default async function HubLeadsPage() {
           place.
         </p>
       </div>
+
+      <IntelligenceAlerts userId={userId} />
 
       {leads.length === 0 ? (
         <GlassCard className="p-6 text-sm text-[var(--muted-foreground)]">

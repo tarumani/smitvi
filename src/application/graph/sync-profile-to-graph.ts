@@ -131,6 +131,70 @@ export class SyncProfileToGraph {
       count += 1;
     }
 
+    const expertiseAreas = Array.isArray(profile.expertiseAreas)
+      ? (profile.expertiseAreas as unknown[]).filter(
+          (i): i is string => typeof i === "string" && i.trim().length > 0,
+        )
+      : [];
+    for (const area of expertiseAreas) {
+      const entity = await this.graph.createEntity({
+        entityType: "PROFESSION",
+        name: area.trim(),
+        ownerUserId: null,
+        visibility: "PUBLIC",
+        aliasSource: "USER",
+      });
+      await this.graph.createRelationship({
+        sourceEntityId: userEntity.id,
+        relationshipType: "USER_HAS_EXPERTISE",
+        targetEntityId: entity.id,
+        confidenceScore: 1,
+        source: "PROFILE",
+        verified: true,
+        verificationStatus: "USER_VERIFIED",
+        evidence: {
+          sourceType: "PROFILE_FIELD",
+          sourceId: profile.id,
+          contentReference: "expertise_areas",
+          contentExcerpt: area.slice(0, 200),
+          confidence: 1,
+        },
+      });
+      count += 1;
+    }
+
+    const industries = Array.isArray(profile.industries)
+      ? (profile.industries as unknown[]).filter(
+          (i): i is string => typeof i === "string" && i.trim().length > 0,
+        )
+      : [];
+    for (const industry of industries) {
+      const entity = await this.graph.createEntity({
+        entityType: "INDUSTRY",
+        name: industry.trim(),
+        ownerUserId: null,
+        visibility: "PUBLIC",
+        aliasSource: "USER",
+      });
+      await this.graph.createRelationship({
+        sourceEntityId: userEntity.id,
+        relationshipType: "USER_WORKS_IN_INDUSTRY",
+        targetEntityId: entity.id,
+        confidenceScore: 1,
+        source: "PROFILE",
+        verified: true,
+        verificationStatus: "USER_VERIFIED",
+        evidence: {
+          sourceType: "PROFILE_FIELD",
+          sourceId: profile.id,
+          contentReference: "industries",
+          contentExcerpt: industry.slice(0, 200),
+          confidence: 1,
+        },
+      });
+      count += 1;
+    }
+
     const interests = Array.isArray(profile.interests)
       ? (profile.interests as unknown[]).filter(
           (i): i is string => typeof i === "string" && i.trim().length > 0,

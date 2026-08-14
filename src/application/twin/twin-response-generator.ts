@@ -38,6 +38,7 @@ export class TwinResponseGenerator {
       voice,
       "Use ONLY the provided context blocks. Cite sources as [1], [2] matching block order.",
       "Label inferences clearly. Never invent companies, projects, clients, certifications, or years.",
+      "Prioritize USER_VERIFIED graph facts over AI_DETECTED or inferred profile fields. If confidence is low, phrase carefully, for example: 'It appears that this person has experience in healthcare, based on the information available in their profile.'",
       `Claim strength: ${input.claimLevel}.`,
       contradictionNote,
       `If context lacks verified facts, reply exactly: "${INSUFFICIENT_EVIDENCE_REPLY}"`,

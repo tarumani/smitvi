@@ -145,6 +145,12 @@ export const createProfileSchema = z.object({
       "connect",
       "build",
       "celebrate",
+      "ai_welcome",
+      "ai_type",
+      "ai_tell",
+      "ai_review",
+      "ai_questions",
+      "ai_ready",
     ])
     .optional()
     .nullable(),
@@ -156,6 +162,19 @@ export const updateProfileSchema = createProfileSchema.partial().extend({
   username: usernameSchema.optional(),
   displayName: displayNameSchema.optional(),
   publicTwinEnabled: z.boolean().optional(),
+  appearInExpertDiscovery: z.boolean().optional(),
+  allowRecommendations: z.boolean().optional(),
+  profileType: z
+    .enum([
+      "PROFESSIONAL",
+      "CREATOR",
+      "FREELANCER",
+      "EDUCATOR",
+      "FOUNDER",
+      "STUDENT",
+    ])
+    .optional()
+    .nullable(),
   portfolio: z.array(portfolioItemSchema).max(20).optional(),
 });
 

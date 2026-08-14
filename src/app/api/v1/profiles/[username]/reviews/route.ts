@@ -49,6 +49,16 @@ export async function POST(request: Request, context: RouteContext) {
       comment: parsed.data.comment,
     });
 
+    void container.socialActivityPush
+      .notifyNewReview({
+        revieweeUserId: profile.userId,
+        reviewerUserId: session.user.id,
+        rating: review.rating,
+        reviewerName: review.reviewerName,
+        reviewerUsername: review.reviewerUsername,
+      })
+      .catch((err) => console.warn("[push:review]", err));
+
     return jsonCreated({ review });
   } catch (error) {
     return jsonError(error);

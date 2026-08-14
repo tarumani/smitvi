@@ -42,6 +42,8 @@ type FormState = {
   skills: string;
   avatarUrl: string;
   publicTwinEnabled: boolean;
+  appearInExpertDiscovery: boolean;
+  allowRecommendations: boolean;
 };
 
 export function ProfileForm({
@@ -66,6 +68,8 @@ export function ProfileForm({
     skills: initialProfile?.skills.map((skill) => skill.name).join(", ") ?? "",
     avatarUrl: initialProfile?.avatarUrl ?? "",
     publicTwinEnabled: initialProfile?.publicTwinEnabled ?? true,
+    appearInExpertDiscovery: initialProfile?.appearInExpertDiscovery ?? false,
+    allowRecommendations: initialProfile?.allowRecommendations ?? true,
   });
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -121,6 +125,8 @@ export function ProfileForm({
           skills: skillList,
           visibility: "PUBLIC" as const,
           publicTwinEnabled: form.publicTwinEnabled,
+          appearInExpertDiscovery: form.appearInExpertDiscovery,
+          allowRecommendations: form.allowRecommendations,
           ...(onboardingMode
             ? { onboardingStep: "celebrate" as const }
             : {}),
@@ -341,6 +347,34 @@ export function ProfileForm({
             className="h-4 w-4 rounded border-[var(--border)]"
           />
           Enable public Twin chat on my profile
+        </label>
+      ) : null}
+
+      {!onboardingMode ? (
+        <label className="flex items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            checked={form.appearInExpertDiscovery}
+            onChange={(event) =>
+              updateField("appearInExpertDiscovery", event.target.checked)
+            }
+            className="h-4 w-4 rounded border-[var(--border)]"
+          />
+          Appear in Expert Discovery
+        </label>
+      ) : null}
+
+      {!onboardingMode ? (
+        <label className="flex items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            checked={form.allowRecommendations}
+            onChange={(event) =>
+              updateField("allowRecommendations", event.target.checked)
+            }
+            className="h-4 w-4 rounded border-[var(--border)]"
+          />
+          Allow recommendations
         </label>
       ) : null}
 

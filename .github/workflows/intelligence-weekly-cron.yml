@@ -1,0 +1,16 @@
+name: Intelligence weekly report
+
+on:
+  schedule:
+    - cron: "0 13 * * 1"
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate weekly intelligence reports
+        run: |
+          curl -fsS -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "https://smitvi.com/api/cron/intelligence-weekly-report"

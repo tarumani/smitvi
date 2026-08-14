@@ -69,6 +69,49 @@ enum AuditAction {
   CONSULTATION_OFFER_UPDATED
   CONSULTATION_REQUESTED
   CONSULTATION_REQUEST_UPDATED
+  PROFILE_ONBOARDING_STARTED
+  PROFILE_TYPE_SELECTED
+  PROFILE_AI_ANALYSIS_REQUESTED
+  PROFILE_AI_ANALYSIS_COMPLETED
+  PROFILE_AI_SUGGESTION_ACCEPTED
+  PROFILE_AI_SUGGESTION_REJECTED
+  PROFILE_PROJECT_GENERATED
+  PROFILE_ACTIVATED
+  PROFILE_INTELLIGENCE_READY
+  PROFILE_DISCOVERABILITY_ENABLED
+  PROFILE_IMPROVE_WITH_AI_STARTED
+  PROFILE_IMPROVE_WITH_AI_COMPLETED
+  INTELLIGENCE_UPDATE_CONFIRMED
+  INTELLIGENCE_ACTION_COMPLETED
+  INTELLIGENCE_WEEKLY_REPORT
+}
+
+enum ProfileType {
+  PROFESSIONAL
+  CREATOR
+  FREELANCER
+  EDUCATOR
+  FOUNDER
+  STUDENT
+}
+
+enum ProfileActivationStatus {
+  REGISTERED
+  ONBOARDING_STARTED
+  PROFILE_DRAFTED
+  PROFILE_REVIEWED
+  PROFILE_ACTIVATED
+  INTELLIGENCE_READY
+  DISCOVERABLE
+  MONETIZABLE
+}
+
+enum IntelligenceReadinessLevel {
+  STARTING
+  BUILDING
+  GROWING
+  INTELLIGENT
+  INTELLIGENCE_READY
 }
 
 enum OrgRole {
@@ -229,6 +272,12 @@ enum CreatorPayoutStatus {
   ON_HOLD
 }
 
+enum CreatorPendingCreditStatus {
+  PENDING
+  SETTLED
+  REVERSED
+}
+
 enum TwinAccessMode {
   FREE
   PAID
@@ -256,6 +305,13 @@ enum MarketplaceRefundStatus {
   PROCESSING
   COMPLETED
   FAILED
+  DISPUTED
+}
+
+enum MarketplaceRefundKind {
+  FULL
+  PARTIAL
+  DISPUTE
 }
 
 model User {
@@ -305,12 +361,21 @@ model User {
   twinFeedback                 TwinFeedback[]
   creatorWallet                CreatorWallet?
   creatorPayouts               CreatorPayout[]
+  creatorPendingCredits        CreatorPendingCredit[]
   twinMonetizationSettings     TwinMonetizationSettings?
   twinCreatorSubscriptionsAsCreator TwinCreatorSubscription[] @relation("TwinCreator")
   twinCreatorSubscriptionsAsSubscriber TwinCreatorSubscription[] @relation("TwinSubscriber")
   marketplaceAccessGrants      MarketplaceAccess[]
   marketplaceReviews           MarketplaceReview[]
   marketplaceEvents            MarketplaceEvent[]
+  pushDevices                  PushDevice[]
+  twinInboxReads               TwinInboxRead[]
+  socialActivityReads          SocialActivityRead[]
+  dailyIntelligenceSnapshots   DailyIntelligenceSnapshot[]
+  nextBestActions              NextBestAction[]
+  userActionCompletions        UserActionCompletion[]
+  weeklyIntelligenceReports    WeeklyIntelligenceReport[]
+  meaningfulActivities         MeaningfulActivity[]
 
   @@index([role])
   @@index([plan])
@@ -351,6 +416,23 @@ model Profile {
   activationNudgeSentAt DateTime?      @map("activation_nudge_sent_at")
   listingNudgeSentAt    DateTime?      @map("listing_nudge_sent_at")
   referrerUsername      String?        @map("referrer_username") @db.VarChar(30)
+  profileType                  ProfileType?               @map("profile_type")
+  activationStatus             ProfileActivationStatus    @default(REGISTERED) @map("activation_status")
+  intelligenceReadinessScore   Int                        @default(0) @map("intelligence_readiness_score")
+  intelligenceReadinessLevel   IntelligenceReadinessLevel @default(STARTING) @map("intelligence_readiness_level")
+  onboardingCompletedAt        DateTime?                  @map("onboarding_completed_at")
+  profileActivatedAt           DateTime?                  @map("profile_activated_at")
+  intelligenceReadyAt          DateTime?                  @map("intelligence_ready_at")
+  discoverableAt               DateTime?                  @map("discoverable_at")
+  monetizableAt                DateTime?                  @map("monetizable_at")
+  profileAIAnalysisVersion     Int                        @default(0) @map("profile_ai_analysis_version")
+  onboardingDraft              Json?                      @map("onboarding_draft")
+  expertiseAreas               Json                       @default("[]") @map("expertise_areas")
+  industries                   Json                       @default("[]")
+  appearInExpertDiscovery      Boolean                    @default(false) @map("appear_in_expert_discovery")
+  allowRecommendations         Boolean                    @default(true) @map("allow_recommendations")
+  lastMeaningfulActivityAt     DateTime?                  @map("last_meaningful_activity_at")
+  lastReengagementNotifiedAt   DateTime?                  @map("last_reengagement_notified_at")
   createdAt          DateTime          @default(now()) @map("created_at")
   updatedAt          DateTime          @updatedAt @map("updated_at")
 
@@ -365,6 +447,9 @@ model Profile {
   @@index([createdAt])
   @@index([ratingAverage])
   @@index([referrerUsername])
+  @@index([activationStatus])
+  @@index([profileType])
+  @@index([intelligenceReadinessScore])
   @@map("profiles")
 }
 
@@ -556,6 +641,48 @@ model ConversationMessage {
 
   @@index([conversationId, createdAt])
   @@map("conversation_messages")
+}
+
+model PushDevice {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  expoPushToken String   @map("expo_push_token") @db.VarChar(512)
+  platform      String?  @db.VarChar(32)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, expoPushToken])
+  @@index([userId])
+  @@map("push_devices")
+}
+
+model TwinInboxRead {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  conversationId String   @map("conversation_id") @db.Uuid
+  readAt         DateTime @default(now()) @map("read_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, conversationId])
+  @@index([userId])
+  @@map("twin_inbox_reads")
+}
+
+/// Per-user read markers for FOLLOW / REVIEW notification rows (mobile + API).
+model SocialActivityRead {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  activityKey String  @map("activity_key") @db.VarChar(80)
+  readAt     DateTime @default(now()) @map("read_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, activityKey])
+  @@index([userId])
+  @@map("social_activity_reads")
 }
 
 model ChatUsageDaily {
@@ -1302,6 +1429,26 @@ model CreatorWallet {
   @@map("creator_wallets")
 }
 
+/// Per-sale pending credit; hold clock is creditedAt, not wallet.updatedAt.
+model CreatorPendingCredit {
+  id          String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String                     @map("user_id") @db.Uuid
+  orderId     String?                    @unique @map("order_id") @db.Uuid
+  amountCents Int                        @map("amount_cents")
+  currency    String                     @db.VarChar(3)
+  status      CreatorPendingCreditStatus @default(PENDING)
+  creditedAt  DateTime                   @default(now()) @map("credited_at")
+  settledAt   DateTime?                  @map("settled_at")
+  createdAt   DateTime                   @default(now()) @map("created_at")
+  updatedAt   DateTime                   @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, creditedAt])
+  @@index([userId, status, creditedAt])
+  @@map("creator_pending_credits")
+}
+
 model CreatorPayout {
   id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId        String              @map("user_id") @db.Uuid
@@ -1354,14 +1501,22 @@ model MarketplaceReview {
 }
 
 model MarketplaceRefund {
-  id        String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  orderId   String                  @unique @map("order_id") @db.Uuid
-  status    MarketplaceRefundStatus @default(REQUESTED)
-  reason    String?                 @db.VarChar(500)
-  createdAt DateTime                @default(now()) @map("created_at")
-  updatedAt DateTime                @updatedAt @map("updated_at")
+  id                 String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId            String                  @unique @map("order_id") @db.Uuid
+  status             MarketplaceRefundStatus @default(REQUESTED)
+  kind               MarketplaceRefundKind   @default(FULL)
+  /** Gross cents to return to buyer. Null = full order gross. */
+  amountCents        Int?                    @map("amount_cents")
+  /** When true (full refunds), library access is revoked on COMPLETED. */
+  revokeAccess       Boolean                 @default(true) @map("revoke_access")
+  reason             String?                 @db.VarChar(500)
+  externalRefundId   String?                 @map("external_refund_id") @db.VarChar(120)
+  providerRefundedAt DateTime?               @map("provider_refunded_at")
+  createdAt          DateTime                @default(now()) @map("created_at")
+  updatedAt          DateTime                @updatedAt @map("updated_at")
 
   @@index([status, createdAt])
+  @@index([kind, createdAt])
   @@map("marketplace_refunds")
 }
 
@@ -1726,5 +1881,140 @@ model GrowthJob {
 
   @@index([status, jobType])
   @@map("growth_jobs")
+}
+
+enum IntelligenceActionType {
+  COMPLETE_PROFILE
+  ADD_SKILL
+  CONFIRM_SKILL
+  ADD_EXPERIENCE
+  ADD_PROJECT
+  ADD_KNOWLEDGE
+  UPDATE_INTELLIGENCE
+  IMPROVE_TWIN
+  CONNECT_EXPERT
+  REVIEW_RECOMMENDATION
+  EXPLORE_TOPIC
+  RESPOND_TO_OPPORTUNITY
+  CREATE_GUIDE
+  CREATE_PRODUCT
+  CREATE_CONSULTATION
+  ACTIVATE_DISCOVERY
+  REVIEW_WEEKLY_REPORT
+}
+
+enum IntelligenceActionStatus {
+  PENDING
+  COMPLETED
+  DISMISSED
+  EXPIRED
+}
+
+enum MeaningfulActivityType {
+  PROFILE_UPDATED
+  SKILL_CONFIRMED
+  PROJECT_ADDED
+  EXPERIENCE_ADDED
+  KNOWLEDGE_ADDED
+  GRAPH_UPDATED
+  TWIN_USED
+  TWIN_TAUGHT
+  CONNECTION_MADE
+  RECOMMENDATION_REVIEWED
+  ACTION_COMPLETED
+  MARKETPLACE_ACTIVITY
+  INTELLIGENCE_UPDATE
+  DISCOVERY_ENABLED
+}
+
+enum IntelligenceUpdateVisibility {
+  PRIVATE
+  PROFILE
+  PUBLIC
+}
+
+model DailyIntelligenceSnapshot {
+  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                String   @map("user_id") @db.Uuid
+  date                  DateTime @db.Date
+  readinessScore        Int      @map("readiness_score")
+  readinessDelta        Int      @default(0) @map("readiness_delta")
+  primaryActionId       String?  @map("primary_action_id") @db.Uuid
+  recommendationSummary Json     @default("{}") @map("recommendation_summary")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([date])
+  @@map("daily_intelligence_snapshots")
+}
+
+model NextBestAction {
+  id          String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String                    @map("user_id") @db.Uuid
+  type        IntelligenceActionType
+  title       String                    @db.VarChar(200)
+  description String                    @db.VarChar(600)
+  priority    Int
+  status      IntelligenceActionStatus  @default(PENDING)
+  generatedAt DateTime                  @default(now()) @map("generated_at")
+  completedAt DateTime?                 @map("completed_at")
+  dismissedAt DateTime?                 @map("dismissed_at")
+  expiresAt   DateTime?                 @map("expires_at")
+  metadata    Json                      @default("{}")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status, generatedAt])
+  @@index([userId, type, generatedAt])
+  @@map("next_best_actions")
+}
+
+model UserActionCompletion {
+  id         String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String                  @map("user_id") @db.Uuid
+  actionType IntelligenceActionType  @map("action_type")
+  source     String                  @db.VarChar(64)
+  impact     Json                    @default("{}")
+  completedAt DateTime               @default(now()) @map("completed_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, completedAt])
+  @@index([actionType, completedAt])
+  @@map("user_action_completions")
+}
+
+model WeeklyIntelligenceReport {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  weekStart       DateTime @map("week_start") @db.Date
+  weekEnd         DateTime @map("week_end") @db.Date
+  metricsSnapshot Json     @map("metrics_snapshot")
+  summary         String   @db.VarChar(800)
+  recommendations Json     @default("[]")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekStart])
+  @@index([weekStart])
+  @@map("weekly_intelligence_reports")
+}
+
+model MeaningfulActivity {
+  id        String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String                 @map("user_id") @db.Uuid
+  type      MeaningfulActivityType
+  title     String                 @db.VarChar(240)
+  metadata  Json                   @default("{}")
+  createdAt DateTime               @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+  @@map("meaningful_activities")
 }
 

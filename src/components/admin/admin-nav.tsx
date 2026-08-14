@@ -15,6 +15,8 @@ const items = [
   { href: ROUTES.adminRecommendations, label: "Recommendations" },
   { href: ROUTES.adminTwin, label: "AI Twin" },
   { href: ROUTES.adminMarketplace, label: "Marketplace" },
+  { href: ROUTES.adminActivation, label: "Activation" },
+  { href: ROUTES.adminIntelligence, label: "Intelligence" },
   { href: ROUTES.adminModeration, label: "Flags" },
 ] as const;
 

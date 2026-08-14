@@ -125,6 +125,18 @@ export class CreateMarketplaceCheckout {
       keyId: process.env.RAZORPAY_KEY_ID!,
       amountCents: order.grossAmountCents,
       currency: order.currency,
+      /** Mobile / in-app browser: hosted Checkout.js bridge (API route, not portal UI). */
+      checkoutUrl: `${appUrl}/api/v1/marketplace/checkout/razorpay-pay?${new URLSearchParams(
+        {
+          key: process.env.RAZORPAY_KEY_ID!,
+          order_id: String(rpOrder.id),
+          amount: String(order.grossAmountCents),
+          currency: order.currency,
+          smitvi_order: order.id,
+          listing_id: order.listingId,
+          name: order.listing.title.slice(0, 80),
+        },
+      ).toString()}`,
     };
   }
 }

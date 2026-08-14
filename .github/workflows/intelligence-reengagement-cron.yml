@@ -1,0 +1,16 @@
+name: Intelligence re-engagement
+
+on:
+  schedule:
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send intelligence re-engagement
+        run: |
+          curl -fsS -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "https://smitvi.com/api/cron/intelligence-reengagement"

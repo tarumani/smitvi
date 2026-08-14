@@ -123,6 +123,35 @@ export async function readUpload(storagePath: string): Promise<Buffer> {
   return Buffer.from(await data.arrayBuffer());
 }
 
+/**
+ * Time-limited URL for private objects. Returns null when the driver cannot
+ * mint a third-party signed URL (local storage) — callers should use the
+ * authenticated API stream instead.
+ */
+export async function createSignedDownloadUrl(
+  storagePath: string,
+  expiresInSeconds = 300,
+): Promise<string | null> {
+  const driver = getStorageDriver();
+  if (driver === "local") {
+    return null;
+  }
+
+  const bucket = await ensureSupabaseBucket();
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .createSignedUrl(storagePath, expiresInSeconds);
+
+  if (error || !data?.signedUrl) {
+    throw new ValidationError(
+      `Could not create signed download URL: ${error?.message ?? "unknown"}`,
+    );
+  }
+
+  return data.signedUrl;
+}
+
 export async function deleteUpload(storagePath: string): Promise<void> {
   const driver = getStorageDriver();
   if (driver === "local") {

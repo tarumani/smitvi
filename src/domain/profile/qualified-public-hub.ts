@@ -7,6 +7,7 @@ import type { Prisma } from "@/generated/prisma/client";
 export const qualifiedPublicHubProfileWhere = {
   visibility: "PUBLIC",
   isOnboarded: true,
+  appearInExpertDiscovery: true,
   user: {
     knowledgeSources: {
       some: { isPublic: true, status: "READY" },

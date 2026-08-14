@@ -8,6 +8,21 @@ export type ConversationSummary = {
   createdAt: Date;
 };
 
+export type UserConversationListItem = ConversationSummary & {
+  ownerUserId: string;
+  owner: {
+    userId: string;
+    displayName: string | null;
+    username: string | null;
+    avatarUrl: string | null;
+  };
+  lastMessage: {
+    role: "USER" | "ASSISTANT" | "SYSTEM";
+    content: string;
+    createdAt: Date;
+  } | null;
+};
+
 export type ConversationMessageEntity = {
   id: string;
   role: "USER" | "ASSISTANT" | "SYSTEM";
@@ -49,6 +64,71 @@ export class PrismaConversationRepository {
         createdAt: true,
       },
       take: 50,
+    });
+  }
+
+  async listForUserDetailed(userId: string): Promise<UserConversationListItem[]> {
+    const rows = await prisma.conversation.findMany({
+      where: { userId },
+      orderBy: { updatedAt: "desc" },
+      take: 50,
+      select: {
+        id: true,
+        title: true,
+        updatedAt: true,
+        createdAt: true,
+        ownerUserId: true,
+        messages: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: {
+            role: true,
+            content: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    const ownerIds = [...new Set(rows.map((row) => row.ownerUserId))];
+    const profiles =
+      ownerIds.length > 0
+        ? await prisma.profile.findMany({
+            where: { userId: { in: ownerIds } },
+            select: {
+              userId: true,
+              displayName: true,
+              username: true,
+              avatarUrl: true,
+            },
+          })
+        : [];
+    const profileByUserId = new Map(
+      profiles.map((profile) => [profile.userId, profile]),
+    );
+
+    return rows.map((row) => {
+      const profile = profileByUserId.get(row.ownerUserId);
+      return {
+        id: row.id,
+        title: row.title,
+        updatedAt: row.updatedAt,
+        createdAt: row.createdAt,
+        ownerUserId: row.ownerUserId,
+        owner: {
+          userId: row.ownerUserId,
+          displayName: profile?.displayName ?? null,
+          username: profile?.username ?? null,
+          avatarUrl: profile?.avatarUrl ?? null,
+        },
+        lastMessage: row.messages[0]
+          ? {
+              role: row.messages[0].role,
+              content: row.messages[0].content,
+              createdAt: row.messages[0].createdAt,
+            }
+          : null,
+      };
     });
   }
 

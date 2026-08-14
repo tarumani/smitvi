@@ -8,7 +8,15 @@ export async function GET() {
     const session = await requireSession();
     getRateLimiter().consume(`marketplace:orders:${session.user.id}`);
     const orders = await container.marketplace.listOrdersForUser(session.user.id);
-    return jsonOk({ orders });
+    const refundMap = await container.marketplaceRefunds.mapForOrders(
+      orders.map((o) => o.id),
+    );
+    return jsonOk({
+      orders: orders.map((o) => ({
+        ...o,
+        refund: refundMap.get(o.id) ?? null,
+      })),
+    });
   } catch (error) {
     return jsonError(error);
   }

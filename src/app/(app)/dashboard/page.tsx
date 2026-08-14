@@ -12,6 +12,8 @@ import {
   TRAIN_TWIN_LABEL,
 } from "@/config/constants";
 import { IntelligenceActivationHub } from "@/components/dashboard/intelligence-activation-hub";
+import { ImproveIntelligenceBanner } from "@/components/dashboard/improve-intelligence-banner";
+import { IntelligenceAlerts } from "@/components/intelligence/intelligence-alerts";
 import { ForYouFeed } from "@/components/recommendations/for-you-feed";
 import { TwinLaunchWizard } from "@/components/dashboard/twin-launch-wizard";
 import { HubSharePromo } from "@/components/dashboard/hub-share-promo";
@@ -159,6 +161,13 @@ export default async function DashboardPage({
           >
             @{session.profile.username}
           </Link>
+          {" · "}
+          <Link
+            href={ROUTES.hub.today}
+            className="text-[var(--accent)] hover:underline"
+          >
+            Your Intelligence Today
+          </Link>
         </p>
       </div>
 
@@ -170,6 +179,18 @@ export default async function DashboardPage({
         listingCount={sellerListings.length}
         initialStepId={launch ?? null}
       />
+
+      <ImproveIntelligenceBanner
+        score={session.profile.intelligenceReadinessScore ?? 0}
+        activated={
+          session.profile.activationStatus === "PROFILE_ACTIVATED" ||
+          session.profile.activationStatus === "INTELLIGENCE_READY" ||
+          session.profile.activationStatus === "DISCOVERABLE" ||
+          session.profile.activationStatus === "MONETIZABLE"
+        }
+      />
+
+      <IntelligenceAlerts userId={userId} />
 
       <IntelligenceActivationHub
         userId={userId}

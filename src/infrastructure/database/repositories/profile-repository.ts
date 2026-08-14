@@ -152,6 +152,9 @@ export class PrismaProfileRepository implements ProfileRepository {
             hubDigestEmailEnabled: input.hubDigestEmailEnabled,
             avatarUrl:
               input.avatarUrl === undefined ? undefined : input.avatarUrl,
+            appearInExpertDiscovery: input.appearInExpertDiscovery,
+            allowRecommendations: input.allowRecommendations,
+            profileType: input.profileType === undefined ? undefined : input.profileType,
           },
         });
 

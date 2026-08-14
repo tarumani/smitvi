@@ -48,6 +48,46 @@ export class PrismaMarketplaceRepository {
     });
   }
 
+  /** Recent paid/fulfilled sales for seller notifications feed. */
+  async listRecentPaidSellerOrders(sellerId: string, take = 12) {
+    return prisma.marketplaceOrder.findMany({
+      where: {
+        sellerId,
+        status: { in: ["PAID", "FULFILLED"] },
+      },
+      orderBy: { paidAt: "desc" },
+      take,
+      include: {
+        listing: { select: { title: true } },
+        buyer: {
+          include: {
+            profile: { select: { username: true, displayName: true } },
+          },
+        },
+      },
+    });
+  }
+
+  /** Recent paid/fulfilled purchases for buyer notifications / receipt feed. */
+  async listRecentPaidBuyerOrders(buyerId: string, take = 12) {
+    return prisma.marketplaceOrder.findMany({
+      where: {
+        buyerId,
+        status: { in: ["PAID", "FULFILLED"] },
+      },
+      orderBy: { paidAt: "desc" },
+      take,
+      include: {
+        listing: { select: { title: true } },
+        seller: {
+          include: {
+            profile: { select: { username: true, displayName: true } },
+          },
+        },
+      },
+    });
+  }
+
   async listActive(limit = 40) {
     return prisma.marketplaceListing.findMany({
       where: { status: "ACTIVE" },
@@ -306,6 +346,52 @@ export class PrismaMarketplaceRepository {
       _sum: { netAmountCents: true },
     });
     return result._sum.netAmountCents ?? 0;
+  }
+
+  /** Net earnings grouped by listing currency (PAID / FULFILLED). */
+  async sumSellerNetEarningsByCurrency(sellerId: string): Promise<
+    Array<{ currency: string; lifetimeNetCents: number; monthNetCents: number }>
+  > {
+    const startOfMonth = new Date();
+    startOfMonth.setUTCDate(1);
+    startOfMonth.setUTCHours(0, 0, 0, 0);
+
+    const [lifetime, month] = await Promise.all([
+      prisma.marketplaceOrder.groupBy({
+        by: ["currency"],
+        where: {
+          sellerId,
+          status: { in: ["PAID", "FULFILLED"] },
+        },
+        _sum: { netAmountCents: true },
+      }),
+      prisma.marketplaceOrder.groupBy({
+        by: ["currency"],
+        where: {
+          sellerId,
+          status: { in: ["PAID", "FULFILLED"] },
+          paidAt: { gte: startOfMonth },
+        },
+        _sum: { netAmountCents: true },
+      }),
+    ]);
+
+    const monthMap = new Map(
+      month.map((row) => [row.currency, row._sum.netAmountCents ?? 0]),
+    );
+    const currencies = new Set([
+      ...lifetime.map((r) => r.currency),
+      ...month.map((r) => r.currency),
+    ]);
+
+    return [...currencies]
+      .sort()
+      .map((currency) => ({
+        currency,
+        lifetimeNetCents:
+          lifetime.find((r) => r.currency === currency)?._sum.netAmountCents ?? 0,
+        monthNetCents: monthMap.get(currency) ?? 0,
+      }));
   }
 
   async topEarners(limit = 5) {

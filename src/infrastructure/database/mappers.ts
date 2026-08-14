@@ -107,6 +107,11 @@ export function toProfileEntity(profile: ProfileWithRelations): ProfileEntity {
     hubArchetypeId: profile.hubArchetypeId,
     reputationScore: profile.reputationScore,
     onboardingStep: profile.onboardingStep,
+    profileType: profile.profileType,
+    activationStatus: profile.activationStatus,
+    intelligenceReadinessScore: profile.intelligenceReadinessScore,
+    appearInExpertDiscovery: profile.appearInExpertDiscovery,
+    allowRecommendations: profile.allowRecommendations,
     hubDigestEmailEnabled: profile.hubDigestEmailEnabled,
     skills: profile.skills.map(toSkillEntity),
     experiences: profile.experiences
@@ -143,5 +148,8 @@ export function toProfileSummary(profile: Profile): ProfileSummary {
     reputationScore: profile.reputationScore,
     intelligencePoints: profile.intelligencePoints,
     onboardingStep: profile.onboardingStep,
+    profileType: profile.profileType,
+    activationStatus: profile.activationStatus,
+    intelligenceReadinessScore: profile.intelligenceReadinessScore,
   };
 }

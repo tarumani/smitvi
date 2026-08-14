@@ -2,6 +2,7 @@ import type { PrismaMarketplaceRepository } from "@/infrastructure/database/repo
 import type { CreatorWalletService } from "@/application/monetization/creator-wallet-service";
 import type { MarketplaceGraphSyncService } from "@/application/monetization/marketplace-graph-sync-service";
 import type { MarketplaceEventService } from "@/application/monetization/marketplace-event-service";
+import type { MarketplaceOrderPushNotifier } from "@/application/notifications/marketplace-order-push-notifier";
 import { prisma } from "@/infrastructure/database/prisma";
 
 /** Idempotent post-payment fulfillment. */
@@ -11,9 +12,21 @@ export class MarketplaceFulfillmentService {
     private readonly wallet: CreatorWalletService,
     private readonly graphSync: MarketplaceGraphSyncService,
     private readonly events: MarketplaceEventService,
+    private readonly orderPush?: MarketplaceOrderPushNotifier,
   ) {}
 
   async fulfillPaidOrder(orderId: string) {
+    const existing = await prisma.marketplaceOrder.findUnique({
+      where: { id: orderId },
+    });
+    if (!existing) return null;
+
+    const alreadySettled =
+      existing.status === "PAID" || existing.status === "FULFILLED";
+    if (alreadySettled) {
+      return existing;
+    }
+
     const order = await this.marketplace.markOrderPaid(orderId);
     if (order.status !== "PAID") return order;
 
@@ -41,6 +54,7 @@ export class MarketplaceFulfillmentService {
       sellerId: order.sellerId,
       netAmountCents: order.netAmountCents,
       currency: order.currency,
+      orderId: order.id,
     });
 
     await this.events.track({
@@ -56,6 +70,27 @@ export class MarketplaceFulfillmentService {
     });
     if (listing) {
       await this.graphSync.onPurchase(listing.sellerId, listing.title, listing.id);
+    }
+
+    if (this.orderPush) {
+      void Promise.all([
+        this.orderPush.notifySellerOrderPaid({
+          sellerUserId: order.sellerId,
+          buyerUserId: order.buyerId,
+          orderId: order.id,
+          listingTitle: listing?.title ?? "Your listing",
+          netAmountCents: order.netAmountCents,
+          currency: order.currency,
+        }),
+        this.orderPush.notifyBuyerOrderPaid({
+          buyerUserId: order.buyerId,
+          sellerUserId: order.sellerId,
+          orderId: order.id,
+          listingTitle: listing?.title ?? "Your purchase",
+          grossAmountCents: order.grossAmountCents,
+          currency: order.currency,
+        }),
+      ]).catch(() => undefined);
     }
 
     return order;
