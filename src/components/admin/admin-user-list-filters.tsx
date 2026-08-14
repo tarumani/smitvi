@@ -8,7 +8,9 @@ const FILTERS: {
   label: string;
 }[] = [
   { value: "all", label: "All" },
-  { value: "incomplete", label: "Incomplete onboarding" },
+  { value: "incomplete", label: "Incomplete" },
+  { value: "stale", label: "7+ days incomplete" },
+  { value: "paused", label: "Auto-paused" },
   { value: "dormant", label: "Dormant" },
 ];
 
@@ -67,6 +69,13 @@ export function AdminUserListFilters({
 export function parseAdminUserListFilter(
   value: string | undefined,
 ): AdminUserListFilter {
-  if (value === "incomplete" || value === "dormant") return value;
+  if (
+    value === "incomplete" ||
+    value === "dormant" ||
+    value === "paused" ||
+    value === "stale"
+  ) {
+    return value;
+  }
   return "all";
 }

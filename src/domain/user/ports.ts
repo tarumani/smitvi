@@ -6,7 +6,12 @@ export type SyncUserInput = {
   readonly emailVerified: boolean;
 };
 
-export type AdminUserListFilter = "all" | "incomplete" | "dormant";
+export type AdminUserListFilter =
+  | "all"
+  | "incomplete"
+  | "dormant"
+  | "paused"
+  | "stale";
 
 export type AdminUserListItem = UserEntity & {
   readonly profile: {
@@ -15,9 +20,14 @@ export type AdminUserListItem = UserEntity & {
     readonly avatarUrl: string | null;
     readonly publicTwinEnabled: boolean;
     readonly isOnboarded: boolean;
+    readonly activationStatus: string | null;
+    readonly profileType: string | null;
   } | null;
   readonly knowledgeCount: number;
   readonly conversationCount: number;
+  readonly missingActivation: string[];
+  readonly daysSinceJoin: number;
+  readonly eligibleToDelete: boolean;
 };
 
 export interface UserRepository {

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminOverviewPage() {
-  const [users, twins, knowledge, conversations, failedUploads, bannedUsers, incompleteOnboarding, growth] =
+  const [users, twins, knowledge, conversations, failedUploads, bannedUsers, incompleteOnboarding, staleIncomplete, pausedIncomplete, growth] =
     await Promise.all([
       container.users.countAll(),
       container.profiles.countAll(),
@@ -20,15 +20,27 @@ export default async function AdminOverviewPage() {
       container.knowledge.countByStatus("FAILED"),
       container.users.countBanned(),
       container.users.countForAdminList({ filter: "incomplete" }),
+      container.users.countForAdminList({ filter: "stale" }),
+      container.users.countForAdminList({ filter: "paused" }),
       new GetGrowthMetrics().execute(),
     ]);
 
   const cards = [
     { label: "Users", value: users, href: ROUTES.adminUsers },
     {
-      label: "Incomplete onboarding",
+      label: "Incomplete profiles",
       value: incompleteOnboarding,
       href: `${ROUTES.adminUsers}?filter=incomplete`,
+    },
+    {
+      label: "7+ days incomplete",
+      value: staleIncomplete,
+      href: `${ROUTES.adminUsers}?filter=stale`,
+    },
+    {
+      label: "Auto-paused accounts",
+      value: pausedIncomplete,
+      href: `${ROUTES.adminUsers}?filter=paused`,
     },
     {
       label: "Public hubs live",

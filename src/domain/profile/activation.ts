@@ -25,6 +25,34 @@ export const ACTIVATION_STATUS_ORDER = [
 
 export type ActivationStatus = (typeof ACTIVATION_STATUS_ORDER)[number];
 
+/** Profile has not met the activation quality bar yet. */
+export const INCOMPLETE_ACTIVATION_STATUSES = [
+  "REGISTERED",
+  "ONBOARDING_STARTED",
+  "PROFILE_DRAFTED",
+  "PROFILE_REVIEWED",
+] as const;
+
+export type IncompleteActivationStatus =
+  (typeof INCOMPLETE_ACTIVATION_STATUSES)[number];
+
+export const ACTIVATION_MISSING_LABELS: Record<string, string> = {
+  username: "Username",
+  profileType: "Profile type",
+  headlineOrSummary: "Headline or summary",
+  skills: "At least 3 skills",
+  expertiseOrIndustry: "Expertise or industry",
+};
+
+export function isIncompleteActivationStatus(
+  status: string | null | undefined,
+): boolean {
+  return (
+    !status ||
+    (INCOMPLETE_ACTIVATION_STATUSES as readonly string[]).includes(status)
+  );
+}
+
 export const PROFILE_TYPE_COPY: Record<
   ProfileTypeId,
   { title: string; description: string; example: string }

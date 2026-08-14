@@ -11,6 +11,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/config/constants";
+import { ACTIVATION_MISSING_LABELS } from "@/domain/profile/activation";
 import { isPrivileged } from "@/domain/user/entities";
 
 export const metadata: Metadata = {
@@ -26,15 +27,26 @@ function formatAdminWhen(date: Date | null, emptyLabel: string): string {
 }
 
 function onboardingStatus(user: {
-  profile: { username: string; isOnboarded: boolean } | null;
+  profile: {
+    username: string;
+    isOnboarded: boolean;
+    activationStatus: string | null;
+  } | null;
 }): { label: string; tone: "ok" | "warn" } {
   if (!user.profile) {
     return { label: "Never started onboarding", tone: "warn" };
   }
-  if (!user.profile.isOnboarded) {
-    return { label: "Onboarding not finished", tone: "warn" };
+  const status = user.profile.activationStatus ?? "REGISTERED";
+  if (
+    status === "REGISTERED" ||
+    status === "ONBOARDING_STARTED" ||
+    status === "PROFILE_DRAFTED" ||
+    status === "PROFILE_REVIEWED" ||
+    !user.profile.isOnboarded
+  ) {
+    return { label: "Incomplete profile", tone: "warn" };
   }
-  return { label: "Onboarding complete", tone: "ok" };
+  return { label: "Profile activated", tone: "ok" };
 }
 
 export default async function AdminUsersPage({
@@ -57,8 +69,16 @@ export default async function AdminUsersPage({
     Promise.all([
       container.users.countForAdminList({ query: q, filter: "all" }),
       container.users.countForAdminList({ query: q, filter: "incomplete" }),
+      container.users.countForAdminList({ query: q, filter: "stale" }),
+      container.users.countForAdminList({ query: q, filter: "paused" }),
       container.users.countForAdminList({ query: q, filter: "dormant" }),
-    ]).then(([all, incomplete, dormant]) => ({ all, incomplete, dormant })),
+    ]).then(([all, incomplete, stale, paused, dormant]) => ({
+      all,
+      incomplete,
+      stale,
+      paused,
+      dormant,
+    })),
   ]);
 
   const canMutate = isPrivileged(session.user.role);
@@ -138,6 +158,8 @@ export default async function AdminUsersPage({
                         {" · "}
                         Last login{" "}
                         {formatAdminWhen(user.lastLoginAt, "Never")}
+                        {" · "}
+                        {user.daysSinceJoin}d
                       </p>
                       <p
                         className={
@@ -147,7 +169,24 @@ export default async function AdminUsersPage({
                         }
                       >
                         {onboarding.label}
+                        {user.profile?.activationStatus
+                          ? ` · ${user.profile.activationStatus.replaceAll("_", " ")}`
+                          : ""}
+                        {!user.isActive && user.inactiveBlockedAt
+                          ? " · Auto-paused"
+                          : ""}
+                        {user.eligibleToDelete && onboarding.tone === "warn"
+                          ? " · Eligible to delete"
+                          : ""}
                       </p>
+                      {user.missingActivation.length > 0 ? (
+                        <p className="mt-1 text-xs text-amber-700">
+                          Missing:{" "}
+                          {user.missingActivation
+                            .map((key) => ACTIVATION_MISSING_LABELS[key] ?? key)
+                            .join(", ")}
+                        </p>
+                      ) : null}
                       {hasUsername ? (
                         <Link
                           href={ROUTES.publicProfile(user.profile!.username)}

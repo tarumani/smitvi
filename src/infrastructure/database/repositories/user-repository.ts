@@ -5,17 +5,20 @@ import type {
   SyncUserInput,
   UserRepository,
 } from "@/domain/user/ports";
-import { ForbiddenError } from "@/domain/shared/errors";
+import {
+  missingActivationLabels,
+  incompleteProfileUserWhere,
+} from "@/application/users/incomplete-profile-policy";
+import {
+  daysSince,
+  incompleteProfileBlockCutoff,
+  isIncompleteProfileEligibleToDelete,
+} from "@/config/incomplete-profiles";
 import { prisma } from "@/infrastructure/database/prisma";
 import { toUserEntity } from "@/infrastructure/database/mappers";
 import { Prisma } from "@/generated/prisma/client";
 
-const INCOMPLETE_ONBOARDING_WHERE = {
-  OR: [
-    { profile: { is: null } },
-    { profile: { isOnboarded: false } },
-  ],
-} satisfies Prisma.UserWhereInput;
+const INCOMPLETE_ONBOARDING_WHERE = incompleteProfileUserWhere();
 
 function adminUserListWhere(options?: {
   query?: string;
@@ -47,6 +50,12 @@ function adminUserListWhere(options?: {
     and.push(INCOMPLETE_ONBOARDING_WHERE);
     and.push({ knowledgeSources: { none: {} } });
     and.push({ conversations: { none: {} } });
+  } else if (filter === "paused") {
+    and.push({ inactiveBlockedAt: { not: null } });
+    and.push({ isBanned: false });
+  } else if (filter === "stale") {
+    and.push(INCOMPLETE_ONBOARDING_WHERE);
+    and.push({ createdAt: { lte: incompleteProfileBlockCutoff() } });
   }
 
   return {
@@ -196,6 +205,13 @@ export class PrismaUserRepository implements UserRepository {
             avatarUrl: true,
             publicTwinEnabled: true,
             isOnboarded: true,
+            activationStatus: true,
+            profileType: true,
+            headline: true,
+            bio: true,
+            expertiseAreas: true,
+            industries: true,
+            _count: { select: { skills: true } },
           },
         },
         _count: {
@@ -216,10 +232,27 @@ export class PrismaUserRepository implements UserRepository {
             avatarUrl: row.profile.avatarUrl,
             publicTwinEnabled: row.profile.publicTwinEnabled,
             isOnboarded: row.profile.isOnboarded,
+            activationStatus: row.profile.activationStatus,
+            profileType: row.profile.profileType,
           }
         : null,
       knowledgeCount: row._count.knowledgeSources,
       conversationCount: row._count.conversations,
+      missingActivation: missingActivationLabels(
+        row.profile
+          ? {
+              username: row.profile.username,
+              profileType: row.profile.profileType,
+              headline: row.profile.headline,
+              bio: row.profile.bio,
+              skillCount: row.profile._count.skills,
+              expertiseAreas: row.profile.expertiseAreas,
+              industries: row.profile.industries,
+            }
+          : null,
+      ),
+      daysSinceJoin: daysSince(row.createdAt),
+      eligibleToDelete: isIncompleteProfileEligibleToDelete(row.createdAt),
     }));
   }
 

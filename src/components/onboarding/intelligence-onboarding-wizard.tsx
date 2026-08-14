@@ -4,7 +4,16 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { GlassCard } from "@/components/ui/glass-card";
+import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/config/constants";
 import {
   PROFILE_TYPES,
@@ -78,8 +87,26 @@ function EditableList({
   items: ReviewableField<string>[];
   onChange: (next: ReviewableField<string>[]) => void;
 }) {
-  const [adding, setAdding] = useState("");
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
   const visible = items.filter((i) => i.status !== "REJECTED");
+  const label = title.toLowerCase();
+
+  function addItem() {
+    const next = value.trim();
+    if (!next) return;
+    onChange([
+      ...items,
+      {
+        value: next,
+        source: "USER",
+        status: "EDITED",
+      },
+    ]);
+    setValue("");
+    setOpen(false);
+  }
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -88,17 +115,8 @@ function EditableList({
           type="button"
           className="text-xs text-[var(--accent)]"
           onClick={() => {
-            const value = window.prompt(`Add ${title.toLowerCase()}`);
-            if (value?.trim()) {
-              onChange([
-                ...items,
-                {
-                  value: value.trim(),
-                  source: "USER",
-                  status: "EDITED",
-                },
-              ]);
-            }
+            setValue("");
+            setOpen(true);
           }}
         >
           Add
@@ -124,9 +142,42 @@ function EditableList({
           <p className="text-sm text-[var(--muted)]">None yet</p>
         ) : null}
       </div>
-      {adding ? (
-        <input value={adding} onChange={(e) => setAdding(e.target.value)} />
-      ) : null}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add {label}</DialogTitle>
+            <DialogDescription>
+              Type a value and save it to your Intelligence Profile.
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            className="mt-4 space-y-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              addItem();
+            }}
+          >
+            <Input
+              autoFocus
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+              placeholder={`Add ${label}`}
+            />
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={!value.trim()}>
+                Add
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

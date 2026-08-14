@@ -6,6 +6,8 @@ import {
   inactiveDeleteCutoff,
   isInactiveUserCleanupEnabled,
 } from "@/config/inactive-users";
+import { INCOMPLETE_PROFILE_BLOCK_AFTER_DAYS } from "@/config/incomplete-profiles";
+import { incompleteProfileAutoBlockWhere } from "@/application/users/incomplete-profile-policy";
 import { PRODUCTION_APP_URL, ROUTES } from "@/config/constants";
 import { getSupabaseAdmin } from "@/infrastructure/auth/supabase/admin";
 import { prisma } from "@/infrastructure/database/prisma";
@@ -84,13 +86,14 @@ export class PurgeInactiveUsers {
     }
 
     const blocked = await this.blockAbandoned(blockCutoff, now);
+    const incomplete = await this.blockIncompleteProfiles(now);
     const deleted = await this.deleteBlocked(deleteCutoff);
 
     return {
       enabled: true,
-      blocked: blocked.blocked,
+      blocked: blocked.blocked + incomplete.blocked,
       deleted: deleted.deleted,
-      blockSkipped: blocked.skipped,
+      blockSkipped: blocked.skipped + incomplete.skipped,
       deleteSkipped: deleted.skipped,
       blockCutoff: blockCutoff.toISOString(),
       deleteCutoff: deleteCutoff.toISOString(),
@@ -146,6 +149,63 @@ export class PurgeInactiveUsers {
         blocked += 1;
       } catch (error) {
         console.error("[inactive-cleanup] block failed", user.id, error);
+        skipped += 1;
+      }
+    }
+
+    return { blocked, skipped };
+  }
+
+  /** Pause FREE users whose Intelligence Profile is still incomplete after 7 days. */
+  private async blockIncompleteProfiles(now: Date) {
+    const cutoff = new Date(
+      now.getTime() -
+        INCOMPLETE_PROFILE_BLOCK_AFTER_DAYS * 24 * 60 * 60 * 1000,
+    );
+    const candidates = await prisma.user.findMany({
+      where: incompleteProfileAutoBlockWhere([
+        { inactiveBlockedAt: null },
+        { isActive: true },
+        { createdAt: { lt: cutoff } },
+      ]),
+      take: INACTIVE_CLEANUP_BATCH_LIMIT,
+      orderBy: { createdAt: "asc" },
+      select: {
+        id: true,
+        email: true,
+        profile: { select: { displayName: true } },
+      },
+    });
+
+    let blocked = 0;
+    let skipped = 0;
+    const loginUrl = `${appOrigin()}${ROUTES.login}`;
+    const onboardUrl = `${appOrigin()}${ROUTES.onboardingIntelligence}`;
+
+    for (const user of candidates) {
+      try {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            isActive: false,
+            inactiveBlockedAt: now,
+          },
+        });
+
+        const name = user.profile?.displayName || "there";
+        await sendTransactionalEmail({
+          to: user.email,
+          subject: "Complete your Smitvi profile to keep your account",
+          html: `<p>Hi ${name},</p>
+<p>Your Smitvi profile is still incomplete after ${INCOMPLETE_PROFILE_BLOCK_AFTER_DAYS} days, so access is paused until you finish activation.</p>
+<p><a href="${onboardUrl}">Complete your Intelligence Profile</a> or <a href="${loginUrl}">sign in</a>.</p>
+<p>An admin may permanently delete unfinished accounts after this window.</p>
+<p>— Smitvi</p>`,
+        });
+
+        blocked += 1;
+      } catch (error) {
+        console.error("[incomplete-profile] block failed", user.id, error);
         skipped += 1;
       }
     }

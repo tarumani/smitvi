@@ -1,6 +1,7 @@
 import { prisma } from "@/infrastructure/database/prisma";
 import { container } from "@/application/container";
 import {
+  ACTIVATION_STATUS_ORDER,
   evaluateActivation,
   evaluateIntelligenceReady,
   maxActivationStatus,
@@ -196,6 +197,20 @@ export class ProfileActivationService {
       where: { userId },
       data,
     });
+
+    if (
+      ACTIVATION_STATUS_ORDER.indexOf(status) >=
+      ACTIVATION_STATUS_ORDER.indexOf("PROFILE_ACTIVATED")
+    ) {
+      await prisma.user.updateMany({
+        where: {
+          id: userId,
+          isBanned: false,
+          inactiveBlockedAt: { not: null },
+        },
+        data: { isActive: true, inactiveBlockedAt: null },
+      });
+    }
 
     void container.syncProfileToGraph.execute(userId).catch(() => undefined);
 

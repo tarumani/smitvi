@@ -7,6 +7,7 @@ import { container } from "@/application/container";
 import { resolveEffectiveUserPlan } from "@/domain/billing/effective-plan";
 import { resolveAuthUser } from "@/application/auth/resolve-auth-user";
 import { LAST_LOGIN_TOUCH_INTERVAL_MS } from "@/config/inactive-users";
+import { isIncompleteActivationStatus } from "@/domain/profile/activation";
 import { createSupabaseServerClient } from "@/infrastructure/auth/supabase/server";
 
 export type CurrentSession = {
@@ -80,12 +81,19 @@ export async function getCurrentSession(): Promise<CurrentSession | null> {
     return null;
   }
 
-  // Inactivity-paused abandoned accounts can recover by signing in again.
-  if (user.inactiveBlockedAt && !user.isBanned) {
+  const profile = await container.profiles.findSummaryByUserId(user.id);
+
+  // Inactivity pause recovers on sign-in. Incomplete profiles stay paused
+  // until they meet activation quality (they can still finish onboarding).
+  const incomplete = isIncompleteActivationStatus(profile?.activationStatus);
+  if (user.inactiveBlockedAt && !user.isBanned && !incomplete) {
     user = await container.users.clearInactiveBlock(user.id);
   }
 
-  if (!user.isActive || user.isBanned) {
+  const incompletePaused =
+    Boolean(user.inactiveBlockedAt) && !user.isBanned && incomplete;
+
+  if (user.isBanned || (!user.isActive && !incompletePaused)) {
     return null;
   }
 
@@ -94,8 +102,6 @@ export async function getCurrentSession(): Promise<CurrentSession | null> {
     await container.users.updateLastLogin(user.id, new Date());
     user = { ...user, lastLoginAt: new Date() };
   }
-
-  const profile = await container.profiles.findSummaryByUserId(user.id);
 
   const effectivePlan = resolveEffectiveUserPlan(user.plan, authUser.email);
   const userWithPlan =
