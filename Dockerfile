@@ -10,6 +10,7 @@ FROM base AS deps
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
 COPY prisma.config.ts ./
+ENV DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/postgres
 RUN npm ci
 
 FROM base AS builder
