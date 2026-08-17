@@ -114,4 +114,9 @@ export const SOCIAL_LINKS = [
     label: "LinkedIn",
     href: "https://www.linkedin.com/company/smitvi/",
   },
+  {
+    id: "youtube",
+    label: "YouTube",
+    href: "https://www.youtube.com/@Smitvi",
+  },
 ] as const;

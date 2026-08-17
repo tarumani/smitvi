@@ -53,8 +53,9 @@ export default function PrivacyPage() {
       <InfoContentSection title="Cookies & advertising" icon={Cookie}>
         <p>
           We use essential cookies for sign-in and preferences. Where required by
-          law, we ask consent before non-essential cookies. Partners such as Google
-          may use cookies to measure traffic or show ads (including AdSense). Use{" "}
+          law, we ask consent before advertising cookies. Google Analytics
+          (G-ZJXYL2S12J) is used to measure traffic. Google may also show ads
+          (including AdSense) after you accept advertising cookies. Use{" "}
           <strong>Cookie settings</strong> in the footer to change your choice, or
           manage cookies in your browser and via Google&apos;s ad settings.
         </p>

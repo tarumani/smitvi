@@ -9,6 +9,7 @@ import {
   updateSession,
 } from "@/infrastructure/auth/supabase/proxy-client";
 import { getRequestOrigin } from "@/infrastructure/http/request-origin";
+import { publicHubRewritePath } from "@/lib/public-hub-url";
 
 function matchesPrefix(pathname: string, prefixes: readonly string[]) {
   return prefixes.some(
@@ -31,13 +32,11 @@ export async function proxy(request: NextRequest) {
   const { response, user, sessionCookies } = await updateSession(request);
 
   // smitvi.com/@username → /u/username (and /@username/chat → /u/username/chat)
-  if (pathname.startsWith("/@")) {
-    const rest = pathname.slice(2);
-    if (rest.length > 0) {
-      const url = request.nextUrl.clone();
-      url.pathname = `/u/${rest}`;
-      return applySessionCookies(NextResponse.rewrite(url), sessionCookies);
-    }
+  const hubPath = publicHubRewritePath(pathname);
+  if (hubPath) {
+    const url = request.nextUrl.clone();
+    url.pathname = hubPath;
+    return applySessionCookies(NextResponse.rewrite(url), sessionCookies);
   }
 
   const isProtected = matchesPrefix(pathname, PROTECTED_PATH_PREFIXES);

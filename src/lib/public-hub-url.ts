@@ -10,6 +10,24 @@ export function publicHubUrl(username: string): string {
   return `${appOrigin()}${ROUTES.publicProfile(username)}`;
 }
 
+/**
+ * Map pretty `/@username` URLs onto the real `/u/[username]` route.
+ * Next.js treats `@…` as a parallel-route slot, so this must run before files.
+ * Also accepts `%40username` (encoded @) from first-click / messenger links.
+ */
+export function publicHubRewritePath(pathname: string): string | null {
+  let path = pathname;
+  try {
+    path = decodeURIComponent(pathname);
+  } catch {
+    /* keep original */
+  }
+  if (!path.startsWith("/@")) return null;
+  const rest = path.slice(2);
+  if (!rest) return null;
+  return `/u/${rest}`;
+}
+
 export function publicTwinChatUrl(username: string): string {
   return `${appOrigin()}${ROUTES.publicTwinChat(username)}`;
 }

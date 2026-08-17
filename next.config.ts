@@ -14,6 +14,16 @@ const nextConfig: NextConfig = {
     ],
   },
   poweredByHeader: false,
+  async rewrites() {
+    return {
+      // beforeFiles: `/@user` is otherwise treated as a parallel-route slot
+      // and the first navigation can render an empty shell until refresh.
+      beforeFiles: [
+        { source: "/@:username", destination: "/u/:username" },
+        { source: "/@:username/:path*", destination: "/u/:username/:path*" },
+      ],
+    };
+  },
 };
 
 export default nextConfig;

@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { THEME_STORAGE_KEY } from "@/components/providers/theme-script";
 import { RegisterServiceWorker } from "@/components/pwa/register-sw";
 import { AdSenseScriptLoader } from "@/components/marketing/adsense-script-loader";
+import { GoogleAnalytics } from "@/components/marketing/google-analytics";
 import { CookieConsentBanner } from "@/components/marketing/cookie-consent-banner";
 import { APP_VISION } from "@/config/brand";
 import { APP_NAME, APP_TAGLINE, TRAIN_TWIN_LABEL } from "@/config/constants";
@@ -90,6 +91,7 @@ export default async function RootLayout({
           {children}
           <RegisterServiceWorker />
           <CookieConsentBanner />
+          <GoogleAnalytics />
           <AdSenseScriptLoader />
           <Toaster richColors position="top-right" />
         </ThemeProvider>

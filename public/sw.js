@@ -1,5 +1,5 @@
 /* Minimal installable offline shell for Smitvi PWA */
-const CACHE = "smitvi-shell-v1";
+const CACHE = "smitvi-shell-v2";
 const SHELL = ["/", "/dashboard", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
@@ -19,20 +19,43 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
-  if (request.url.includes("/api/")) return;
 
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request)
+  const url = new URL(request.url);
+  if (url.pathname.startsWith("/api/")) return;
+  // Next.js RSC / public hub first-loads must not be served from an old shell.
+  if (url.searchParams.has("_rsc")) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  const isDocument =
+    request.mode === "navigate" || request.destination === "document";
+
+  if (isDocument) {
+    event.respondWith(
+      fetch(request)
         .then((response) => {
-          if (response.ok && request.destination === "document") {
+          if (response.ok) {
             const copy = response.clone();
             void caches.open(CACHE).then((cache) => cache.put(request, copy));
           }
           return response;
         })
-        .catch(() => cached);
-      return cached || network;
+        .catch(() => caches.match(request).then((cached) => cached || Response.error())),
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      const network = fetch(request).then((response) => {
+        if (response.ok && request.destination === "script") {
+          const copy = response.clone();
+          void caches.open(CACHE).then((cache) => cache.put(request, copy));
+        }
+        return response;
+      });
+      return network.catch(() => cached);
     }),
   );
 });
